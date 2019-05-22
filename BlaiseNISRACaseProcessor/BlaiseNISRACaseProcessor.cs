@@ -41,7 +41,7 @@ namespace BlaiseNISRACaseProcessor
             log.Info("Blaise NISRA Case Processor service stopped.");
         }
 
-        public void Run()
+        public bool Run()
         {
             // Connection parameters
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
@@ -59,6 +59,7 @@ namespace BlaiseNISRACaseProcessor
                 log.Error("Error connecting to Blaise Server Manager.");
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
+                return false;
             }
 
             // Loop through the server parks on the connected Blaise server.
@@ -70,9 +71,10 @@ namespace BlaiseNISRACaseProcessor
                     ProcessSurvey(serverPark.Name, survey.Name);
                 }
             }
+            return true;
         }
 
-        public void ProcessSurvey(string serverPark, string instrument)
+        public bool ProcessSurvey(string serverPark, string instrument)
         {
             try
             {
@@ -94,13 +96,17 @@ namespace BlaiseNISRACaseProcessor
                     var blaiseServerDataLink = GetDataLinkFromBDI(blaiseServerBDI);
 
                     if (nisraFileDataLink == null || blaiseServerDataLink == null)
-                        return;
+                        return false;
                     else
+                    {
                         ImportDataRecords(nisraFileDataLink, blaiseServerDataLink);
+                        return true;
+                    }
                 }
                 else
                 {
                     log.Info(String.Format("No NISRA file found for: {0}/{1}.", serverPark, instrument));
+                    return false;
                 }
             }
             catch (Exception e)
@@ -108,17 +114,34 @@ namespace BlaiseNISRACaseProcessor
                 log.Error(String.Format("Error Processing survey: {0}/{1}",serverPark,instrument));
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
+                return false;
             }
         }
 
+        /// <summary>
+        /// Searches for a .bdi file matching the instrument name in the source directory provided.
+        /// </summary>
+        /// <param name="sourceDirectory"> The directory where the target BDI file exists. </param>
+        /// <param name="instrument"> The name of the instrument (i.e OPN1901A). </param>
+        /// <returns> String representation of the file path. </returns>
         public string GetBDIFile(string sourceDirectory, string instrument = "")
         {
-            List<string> ext = new List<string> { ".bdi", ".bdix" };
-            var bdiFiles = Directory.GetFiles(sourceDirectory, String.Format("*{0}.*", instrument), SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s)));
-            if (bdiFiles.Count() > 0)
-                return bdiFiles.ElementAt(0);
-            else
+            try
+            {
+                List<string> ext = new List<string> { ".bdi", ".bdix" };
+                var bdiFiles = Directory.GetFiles(sourceDirectory, String.Format("*{0}.*", instrument), SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s)));
+                if (bdiFiles.Count() > 0)
+                    return bdiFiles.ElementAt(0);
+                else
+                    return "";
+            }
+            catch (Exception e)
+            {
+                log.Error(String.Format("Error Getting BDI file: {0}/{1}", sourceDirectory, instrument));
+                log.Error(e.Message);
+                log.Error(e.StackTrace);
                 return "";
+            }
         }
 
         /// <summary>
@@ -230,11 +253,11 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="sourceDL">A datalink object referencing the source data location.</param>
         /// <param name="targetDL">A datalink object referencing the target data location.</param>
-        public void ImportDataRecords(IDataLink sourceDL, IDataLink targetDL)
+        public bool ImportDataRecords(IDataLink sourceDL, IDataLink targetDL)
         {
             // This function will need to consider the rules surrounding NISRA data import.
             // Below this return statement is the code required to copy records directly to the database.
-            return;
+            return true;
             try
             {
                 IDataSet ds = sourceDL.Read("");
