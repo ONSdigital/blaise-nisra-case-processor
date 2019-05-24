@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.ServerManager;
 using System.Configuration;
+using System.Timers;
 
 namespace BlaiseNISRACaseProcessor
 {
@@ -27,18 +28,28 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            this.OnStart(null);
+            this.Run();
         }
 
         protected override void OnStart(string[] args)
         {
             log.Info("Blaise NISRA Case Processor service started.");
-            Run();
+
+            // Set up a timer that triggers every minute.
+            Timer timer = new Timer();
+            timer.Interval = 60000; // 60 seconds
+            timer.Elapsed += new ElapsedEventHandler(this.ProcessFiles);
+            timer.Start();
         }
 
         protected override void OnStop()
         {
             log.Info("Blaise NISRA Case Processor service stopped.");
+        }
+
+        private void ProcessFiles(object sender, ElapsedEventArgs args)
+        {
+            Run();
         }
 
         public bool Run()
