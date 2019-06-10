@@ -17,15 +17,15 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             Assert.AreEqual(true, success);
         }
 
-        [TestMethod]
-        public void Test_ProcessSurvey()
-        {
-            var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
+        //[TestMethod]
+        //public void Test_ProcessSurvey()
+        //{
+        //    var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
 
-            bool success = b.ProcessSurvey("LocalDevelopment","OPN1901A");
+        //    bool success = b.ProcessSurvey("LocalDevelopment","OPN1901A");
 
-            Assert.AreEqual(true, success);
-        }
+        //    Assert.AreEqual(true, success);
+        //}
 
         [TestMethod]
         public void Test_Get_BDI_File()

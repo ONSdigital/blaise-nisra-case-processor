@@ -54,6 +54,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.DataRecord.dll</HintPath>
     </Reference>
+    <Reference Include="StatNeth.Blaise.API.Meta, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.Meta.dll</HintPath>
+    </Reference>
     <Reference Include="StatNeth.Blaise.API.ServerManager">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.ServerManager.dll</HintPath>
     </Reference>
@@ -97,7 +101,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
