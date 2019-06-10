@@ -8,10 +8,11 @@ The application works on a timer and preiodically checks for differences between
 The following keys need to be added to the App.config file for the program to work correctly.
 Fill in the associated values as required.
 
+    <add key="MinuteRunTimer" value="" />
+    <add key="NisraDataFolder" value="" />
     <add key="BlaiseServerHostName" value=""/>
     <add key="BlaiseServerUserName" value=""/>
     <add key="BlaiseServerPassword" value=""/>
-    
 
 # Install the Log4Net & SQLite packages via NuGet.
 
