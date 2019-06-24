@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -7,26 +7,6 @@ namespace BlaiseNISRACaseProcessor_UnitTests
     [TestClass]
     public class BNCP_UnitTests
     {
-        [TestMethod]
-        public void Test_Run()
-        {
-            var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-
-            bool success = b.Run();
-
-            Assert.AreEqual(true, success);
-        }
-
-        //[TestMethod]
-        //public void Test_ProcessSurvey()
-        //{
-        //    var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-
-        //    bool success = b.ProcessSurvey("LocalDevelopment","OPN1901A");
-
-        //    Assert.AreEqual(true, success);
-        //}
-
         [TestMethod]
         public void Test_Get_BDI_File()
         {
