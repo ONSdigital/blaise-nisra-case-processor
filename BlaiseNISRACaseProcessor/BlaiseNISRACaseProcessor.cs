@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,6 +9,8 @@ using System.Security;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.ServerManager;
 using System.Configuration;
@@ -16,62 +18,56 @@ using System.Timers;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
 using System.Globalization;
+using System.Web.Script.Serialization;
 
 namespace BlaiseNISRACaseProcessor
 {
-    public partial class BlaiseNISRACaseProcessor: ServiceBase
+    public partial class BlaiseNISRACaseProcessor : ServiceBase
     {
         // Instantiate logger.
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        // Objects for RabbitMQ.
+        public IConnection connection;
+        public IModel channel;
 
         public BlaiseNISRACaseProcessor()
         {
             InitializeComponent();
         }
 
-        public void OnDebug()
-        {
-            //EditNisraData();
-            //return;
-            this.Run();
-        }
-
+        /// <summary>
+        /// Method for creating synthetic HOUT data for testing.
+        /// </summary>
         public void EditNisraData()
         {
-            var dataDropFolder = ConfigurationManager.AppSettings["NisraDataFolder"];
-            string nisraBDI = GetBDIFile(dataDropFolder, "OPN1901A");
-
-            var nisraFileDataLink = GetDataLinkFromBDI(nisraBDI);
-
-
-            // Read the NISRA data into a dataset object.
-            IDataSet nisraDataset = nisraFileDataLink.Read("");
-
-            string[] values = { "110", "200", "300" };
-
+            var nistaProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
+            string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
+            var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
+            IDataSet nisraDataset = nisraDataLink.Read("");
+            string[] values = { "100", "100", "100", "100", "100", "105", "109", "110", "110", "110", "110", "110" };
             int count = 0;
-            // Loop through every record within the NISRA dataset
             while (!nisraDataset.EndOfSet && (count < values.Length))
             {
-                // Read the current record.
                 var nisraRecord = nisraDataset.ActiveRecord;
-
-
-                // Get the completed and processed flags from the current record
                 var houtVal = nisraRecord.GetField("QAdmin.Hout");
                 houtVal.DataValue.Assign(values[count]);
-
-                nisraFileDataLink.Write(nisraRecord);
-
+                nisraDataLink.Write(nisraRecord);
                 count++;
                 nisraDataset.MoveNext();
             }
         }
 
+        public void OnDebug()
+        {
+            EditNisraData();
+            this.Run();
+        }
+
         protected override void OnStart(string[] args)
         {
-            log.Info("Blaise NISRA Case Processor service started.");            
-            
+            log.Info("Blaise NISRA Case Processor service started.");
+
             // Get the MinuteRunTimer env variable and convert it from minutes to miliseconds.
             string timerString = ConfigurationManager.AppSettings["MinuteRunTimer"];
             double time = double.Parse(timerString, CultureInfo.InvariantCulture.NumberFormat);
@@ -79,8 +75,8 @@ namespace BlaiseNISRACaseProcessor
 
             // Set up a timer that triggers every minute.
             Timer timer = new Timer();
-            timer.Interval = time; 
-            timer.Elapsed += new ElapsedEventHandler(this.ProcessFiles);
+            timer.Interval = time;
+            timer.Elapsed += new ElapsedEventHandler(this.TimerRun);
             timer.Start();
         }
 
@@ -89,79 +85,177 @@ namespace BlaiseNISRACaseProcessor
             log.Info("Blaise NISRA Case Processor service stopped.");
         }
 
-        private void ProcessFiles(object sender, ElapsedEventArgs args)
+        private void TimerRun(object sender, ElapsedEventArgs args)
         {
             Run();
         }
 
-        public bool Run()
+        public void Run()
         {
-            // Connection parameters
+            // Get NISRA processing folder from app config.
+            string nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
+
+            // Get Blaise server details from app config.
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
 
-            IConnectedServer serverManagerConnection = null;
-            try
-            {
-                log.Info("Attempting to connect to Blaise Server Manager.");
-                serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password));
-            }
-            catch (Exception e)
-            {
-                log.Error("Error connecting to Blaise Server Manager.");
-                log.Error(e.Message);
-                log.Error(e.StackTrace);
-                return false;
-            }
+            // Look for BDIX files in the NISRA processing folder.
+            string[] bdixFiles = Directory.GetFiles(nisraProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
 
-            // Loop through the server parks on the connected Blaise server.
-            foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
+            // If a BDIX file is found, process it.
+            if (bdixFiles.Any())
             {
-                // Loop through the surveys installed on the current server park
-                foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
+                // Process all the BDIX files found.
+                foreach (var bdixFile in bdixFiles)
                 {
-                    ProcessSurvey(serverPark, survey);
+                    log.Info("Processing NISRA file - " + bdixFile);
+                    // Connect to the Blaise server.
+                    IConnectedServer serverManagerConnection = null;
+                    try
+                    {
+                        log.Info("Connecting to Blaise server - " + serverName);
+                        serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password));
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error("Error connecting to Blaise server - " + serverName);
+                        log.Error(e.Message);
+                        log.Error(e.StackTrace);
+                    }
+                    // Loop through the server parks on the connected Blaise server.
+                    foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
+                    {
+                        // Loop through the surveys installed on the current server park
+                        foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
+                        {
+                            // If a survey is found that matches the NISRA file, process it.
+                            if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                            {
+                                log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
+                                ProcessSurvey(serverPark, survey);
+                            }
+                            else
+                            {
+                                log.Warn("No survey found on Blaise server that matches NISRA file.");
+                            }
+                        }
+                    }
                 }
             }
-            return true;
         }
 
-        public bool ProcessSurvey(IServerPark serverPark, ISurvey instrument)
+        /// <summary>
+        /// Process the survey data.
+        /// </summary>
+        public void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
         {
             try
             {
-                log.Info(String.Format("Processing - {0}/{1}", serverPark.Name, instrument.Name));
-
-                var dataDropFolder = ConfigurationManager.AppSettings["NisraDataFolder"];
-
-                string nisraBDI = GetBDIFile(dataDropFolder, instrument.Name);
-
-                if (nisraBDI != "")
+                // Get process and backup folder locations from app config.
+                var nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
+                var nisraBackupFolder = ConfigurationManager.AppSettings["NisraBackupFolder"];
+                // Get path for NISRA BDIX.
+                string nisraBDI = GetBDIFile(nisraProcessFolder, instrument.Name);
+                // Get data links for the NISRA file and Blaise server.
+                var nisraFileDataLink = GetDataLinkFromBDI(nisraBDI);
+                var blaiseServerDataLink = GetRemoteDataLink(serverPark, instrument);
+                // If we have data links for the NISRA file and the Blaise server.
+                if (nisraFileDataLink != null || blaiseServerDataLink != null)
                 {
-                    log.Info(String.Format("NISRA .bdi file found. - {0}", nisraBDI));
-                    
-                    // Get data links for the nisra file and the blaise server data interfaces:
-                    var nisraFileDataLink = GetDataLinkFromBDI(nisraBDI);
-                    var blaiseServerDataLink = GetRemoteDataLink(serverPark, instrument);
-
-                    if (nisraFileDataLink == null || blaiseServerDataLink == null)
-                        return false;
-                    else
+                    // Attempt to import the cases if necessary.
+                    if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink))
                     {
-                        ImportDataRecords(nisraFileDataLink, blaiseServerDataLink);
-                        return true;
+                        // Move the NISRA file to backup location if it's been sucessfully processed.
+                        MoveFiles(nisraProcessFolder, nisraBackupFolder, MoveType.Move);
                     }
                 }
                 else
                 {
-                    log.Info(String.Format("No NISRA file found for: {0}/{1}.", serverPark.Name, instrument.Name));
-                    return false;
+                    log.Warn("Could not get data links for NISRA file and/or Blaise server.");
                 }
             }
             catch (Exception e)
             {
-                log.Error(String.Format("Error Processing survey: {0}/{1}",serverPark.Name,instrument.Name));
+                log.Error(String.Format("Error Processing survey: {0}/{1}", serverPark.Name, instrument.Name));
+                log.Error(e.Message);
+                log.Error(e.StackTrace);
+            }
+        }
+
+        /// <summary>
+        /// Uses two datalink objects to import the data from one source to another.
+        /// </summary>
+        /// <param name="sourceDL">A datalink object referencing the source data location.</param>
+        /// <param name="targetDL">A datalink object referencing the target data location.</param>
+        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink)
+        {
+            try
+            {
+                // Read the NISRA data into a dataset object.
+                IDataSet nisraDataSet = nisraDatalink.Read("");
+                // Connect to Rabbit.
+                SetupRabbit();
+                // Loop through every record within the NISRA dataset.
+                while (!nisraDataSet.EndOfSet)
+                {
+                    // Read the current record/case.
+                    var nisraRecord = nisraDataSet.ActiveRecord;
+                    // Get the key field from the model.
+                    IDatamodel sourceModel = nisraRecord.Datamodel;
+                    var key = DataRecordManager.GetKey(sourceModel, "PRIMARY");
+                    // Get the value of the key field.
+                    string serialNumber = nisraRecord.Keys[0].KeyValue;
+                    key.Fields[0].DataValue.Assign(serialNumber);
+                    // Check if a record/case with the key field value exists on the Blaise server.
+                    if (serverDataLink.KeyExists(key))
+                    {
+                        // Check for an HOUT field in the NISRA data.
+                        if (CheckForField(nisraRecord, "QAdmin.Hout"))
+                        {
+                            // Get the NISTA HOUT.
+                            var nisraHOUT = nisraRecord.GetField("QAdmin.Hout");
+                            // If HOUT is not 0.
+                            if (!(nisraHOUT.DataValue.IntegerValue == 0))
+                            {
+                                // Get the record/case on the server.
+                                var serverRecord = serverDataLink.ReadRecord(key);
+                                // Get the HOUT of the record/case on the server.
+                                var serverHOUT = serverRecord.GetField("QAdmin.Hout");
+                                // Compare the HOUT of the record/case in the NISRA file and on the server.
+                                // Write the NISRA record/case to the server if it's HOUT is greater
+                                if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
+                                {
+                                    log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                                    serverDataLink.Write(nisraRecord);
+                                    serialNumber = serialNumber.Replace("\"", "");
+                                    SendStatus(MakeStatusJson(serialNumber));
+                                }
+                                else
+                                {
+                                    log.Info(String.Format("Serial {0} - Server has better or equal HOUT (NISRA: {1} / Server: {2}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                                }
+                            }
+                            else
+                            {
+                                log.Info(String.Format("Serial {0} - NISRA has not been processed (NISRA: {1}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // If no case if found, write the record stright to the Blaise server (IPS behaviour).
+                        serverDataLink.Write(nisraRecord);
+                    }
+                    // Move to the next record:
+                    nisraDataSet.MoveNext();
+                }
+                connection.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.Error("Error importing data records.");
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
                 return false;
@@ -187,7 +281,7 @@ namespace BlaiseNISRACaseProcessor
             }
             catch (Exception e)
             {
-                log.Error(String.Format("Error Getting BDI file: {0}/{1}", sourceDirectory, instrument));
+                log.Error(String.Format("Error Getting BDI file: {0}{1}", sourceDirectory, instrument));
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
                 return "";
@@ -218,22 +312,6 @@ namespace BlaiseNISRACaseProcessor
                 log.Error(e.StackTrace);
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Converts a string password to the SecureString format.
-        /// </summary>
-        /// <param name="pw">The string password being read in for conversion.</param>
-        /// <returns>A SecureString version of the imported password.</returns>
-        public static SecureString GetPassword(string pw)
-        {
-            char[] passwordChars = pw.ToCharArray();
-            SecureString password = new SecureString();
-            foreach (char c in passwordChars)
-            {
-                password.AppendChar(c);
-            }
-            return password;
         }
 
         /// <summary>
@@ -291,7 +369,7 @@ namespace BlaiseNISRACaseProcessor
             }
             catch (Exception e)
             {
-                log.Error("Error Getting DataLink");
+                log.Error("Error getting data link - " + bdiFile);
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
                 return null;
@@ -310,21 +388,18 @@ namespace BlaiseNISRACaseProcessor
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
-
             // Get the GIID of the instrument.
             Guid instrumentID = Guid.NewGuid();
             try
             {
                 instrumentID = instrument.InstrumentID;
-
                 // Connect to the data.
                 IRemoteDataServer dataLinkConn = DataLinkManager.GetRemoteDataServer(serverName, 8033, userName, GetPassword(password));
-
                 return dataLinkConn.GetDataLink(instrumentID, serverPark.Name);
             }
             catch (Exception e)
             {
-                log.Error("Error connecting to remote data link.");
+                log.Error("Error getting data link - " + serverPark.Name + "/" + instrumentID);
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
                 return null;
@@ -332,75 +407,158 @@ namespace BlaiseNISRACaseProcessor
         }
 
         /// <summary>
-        /// Uses two datalink objects to import the data from one source to another.
+        /// Converts a string password to the SecureString format.
         /// </summary>
-        /// <param name="sourceDL">A datalink object referencing the source data location.</param>
-        /// <param name="targetDL">A datalink object referencing the target data location.</param>
-        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 dbDatalink)
+        /// <param name="pw">The string password being read in for conversion.</param>
+        /// <returns>A SecureString version of the imported password.</returns>
+        public static SecureString GetPassword(string pw)
         {
-            // This function will need to consider the rules surrounding NISRA data import.
-            // Below this return statement is the code required to copy records directly to the database.
-            //return true;
+            char[] passwordChars = pw.ToCharArray();
+            SecureString password = new SecureString();
+            foreach (char c in passwordChars)
+            {
+                password.AppendChar(c);
+            }
+            return password;
+        }
+
+        /// <summary>
+        /// Enumeration of Move or Copy for the MoveFiles method.
+        /// </summary>
+        public enum MoveType
+        {
+            Move,
+            Copy
+        }
+
+        /// <summary>
+        /// Move or copy files from path to path.
+        /// </summary>
+        public bool MoveFiles(string sourcePath, string targetPath, MoveType moveType)
+        {
             try
             {
-                // Read the NISRA data into a dataset object.
-                IDataSet nisraDataset = nisraDatalink.Read("");
-
-                // Loop through every record within the NISRA dataset
-                while (!nisraDataset.EndOfSet)
+                if (Directory.Exists(sourcePath))
                 {
-                    // Read the current record.
-                    var nisraRecord = nisraDataset.ActiveRecord;
+                    string[] files = Directory.GetFiles(sourcePath);
 
-                    // Get the key from the NISRA datalink's attached data model.
-                    IDatamodel sourceModel = nisraRecord.Datamodel;
-                    var key = DataRecordManager.GetKey(sourceModel, "PRIMARY");
-                    
-                    // Assign the serial number of the current nisra data record to the key value.
-                    string serialNumber = nisraRecord.Keys[0].KeyValue;
-                    key.Fields[0].DataValue.Assign(serialNumber);
-                    
-                    // Check if a case with this key exists in the source data set. (this will find our matching record)
-                    if (dbDatalink.KeyExists(key))
+                    // Copy the files and overwrite destination files if they already exist.
+                    foreach (string file in files)
                     {
-                        // If it does then get the record using the generated key
-                        var dbRecord = dbDatalink.ReadRecord(key);
+                        // Use static Path methods to extract only the file name from the path.
+                        string fileName = System.IO.Path.GetFileName(file);
+                        string destFile = System.IO.Path.Combine(targetPath, fileName);
 
-                        // Get both of the record's Hout field (NISRA & the database) 
-                        var nisraHout = nisraRecord.GetField("QAdmin.Hout");
-                        var dbHout = dbRecord.GetField("QAdmin.Hout");
-
-                        if (!(nisraHout.DataValue.IntegerValue == 0))
+                        Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                        switch (moveType)
                         {
-                            // Compare the two outcome values. If the nisra value is lower then the stored value then replace it.
-                            if (nisraHout.DataValue.IntegerValue < dbHout.DataValue.IntegerValue || dbHout.DataValue.IntegerValue == 0)
-                            {
-                                log.Info(String.Format("Serial {0} - Nisra case has a better outcome. Nisra: {1} / DB: {2}", serialNumber.Trim(' '), nisraHout.DataValue.IntegerValue, dbHout.DataValue.IntegerValue));
-                                dbDatalink.Write(nisraRecord);
-                            }
-                            else
-                            {
-                                log.Info(String.Format("Serial {0} - Database case has a better or equal outcome. Nisra: {1} / DB: {2}", serialNumber.Trim(' '), nisraHout.DataValue.IntegerValue, dbHout.DataValue.IntegerValue));
-                            }
-                        }
-                        else
-                        {
-                            log.Info(String.Format("Serial {0} - Nisra case has not been processed. Nisra: {1} / DB: {2}", serialNumber.Trim(' '), nisraHout.DataValue.IntegerValue, dbHout.DataValue.IntegerValue));
+                            case MoveType.Move:
+                                System.IO.File.Delete(destFile);
+                                System.IO.File.Move(file, destFile);
+                                log.Info(String.Format("Successfully moved files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                break;
+                            case MoveType.Copy:
+                                System.IO.File.Copy(file, destFile, true);
+                                log.Info(String.Format("Successfully copied files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                break;
                         }
                     }
-
-                    // Move to the next record:
-                    nisraDataset.MoveNext();
+                    return true;
                 }
-                return true;
+                else
+                {
+                    log.Error(String.Format("Unable to copy. Source path doesnt exist: {0}", sourcePath));
+                    return false;
+                }
             }
             catch (Exception e)
             {
-                log.Error("Error Importing data records.");
+                log.Error(String.Format("Error moving files: {0} -> {1}", sourcePath, targetPath));
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Method for connecting to RabbitMQ and setting up the channels.
+        /// </summary>
+        public bool SetupRabbit()
+        {
+            log.Info("Setting up RabbitMQ.");
+            try
+            {
+                // Create a connection to RabbitMQ using the Rabbit credentials stored in the app.config file.
+                var connFactory = new ConnectionFactory()
+                {
+                    HostName = ConfigurationManager.AppSettings["RabbitHostName"],
+                    UserName = ConfigurationManager.AppSettings["RabbitUserName"],
+                    Password = ConfigurationManager.AppSettings["RabbitPassword"]
+                };
+                connection = connFactory.CreateConnection();
+                channel = connection.CreateModel();
+                // Get the exchange and queue details from the app.config file.
+                string exchangeName = ConfigurationManager.AppSettings["RabbitExchange"];
+                string queueName = ConfigurationManager.AppSettings["CaseStatusQueueName"];
+                // Declare the exchange for sending messages.
+                channel.ExchangeDeclare(exchange: exchangeName, type: "direct", durable: true);
+                log.Info("Exchange declared - " + exchangeName);
+                // Declare the queue for sending message updates.
+                channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                log.Info("Queue declared - " + queueName);
+                log.Info("RabbitMQ setup complete.");
+                return true;
+            }
+            catch
+            {
+                log.Info("Unable to establish RabbitMQ connection.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Builds a JSON status object to be used in the SendStatus method.
+        /// </summary>
+        /// <param name="data"> Case object containing case information.</param>
+        /// <param name="status"> Status of the case being processed.</param>
+        /// <returns>Json object containing required information.</returns>
+        private Dictionary<string, string> MakeStatusJson(string serial)
+        {
+            Dictionary<string, string> jsonData = new Dictionary<string, string>();
+            jsonData["serial"] = serial;
+            return jsonData;
+        }
+
+        /// <summary>
+        /// Sends a status message to RabbitMQ.
+        /// </summary>
+        private void SendStatus(Dictionary<string, string> jsonData)
+        {
+            string message = new JavaScriptSerializer().Serialize(jsonData);
+            var body = Encoding.UTF8.GetBytes(message);
+            string caseStatusQueueName = ConfigurationManager.AppSettings["CaseStatusQueueName"];
+            channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
+            log.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
+        }
+
+        /// <summary>
+        /// Checks passed in Blaise record for the passed in field name.
+        /// </summary>
+        private bool CheckForField(StatNeth.Blaise.API.DataRecord.IDataRecord dataRecord, string fieldName)
+        {
+            if (dataRecord != null)
+            {
+                IDataRecord2 dataRecord2 = (IDataRecord2)dataRecord;
+                foreach (IField3 field in dataRecord2.GetDataFields())
+                {
+                    if (field.FullName == fieldName)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
         }
     }
 }
