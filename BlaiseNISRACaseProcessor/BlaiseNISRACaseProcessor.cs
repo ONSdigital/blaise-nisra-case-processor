@@ -45,7 +45,7 @@ namespace BlaiseNISRACaseProcessor
             string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
             var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
             IDataSet nisraDataset = nisraDataLink.Read("");
-            string[] values = { "100", "100", "100", "100", "100", "105", "109", "110", "110", "110", "110", "110" };
+            string[] values = { "110", "110", "110", "110", "110" };
             int count = 0;
             while (!nisraDataset.EndOfSet && (count < values.Length))
             {
@@ -60,7 +60,7 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            EditNisraData();
+            //EditNisraData();
             this.Run();
         }
 
@@ -164,7 +164,7 @@ namespace BlaiseNISRACaseProcessor
                 if (nisraFileDataLink != null || blaiseServerDataLink != null)
                 {
                     // Attempt to import the cases if necessary.
-                    if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink))
+                    if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink, instrument, serverPark))
                     {
                         // Move the NISRA file to backup location if it's been sucessfully processed.
                         MoveFiles(nisraProcessFolder, nisraBackupFolder, MoveType.Move);
@@ -188,7 +188,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="sourceDL">A datalink object referencing the source data location.</param>
         /// <param name="targetDL">A datalink object referencing the target data location.</param>
-        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink)
+        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink, ISurvey instrument, IServerPark serverPark)
         {
             try
             {
@@ -223,13 +223,22 @@ namespace BlaiseNISRACaseProcessor
                                 // Get the HOUT of the record/case on the server.
                                 var serverHOUT = serverRecord.GetField("QAdmin.Hout");
                                 // Compare the HOUT of the record/case in the NISRA file and on the server.
-                                // Write the NISRA record/case to the server if it's HOUT is greater
+                                // Write the NISRA record/case to the server if it's HOUT is lower.
                                 if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
                                 {
                                     log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                                    // Get the Case_ID field objects for NISRA and the server.
+                                    var serverCaseID = serverRecord.GetField("QID.Case_ID");
+                                    var nisraCaseID = nisraRecord.GetField("QID.Case_ID");
+                                    // Before we update the server record/case, take the Case_ID from the server data and put it in the NISRA data.
+                                    // This is so that if the NISRA data doesn't have the Case_ID, it's not lost.
+                                    nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
+                                    // Update the server data with the NISRA data.
                                     serverDataLink.Write(nisraRecord);
-                                    serialNumber = serialNumber.Replace("\"", "");
-                                    SendStatus(MakeStatusJson(serialNumber));
+                                    // Make the JSON status update message.
+                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+                                    // Send the JSON status update message.
+                                    SendStatus(json);
                                 }
                                 else
                                 {
@@ -519,13 +528,19 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Builds a JSON status object to be used in the SendStatus method.
         /// </summary>
-        /// <param name="data"> Case object containing case information.</param>
-        /// <param name="status"> Status of the case being processed.</param>
-        /// <returns>Json object containing required information.</returns>
-        private Dictionary<string, string> MakeStatusJson(string serial)
+        public Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
         {
             Dictionary<string, string> jsonData = new Dictionary<string, string>();
-            jsonData["serial"] = serial;
+            if (recordData != null)
+            {
+                foreach (IField qidField in recordData.GetField("QID").Fields)
+                {
+                    jsonData[qidField.LocalName] = qidField.DataValue.ValueAsText.ToLower();
+                }
+            }
+            jsonData["instrument_name"] = instrumentName;
+            jsonData["server_park"] = serverPark;
+            jsonData["status"] = status;
             return jsonData;
         }
 
