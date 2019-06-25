@@ -9,7 +9,13 @@ The following keys need to be added to the App.config file for the program to wo
 Fill in the associated values as required.
 
     <add key="MinuteRunTimer" value="" />
-    <add key="NisraDataFolder" value="" />
+    <add key="NisraProcessFolder" value="" />
+    <add key="NisraBackupFolder" value="" />
+    <add key="RabbitHostName" value="" />
+    <add key="RabbitUserName" value="" />
+    <add key="RabbitPassword" value="" />
+    <add key="RabbitExchange" value=""/>
+    <add key="CaseStatusQueueName" value="" />    
     <add key="BlaiseServerHostName" value=""/>
     <add key="BlaiseServerUserName" value=""/>
     <add key="BlaiseServerPassword" value=""/>
