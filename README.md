@@ -3,7 +3,7 @@
 The Blaise NISRA Case Processor application is a Windows service that runs on a virtual machine hosting a Blaise 5 server.
 The application works on a timer and preiodically checks for differences between imported NISRA Blaise data and the data stored on the Blaise server. Once any new data is found (data differing from that which is stored on the server), the application will apply a number of conflict resolution rules specified for dealing with differing data.
 
-# Populate the key values in the app.config file.
+# Populate the key values in the app.config file
 
 The following keys need to be added to the App.config file for the program to work correctly.
 Fill in the associated values as required.
@@ -20,7 +20,7 @@ Fill in the associated values as required.
     <add key="BlaiseServerUserName" value=""/>
     <add key="BlaiseServerPassword" value=""/>
 
-# Install the Log4Net & SQLite packages via NuGet.
+# Install the Log4Net & SQLite packages via NuGet
 
   ```
   Install-Package log4net
