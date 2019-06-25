@@ -167,7 +167,7 @@ namespace BlaiseNISRACaseProcessor
                     if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink, instrument, serverPark))
                     {
                         // Move the NISRA file to backup location if it's been sucessfully processed.
-                        MoveFiles(nisraProcessFolder, nisraBackupFolder, MoveType.Move);
+                        MoveFiles(nisraProcessFolder, nisraBackupFolder, MoveType.Move, instrument.Name);
                     }
                 }
                 else
@@ -443,7 +443,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Move or copy files from path to path.
         /// </summary>
-        public bool MoveFiles(string sourcePath, string targetPath, MoveType moveType)
+        public bool MoveFiles(string sourcePath, string targetPath, MoveType moveType, string instrumentName)
         {
             try
             {
@@ -456,20 +456,25 @@ namespace BlaiseNISRACaseProcessor
                     {
                         // Use static Path methods to extract only the file name from the path.
                         string fileName = System.IO.Path.GetFileName(file);
-                        string destFile = System.IO.Path.Combine(targetPath, fileName);
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                        switch (moveType)
+                        if (fileName.Contains(instrumentName))
                         {
-                            case MoveType.Move:
-                                System.IO.File.Delete(destFile);
-                                System.IO.File.Move(file, destFile);
-                                log.Info(String.Format("Successfully moved files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
-                                break;
-                            case MoveType.Copy:
-                                System.IO.File.Copy(file, destFile, true);
-                                log.Info(String.Format("Successfully copied files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
-                                break;
+
+                            string destFile = System.IO.Path.Combine(targetPath, fileName);
+
+                            Directory.CreateDirectory(targetPath);
+                            switch (moveType)
+                            {
+                                case MoveType.Move:
+                                    System.IO.File.Delete(destFile);
+                                    System.IO.File.Move(file, destFile);
+                                    log.Info(String.Format("Successfully moved files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                    break;
+                                case MoveType.Copy:
+                                    System.IO.File.Copy(file, destFile, true);
+                                    log.Info(String.Format("Successfully copied files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                    break;
+                            }
                         }
                     }
                     return true;
