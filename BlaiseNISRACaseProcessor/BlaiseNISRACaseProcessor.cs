@@ -271,8 +271,14 @@ namespace BlaiseNISRACaseProcessor
                                     // Modify the Online flag to indicate the new record is from the NISRA data set
                                     var onlineFlagVal = nisraRecord.GetField("QAdmin.Online");
                                     onlineFlagVal.DataValue.Assign("1"); // assuming this is a boolean/enum type value
-                                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+                                    // if the hout value is that of a partial complete (201) then set the partial flag
+                                    if (nisraHOUT.DataValue.IntegerValue == 201)
+                                    {
+                                        var partialFlag = nisraRecord.GetField("QAdmin.Partial");
+                                        partialFlag.DataValue.Assign("1"); // assuming this is a boolean/enum type value
+                                    }
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                                     // Update the server data with the NISRA data.
                                     serverDataLink.Write(nisraRecord);
