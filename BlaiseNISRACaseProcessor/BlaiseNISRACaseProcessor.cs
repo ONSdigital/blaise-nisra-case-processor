@@ -45,13 +45,44 @@ namespace BlaiseNISRACaseProcessor
             string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
             var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
             IDataSet nisraDataset = nisraDataLink.Read("");
-            string[] values = { "110", "110", "110", "110", "110" };
+            string[] values = { "110", "110"};
             int count = 0;
             while (!nisraDataset.EndOfSet && (count < values.Length))
             {
                 var nisraRecord = nisraDataset.ActiveRecord;
                 var houtVal = nisraRecord.GetField("QAdmin.Hout");
                 houtVal.DataValue.Assign(values[count]);
+
+                var whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].WhoMade");
+                whoMadeValue.DataValue.Assign("NISRA");
+
+                var dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DayNumber");
+                dayNumberValue.DataValue.Assign("1");
+                
+                var nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].NrOfDials");
+                nrOfDialsValue.DataValue.Assign("1");
+
+                var callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DialResult");
+                callOutcomeValue.DataValue.Assign("1");
+
+                whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].WhoMade");
+                whoMadeValue.DataValue.Assign("NISRA");
+
+                dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DayNumber");
+                dayNumberValue.DataValue.Assign("1");
+
+                nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].NrOfDials");
+                nrOfDialsValue.DataValue.Assign("1");
+
+                callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DialResult");
+                callOutcomeValue.DataValue.Assign("1");
+
+                var completedVal = nisraRecord.GetField("QAdmin.Completed");
+                completedVal.DataValue.Assign("1");
+
+                var excludeVal = nisraRecord.GetField("Exclude");
+                excludeVal.DataValue.Assign("1");
+
                 nisraDataLink.Write(nisraRecord);
                 count++;
                 nisraDataset.MoveNext();
@@ -60,8 +91,8 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            //EditNisraData();
-            this.Run();
+            EditNisraData();
+            //this.Run();
         }
 
         protected override void OnStart(string[] args)
@@ -227,16 +258,28 @@ namespace BlaiseNISRACaseProcessor
                                 if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
                                 {
                                     log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+
                                     // Get the Case_ID field objects for NISRA and the server.
                                     var serverCaseID = serverRecord.GetField("QID.Case_ID");
                                     var nisraCaseID = nisraRecord.GetField("QID.Case_ID");
+
                                     // Before we update the server record/case, take the Case_ID from the server data and put it in the NISRA data.
                                     // This is so that if the NISRA data doesn't have the Case_ID, it's not lost.
                                     nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
+                                    
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                    // Modify the Online flag to indicate the new record is from the NISRA data set
+                                    var onlineFlagVal = nisraRecord.GetField("QAdmin.Online");
+                                    onlineFlagVal.DataValue.Assign("1"); // assuming this is a boolean/enum type value
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
                                     // Update the server data with the NISRA data.
                                     serverDataLink.Write(nisraRecord);
+
                                     // Make the JSON status update message.
                                     var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+
                                     // Send the JSON status update message.
                                     SendStatus(json);
                                 }
