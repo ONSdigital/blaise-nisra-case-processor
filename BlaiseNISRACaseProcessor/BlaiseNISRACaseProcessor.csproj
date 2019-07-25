@@ -50,10 +50,12 @@
     <Reference Include="RabbitMQ.Client, Version=5.0.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
       <HintPath>..\packages\RabbitMQ.Client.5.1.0\lib\net451\RabbitMQ.Client.dll</HintPath>
     </Reference>
-    <Reference Include="StatNeth.Blaise.API.DataInterface">
+    <Reference Include="StatNeth.Blaise.API.DataInterface, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.DataInterface.dll</HintPath>
     </Reference>
-    <Reference Include="StatNeth.Blaise.API.DataLink">
+    <Reference Include="StatNeth.Blaise.API.DataLink, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.DataLink.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API.DataRecord, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
@@ -64,7 +66,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.Meta.dll</HintPath>
     </Reference>
-    <Reference Include="StatNeth.Blaise.API.ServerManager">
+    <Reference Include="StatNeth.Blaise.API.ServerManager, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.ServerManager.dll</HintPath>
     </Reference>
     <Reference Include="System" />
