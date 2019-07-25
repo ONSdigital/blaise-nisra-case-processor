@@ -45,13 +45,49 @@ namespace BlaiseNISRACaseProcessor
             string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
             var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
             IDataSet nisraDataset = nisraDataLink.Read("");
-            string[] values = { "110", "110", "110", "110", "110" };
+            string[] values = { "110","110", "110", "110" };
             int count = 0;
             while (!nisraDataset.EndOfSet && (count < values.Length))
             {
                 var nisraRecord = nisraDataset.ActiveRecord;
+                
                 var houtVal = nisraRecord.GetField("QAdmin.Hout");
                 houtVal.DataValue.Assign(values[count]);
+
+                var whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].WhoMade");
+                whoMadeValue.DataValue.Assign("NISRA");
+
+                var dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DayNumber");
+                dayNumberValue.DataValue.Assign("1");
+                
+                var nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].NrOfDials");
+                nrOfDialsValue.DataValue.Assign("1");
+
+                var callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DialResult");
+                callOutcomeValue.DataValue.Assign("1");
+
+                whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].WhoMade");
+                whoMadeValue.DataValue.Assign("NISRA");
+
+                dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DayNumber");
+                dayNumberValue.DataValue.Assign("1");
+
+                nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].NrOfDials");
+                nrOfDialsValue.DataValue.Assign("1");
+
+                callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DialResult");
+                callOutcomeValue.DataValue.Assign("1");
+
+                var completedVal = nisraRecord.GetField("QAdmin.Completed");
+                completedVal.DataValue.Assign("1");
+
+                
+                var excludeVal = nisraRecord.GetField("Exclude");
+                excludeVal.DataValue.Assign("1");
+
+                var webStatusVal = nisraRecord.GetField("WebFormStatus");
+                webStatusVal.DataValue.Assign("1");
+
                 nisraDataLink.Write(nisraRecord);
                 count++;
                 nisraDataset.MoveNext();
@@ -60,8 +96,8 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            //EditNisraData();
-            this.Run();
+            EditNisraData();
+            //this.Run();
         }
 
         protected override void OnStart(string[] args)
@@ -210,45 +246,83 @@ namespace BlaiseNISRACaseProcessor
                     // Check if a record/case with the key field value exists on the Blaise server.
                     if (serverDataLink.KeyExists(key))
                     {
-                        // Check for an HOUT field in the NISRA data.
-                        if (CheckForField(nisraRecord, "QAdmin.Hout"))
+                        // Get the record/case on the server.
+                        var serverRecord = serverDataLink.ReadRecord(key);
+
+                        // Check if the WebFormStatus field exists in the NISRA and server record
+                        if (CheckForField(nisraRecord, "WebFormStatus") && CheckForField(serverRecord, "WebFormStatus"))
                         {
-                            // Get the NISTA HOUT.
-                            var nisraHOUT = nisraRecord.GetField("QAdmin.Hout");
-                            // If HOUT is not 0.
-                            if (!(nisraHOUT.DataValue.IntegerValue == 0))
+                            var serverStatus = serverRecord.GetField("WebFormStatus");
+                            var nisraStatus = nisraRecord.GetField("WebFormStatus");
+
+                            // if the nisra status value is null it has not been processed so move to the next record (0 = Null)
+                            if (nisraStatus.DataValue.EnumerationValue == 0)
                             {
-                                // Get the record/case on the server.
-                                var serverRecord = serverDataLink.ReadRecord(key);
-                                // Get the HOUT of the record/case on the server.
-                                var serverHOUT = serverRecord.GetField("QAdmin.Hout");
-                                // Compare the HOUT of the record/case in the NISRA file and on the server.
-                                // Write the NISRA record/case to the server if it's HOUT is lower.
-                                if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
+                                nisraDataSet.MoveNext();
+                                continue;
+                            }
+
+                            // If the server status value is "Complete" and the NISRA status is also "Complete" then process the record's Hout values. (1 = Complete, 2 = Partial)  
+                            // Otherwise do nothing and move to the next record.
+                            if (serverStatus.DataValue.EnumerationValue == 1)
+                            {
+                                if (nisraStatus.DataValue.EnumerationValue == 1)
                                 {
-                                    log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
-                                    // Get the Case_ID field objects for NISRA and the server.
-                                    var serverCaseID = serverRecord.GetField("QID.Case_ID");
-                                    var nisraCaseID = nisraRecord.GetField("QID.Case_ID");
-                                    // Before we update the server record/case, take the Case_ID from the server data and put it in the NISRA data.
-                                    // This is so that if the NISRA data doesn't have the Case_ID, it's not lost.
-                                    nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
-                                    // Update the server data with the NISRA data.
-                                    serverDataLink.Write(nisraRecord);
-                                    // Make the JSON status update message.
-                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
-                                    // Send the JSON status update message.
-                                    SendStatus(json);
+                                    ProcessRecordHoutValues(nisraRecord, serverRecord, serverDataLink, instrument, serverPark, serialNumber);
                                 }
                                 else
                                 {
-                                    log.Info(String.Format("Serial {0} - Server has better or equal HOUT (NISRA: {1} / Server: {2}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                                    nisraDataSet.MoveNext();
+                                    continue;
                                 }
                             }
+                            // If the server status value is "Partial" and the NISRA status is also "Partial" then process the record's Hout values. (1 = Complete, 2 = Partial)  
+                            // Otherwise write the completed NISRA case to the server.
+                            else if (serverStatus.DataValue.EnumerationValue == 2)
+                            {
+                                if (nisraStatus.DataValue.EnumerationValue == 2)
+                                {
+                                    // Compare HOUT values
+                                    ProcessRecordHoutValues(nisraRecord, serverRecord, serverDataLink, instrument, serverPark, serialNumber);
+                                }
+                                else
+                                {
+                                    // Replace server record with NISRA record
+                                    log.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
+
+                                    //Replace Server record with NISRA
+                                    WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
+
+                                    // Make the JSON status update message.
+                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+
+                                    // Send the JSON status update message.
+                                    SendStatus(json);
+                                }
+                            }
+                            // If the nisraStatus value is Partial or Complete write it over the untouched server record.
                             else
                             {
-                                log.Info(String.Format("Serial {0} - NISRA has not been processed (NISRA: {1}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue));
+                                if (nisraStatus.DataValue.EnumerationValue > 0)
+                                {
+                                    // Replace server record with NISRA record
+                                    log.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
+
+                                    //Replace Server record with NISRA
+                                    WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
+
+                                    // Make the JSON status update message.
+                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+
+                                    // Send the JSON status update message.
+                                    SendStatus(json);
+                                }
                             }
+                        }
+                        else
+                        {
+                            // If there's no WebFormStatus field, attempt to process the record using the Hout values
+                            ProcessRecordHoutValues(nisraRecord, serverRecord, serverDataLink, instrument, serverPark, serialNumber);
                         }
                     }
                     else
@@ -269,6 +343,64 @@ namespace BlaiseNISRACaseProcessor
                 log.Error(e.StackTrace);
                 return false;
             }
+        }
+
+        public void ProcessRecordHoutValues(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink, 
+                                            ISurvey instrument, IServerPark serverPark, string serialNumber)
+        {
+            // Check for an HOUT field in the NISRA data.
+            if (CheckForField(nisraRecord, "QAdmin.Hout"))
+            {
+                // Get the NISTA HOUT.
+                var nisraHOUT = nisraRecord.GetField("QAdmin.Hout");
+                // If HOUT is not 0.
+                if (!(nisraHOUT.DataValue.IntegerValue == 0))
+                {
+                    // Get the HOUT of the record/case on the server.
+                    var serverHOUT = serverRecord.GetField("QAdmin.Hout");
+                    // Compare the HOUT of the record/case in the NISRA file and on the server.
+                    // Write the NISRA record/case to the server if it's HOUT is lower.
+                    if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
+                    {
+                        log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+
+                        //Replace Server record with NISRA
+                        WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
+
+                        // Make the JSON status update message.
+                        var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+
+                        // Send the JSON status update message.
+                        SendStatus(json);
+                    }
+                    else
+                    {
+                        log.Info(String.Format("Serial {0} - Server has better or equal HOUT (NISRA: {1} / Server: {2}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                    }
+                }
+                else
+                {
+                    log.Info(String.Format("Serial {0} - NISRA has not been processed (NISRA: {1}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue));
+                }
+            }
+        }
+
+        public void WriteNisraRecordToServer(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink)
+        {
+            // Get the Case_ID field objects for NISRA and the server.
+            var serverCaseID = serverRecord.GetField("QID.Case_ID");
+            var nisraCaseID = nisraRecord.GetField("QID.Case_ID");
+
+            // Before we update the server record/case, take the Case_ID from the server data and put it in the NISRA data.
+            // This is so that if the NISRA data doesn't have the Case_ID, it's not lost.
+            nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
+
+            // Modify the Online flag to indicate the new record is from the NISRA data set
+            var onlineFlagVal = nisraRecord.GetField("QAdmin.Online");
+            onlineFlagVal.DataValue.Assign("1"); // assuming this is a boolean/enum type value
+
+            // Update the server data with the NISRA data.
+            serverDataLink.Write(nisraRecord);
         }
 
         /// <summary>
