@@ -77,9 +77,10 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string serverName = ConfigurationManager.AppSettings.Get("BlaiseServerHostName");
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
             var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-            var connection = b.ConnectToBlaiseServer(serverName, username, password);
+            var connection = b.ConnectToBlaiseServer(serverName, username, password, binding);
 
             Assert.AreNotEqual(null, connection);
         }
@@ -90,9 +91,10 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string serverName = ConfigurationManager.AppSettings.Get("BlaiseServerHostName");
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = "BadPassword";
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
             var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-            var connection = b.ConnectToBlaiseServer(serverName, username, password);
+            var connection = b.ConnectToBlaiseServer(serverName, username, password, binding);
 
             Assert.AreEqual(null, connection);
         }
@@ -103,9 +105,10 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string serverName = ConfigurationManager.AppSettings.Get("BlaiseServerHostName");
             string username = "BadUser";
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
             var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-            var connection = b.ConnectToBlaiseServer(serverName, username, password);
+            var connection = b.ConnectToBlaiseServer(serverName, username, password, binding);
 
             Assert.AreEqual(null, connection);
         }
@@ -116,9 +119,10 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string serverName = "BadServer";
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
             var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
-            var connection = b.ConnectToBlaiseServer(serverName, username, password);
+            var connection = b.ConnectToBlaiseServer(serverName, username, password, binding);
 
             Assert.AreEqual(null, connection);
         }
@@ -139,10 +143,9 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             var b = new BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor();
 
             string serverPark = "LocalDevelopment";
-            string instrument = "HealthSurvey";
+            string instrument = "OPN1901A";
             // Get the BMI and BDI files for the survey:
             string originalBDI = b.GetDataFileName(serverPark, instrument);
-
 
             // Get data links for the original and the backup data interfaces:
             var originalDataLink = b.GetDataLinkFromBDI(originalBDI);
