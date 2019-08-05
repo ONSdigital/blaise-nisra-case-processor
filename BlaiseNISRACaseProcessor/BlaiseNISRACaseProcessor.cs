@@ -80,7 +80,6 @@ namespace BlaiseNISRACaseProcessor
 
                 var completedVal = nisraRecord.GetField("QAdmin.Completed");
                 completedVal.DataValue.Assign("1");
-
                 
                 var excludeVal = nisraRecord.GetField("Exclude");
                 excludeVal.DataValue.Assign("1");
@@ -96,8 +95,8 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            EditNisraData();
-            //this.Run();
+            //EditNisraData();
+            this.Run();
         }
 
         protected override void OnStart(string[] args)
@@ -135,6 +134,7 @@ namespace BlaiseNISRACaseProcessor
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
             // Look for BDIX files in the NISRA processing folder.
             string[] bdixFiles = Directory.GetFiles(nisraProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
@@ -151,7 +151,7 @@ namespace BlaiseNISRACaseProcessor
                     try
                     {
                         log.Info("Connecting to Blaise server - " + serverName);
-                        serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password));
+                        serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
                     }
                     catch (Exception e)
                     {
@@ -436,13 +436,13 @@ namespace BlaiseNISRACaseProcessor
         /// <param name="userName">Username with access to the specified server.</param>
         /// <param name="password">Password for the specified user to access the server.</param>
         /// <returns>A IConnectedServer2 object which is connected to the server provided.</returns>
-        public IConnectedServer2 ConnectToBlaiseServer(string serverName, string userName, string password)
+        public IConnectedServer2 ConnectToBlaiseServer(string serverName, string userName, string password, string binding)
         {
             int port = 8031;
             try
             {
                 IConnectedServer2 connServer =
-                    (IConnectedServer2)ServerManager.ConnectToServer(serverName, port, userName, GetPassword(password));
+                    (IConnectedServer2)ServerManager.ConnectToServer(serverName, port, userName, GetPassword(password), binding);
 
                 return connServer;
             }
@@ -468,9 +468,9 @@ namespace BlaiseNISRACaseProcessor
                 string serverName = ConfigurationManager.AppSettings.Get("BlaiseServerHostName");
                 string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
                 string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
+                string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
 
-                var connection = ConnectToBlaiseServer(serverName, username, password);
-
+                var connection = ConnectToBlaiseServer(serverName, username, password, binding);
 
                 var surveys = connection.GetSurveys(serverPark);
 
@@ -529,13 +529,14 @@ namespace BlaiseNISRACaseProcessor
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
+            string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
             // Get the GIID of the instrument.
             Guid instrumentID = Guid.NewGuid();
             try
             {
                 instrumentID = instrument.InstrumentID;
                 // Connect to the data.
-                IRemoteDataServer dataLinkConn = DataLinkManager.GetRemoteDataServer(serverName, 8033, userName, GetPassword(password));
+                IRemoteDataServer dataLinkConn = DataLinkManager.GetRemoteDataServer(serverName, 8033, binding, userName, GetPassword(password));
                 return dataLinkConn.GetDataLink(instrumentID, serverPark.Name);
             }
             catch (Exception e)
