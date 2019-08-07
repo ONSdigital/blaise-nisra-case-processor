@@ -42,8 +42,8 @@
             this.serviceInstaller1.ServiceName = "BlaiseNISRACaseProcessor";
             this.serviceInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             
-            this.serviceInstaller1.Description = "Analyses NISRA Blaise data set and apply any detected changes to the local Blaise database.";
-            this.serviceInstaller1.DisplayName = "Blaise.NISRACaseProcessor";
+            this.serviceInstaller1.Description = "### BlaiseNISRACaseProcessor";
+            this.serviceInstaller1.DisplayName = "BlaiseNISRACaseProcessor";
             this.serviceInstaller1.ServiceName = "BlaiseNISRACaseProcessor";
             this.serviceInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             // 
