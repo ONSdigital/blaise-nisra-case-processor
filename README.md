@@ -43,13 +43,23 @@ To use the API's:
 
 # Installing the Service
 
-  - Build the Solution 
-    - In Visual Studio select "Release" as the Solution Confiiguration.
-    - Select "Build" from the toolbar.
-    - Select "Build Solution" from the "Build" dropdown
-  - Copy the release files to the program install location of the target machine     
+  - Build the Solution
+    - In Visual Studio select "Release" as the Solution Configuration
+    - Select the "Build" menu
+    - Select "Build Solution" from the "Build" menu
+  - Copy the release files (/bin/release/) to the install location on the server
+  - Uninstall any previous installs
+    - Stop the service from running
+    - Open a command prompt as administrator
+    - Navigate to the windows service installer location
+      - cd c:\Windows\Microsoft.NET\Framework\v4.0.30319\
+    - Run installUtil.exe /U from this location and pass it the location of the service executable
+      - InstallUtil.exe /U {install location}\BlaiseCaseHandler.exe
   - Run the installer against the release build
-    - Open command prompt as administrator
-    - Navigate to the windows service installer (cd c:\Windows\Microsoft.NET\Framework\v4.0.30319)
-    - Run the installUtil.exe from the Windows folder accessed above using the service's exe from the release directory
-      - InstallUtil.exe #Program install location on target machine#\BlaiseNISRACaseProcessor.exe
+    - Open a command prompt as administrator
+    - Navigate to the windows service installer location
+      - cd c:\Windows\Microsoft.NET\Framework\v4.0.30319\
+    - Run installUtil.exe from this location and pass it the location of the service executable
+      - InstallUtil.exe {install location}\BlaiseCaseHandler.exe
+    - Set the service to delayed start
+    - Start the service
