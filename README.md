@@ -7,7 +7,7 @@ The application works on a timer and preiodically checks for differences between
 
 Clone the git respository to your IDE of choice. Visual Studio 2019 is recomended.
 
-Rename the App.config file to App.local.config and populate the key values. **Never use App.config for development.**
+Populate the key values in the App.config file accordingly. **Never committ App.config with key values.**
 
 Build the solution to obtain the necessary references.
 
