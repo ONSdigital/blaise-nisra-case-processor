@@ -24,12 +24,12 @@ Build the solution to obtain the necessary references.
     - Navigate to the windows service installer location
       - cd c:\Windows\Microsoft.NET\Framework\v4.0.30319\
     - Run installUtil.exe /U from this location and pass it the location of the service executable
-      - InstallUtil.exe /U {install location}\BlaiseCaseHandler.exe
+      - InstallUtil.exe /U {install location}\BlaiseNISRACaseProcessor.exe
   - Run the installer against the release build
     - Open a command prompt as administrator
     - Navigate to the windows service installer location
       - cd c:\Windows\Microsoft.NET\Framework\v4.0.30319\
     - Run installUtil.exe from this location and pass it the location of the service executable
-      - InstallUtil.exe {install location}\BlaiseCaseHandler.exe
+      - InstallUtil.exe {install location}\BlaiseNISRACaseProcessor.exe
     - Set the service to delayed start
     - Start the service
