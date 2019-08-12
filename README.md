@@ -1,7 +1,6 @@
 # Blaise_NISRA_Case_Processor
 
-The Blaise NISRA Case Processor application is a Windows service that runs on a virtual machine hosting a Blaise 5 server.
-The application works on a timer and preiodically checks for differences between imported NISRA Blaise data and the data stored on the Blaise server. Once any new data is found (data differing from that which is stored on the server), the application will apply a number of conflict resolution rules specified for dealing with differing data.
+Blaise NISRA Case Processor is a Windows service for processing the NISRA Blaise case data. The service runs preiodically on a timer and compares the NISRA data with the data on our servers, rules are applied to use the best data available.
 
 # Setup Development Environment
 
