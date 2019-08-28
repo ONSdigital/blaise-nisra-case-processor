@@ -51,7 +51,7 @@ namespace BlaiseNISRACaseProcessor
             {
                 var nisraRecord = nisraDataset.ActiveRecord;
                 
-                var houtVal = nisraRecord.GetField("QAdmin.Hout");
+                var houtVal = nisraRecord.GetField("QHAdmin.Hout");
                 houtVal.DataValue.Assign(values[count]);
 
                 var whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].WhoMade");
@@ -78,7 +78,7 @@ namespace BlaiseNISRACaseProcessor
                 callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DialResult");
                 callOutcomeValue.DataValue.Assign("1");
 
-                var completedVal = nisraRecord.GetField("QAdmin.Completed");
+                var completedVal = nisraRecord.GetField("Completed");
                 completedVal.DataValue.Assign("1");
                 
                 var excludeVal = nisraRecord.GetField("Exclude");
@@ -349,15 +349,15 @@ namespace BlaiseNISRACaseProcessor
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
-            if (CheckForField(nisraRecord, "QAdmin.Hout"))
+            if (CheckForField(nisraRecord, "QHAdmin.Hout"))
             {
                 // Get the NISTA HOUT.
-                var nisraHOUT = nisraRecord.GetField("QAdmin.Hout");
+                var nisraHOUT = nisraRecord.GetField("QHAdmin.Hout");
                 // If HOUT is not 0.
                 if (!(nisraHOUT.DataValue.IntegerValue == 0))
                 {
                     // Get the HOUT of the record/case on the server.
-                    var serverHOUT = serverRecord.GetField("QAdmin.Hout");
+                    var serverHOUT = serverRecord.GetField("QHAdmin.Hout");
                     // Compare the HOUT of the record/case in the NISRA file and on the server.
                     // Write the NISRA record/case to the server if it's HOUT is lower.
                     if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
@@ -396,7 +396,7 @@ namespace BlaiseNISRACaseProcessor
             nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
 
             // Modify the Online flag to indicate the new record is from the NISRA data set
-            var onlineFlagVal = nisraRecord.GetField("QAdmin.Online");
+            var onlineFlagVal = nisraRecord.GetField("QHAdmin.Online"); // still required !?
             onlineFlagVal.DataValue.Assign("1"); // assuming this is a boolean/enum type value
 
             // Update the server data with the NISRA data.
