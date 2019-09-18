@@ -232,6 +232,7 @@ namespace BlaiseNISRACaseProcessor
                 // Connect to Rabbit.
                 SetupRabbit();
                 // Loop through every record within the NISRA dataset.
+                log.Info("Looping through NISRA data.");
                 while (!nisraDataSet.EndOfSet)
                 {
                     // Read the current record/case.
@@ -348,15 +349,16 @@ namespace BlaiseNISRACaseProcessor
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
-            if (DataRecordExtensions.CheckForField(nisraRecord, "QHAdmin.Hout"))
+            if (DataRecordExtensions.CheckForField(nisraRecord, "QHAdmin.HOut"))
             {
                 // Get the NISTA HOUT.
-                var nisraHOUT = nisraRecord.GetField("QHAdmin.Hout");
+                var nisraHOUT = nisraRecord.GetField("QHAdmin.HOut");
+                log.Info("NISRA record: " + nisraRecord + " HOut: " + nisraHOUT);
                 // If HOUT is not 0.
                 if (!(nisraHOUT.DataValue.IntegerValue == 0))
                 {
                     // Get the HOUT of the record/case on the server.
-                    var serverHOUT = serverRecord.GetField("QHAdmin.Hout");
+                    var serverHOUT = serverRecord.GetField("QHAdmin.HOut");
                     // Compare the HOUT of the record/case in the NISRA file and on the server.
                     // Write the NISRA record/case to the server if it's HOUT is lower.
                     if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
