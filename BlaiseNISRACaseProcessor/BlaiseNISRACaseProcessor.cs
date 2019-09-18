@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
 using System.ServiceProcess;
 using System.Text;
-using System.Threading.Tasks;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.ServerManager;
 using System.Configuration;
@@ -41,6 +37,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         public void EditNisraData()
         {
+
             var nistaProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
             string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
             var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
@@ -188,9 +185,11 @@ namespace BlaiseNISRACaseProcessor
         {
             try
             {
+                log.Info($"Starting ProcessSurvey for ServerPark: {serverPark.Name}, Instrument: {instrument.Name}");
                 // Get process and backup folder locations from app config.
                 var nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
                 var nisraBackupFolder = ConfigurationManager.AppSettings["NisraBackupFolder"];
+                log.Debug($"NISRAProcessFolder: {nisraProcessFolder}, NISRABackupFolder: {nisraBackupFolder}");
                 // Get path for NISRA BDIX.
                 string nisraBDI = GetBDIFile(nisraProcessFolder, instrument.Name);
                 // Get data links for the NISRA file and Blaise server.
@@ -213,7 +212,7 @@ namespace BlaiseNISRACaseProcessor
             }
             catch (Exception e)
             {
-                log.Error(String.Format("Error Processing survey: {0}/{1}", serverPark.Name, instrument.Name));
+                log.Error($"Error Processing survey, ServerPark: {serverPark.Name}, InstrumentName{instrument.Name}");
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
             }
@@ -250,7 +249,7 @@ namespace BlaiseNISRACaseProcessor
                         var serverRecord = serverDataLink.ReadRecord(key);
 
                         // Check if the WebFormStatus field exists in the NISRA and server record
-                        if (CheckForField(nisraRecord, "WebFormStatus") && CheckForField(serverRecord, "WebFormStatus"))
+                        if (DataRecordExtensions.CheckForField(nisraRecord, "WebFormStatus") && DataRecordExtensions.CheckForField(serverRecord, "WebFormStatus"))
                         {
                             var serverStatus = serverRecord.GetField("WebFormStatus");
                             var nisraStatus = nisraRecord.GetField("WebFormStatus");
@@ -349,7 +348,7 @@ namespace BlaiseNISRACaseProcessor
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
-            if (CheckForField(nisraRecord, "QHAdmin.Hout"))
+            if (DataRecordExtensions.CheckForField(nisraRecord, "QHAdmin.Hout"))
             {
                 // Get the NISTA HOUT.
                 var nisraHOUT = nisraRecord.GetField("QHAdmin.Hout");
@@ -396,8 +395,7 @@ namespace BlaiseNISRACaseProcessor
             nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
 
             // Modify the Online flag to indicate the new record is from the NISRA data set
-            var onlineFlagVal = nisraRecord.GetField("QHAdmin.Online"); // still required !?
-            onlineFlagVal.DataValue.Assign("1"); // assuming this is a boolean/enum type value
+            nisraRecord = DataRecordExtensions.AssignValueIfFieldExists(nisraRecord, "QHAdmin.Online", "1");
 
             // Update the server data with the NISRA data.
             serverDataLink.Write(nisraRecord);
@@ -694,24 +692,6 @@ namespace BlaiseNISRACaseProcessor
             log.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
         }
 
-        /// <summary>
-        /// Checks passed in Blaise record for the passed in field name.
-        /// </summary>
-        private bool CheckForField(StatNeth.Blaise.API.DataRecord.IDataRecord dataRecord, string fieldName)
-        {
-            if (dataRecord != null)
-            {
-                IDataRecord2 dataRecord2 = (IDataRecord2)dataRecord;
-                foreach (IField3 field in dataRecord2.GetDataFields())
-                {
-                    if (field.FullName == fieldName)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            return false;
-        }
+        
     }
 }
