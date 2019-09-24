@@ -11,15 +11,14 @@ namespace BlaiseNISRACaseProcessor
     {
         // Instantiate logger.
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         static void Main()
         {
 #if DEBUG
             log.Info("Blaise NISRA Case Processor service starting in DEBUG mode.");
-
             BlaiseNISRACaseProcessor bncpService = new BlaiseNISRACaseProcessor();
             bncpService.OnDebug();
 #else
+            log.Info("Blaise NISRA Case Processor service starting in RELEASE mode.");
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 

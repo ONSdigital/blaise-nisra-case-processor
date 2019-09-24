@@ -39,11 +39,7 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            //Run();
-            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            _scheduler = schedulerFactory.GetScheduler();
-            _scheduler.Start();
-            AddJob();
+            Run();
         }
 
         protected override void OnStart(string[] args)
@@ -79,11 +75,6 @@ namespace BlaiseNISRACaseProcessor
             log.Info("Blaise NISRA Case Processor service stopped.");
         }
 
-        private void TimerRun(object sender, ElapsedEventArgs args)
-        {
-            Run();
-        }
-
         public static void Run()
         {
             // Get NISRA processing folder from app config.
@@ -105,8 +96,8 @@ namespace BlaiseNISRACaseProcessor
                 foreach (var bdixFile in bdixFiles)
                 {
                     log.Info("Processing NISRA file - " + bdixFile);
+                    // Check BDBX is not locked before processing.
                     var bdbxFile = bdixFile.Substring(0, bdixFile.Length - 4) + "bdbx";
-                    log.Info(bdbxFile);
                     if (FileMethods.CheckFileLock(bdbxFile) == false)
                     {                        
                         // Connect to the Blaise server.
