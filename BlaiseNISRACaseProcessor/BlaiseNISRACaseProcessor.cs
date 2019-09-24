@@ -13,8 +13,10 @@ using System.Configuration;
 using System.Timers;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
-using System.Globalization;
 using System.Web.Script.Serialization;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Triggers;
 
 namespace BlaiseNISRACaseProcessor
 {
@@ -23,9 +25,12 @@ namespace BlaiseNISRACaseProcessor
         // Instantiate logger.
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        // Instantiate scheduler.
+        private static IScheduler _scheduler;
+
         // Objects for RabbitMQ.
-        public IConnection connection;
-        public IModel channel;
+        public static IConnection connection;
+        public static IModel channel;
 
         public BlaiseNISRACaseProcessor()
         {
@@ -34,23 +39,39 @@ namespace BlaiseNISRACaseProcessor
 
         public void OnDebug()
         {
-            this.Run();
+            //Run();
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            _scheduler = schedulerFactory.GetScheduler();
+            _scheduler.Start();
+            AddJob();
         }
 
         protected override void OnStart(string[] args)
         {
             log.Info("Blaise NISRA Case Processor service started.");
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            _scheduler = schedulerFactory.GetScheduler();
+            _scheduler.Start();
+            AddJob();
+        }
 
-            // Get the MinuteRunTimer env variable and convert it from minutes to miliseconds.
-            string timerString = ConfigurationManager.AppSettings["MinuteRunTimer"];
-            double time = double.Parse(timerString, CultureInfo.InvariantCulture.NumberFormat);
-            time = time * 60 * 1000;
+        public static void AddJob()
+        {
+            string quartzCron = ConfigurationManager.AppSettings["QuartzCron"];
+            log.Info("Quartz Cron - " + quartzCron);
+            IDoJob job = new BlaiseNISRACaseProcessorJob();
+            var jobDetail = new JobDetailImpl("job", "group", job.GetType());
+            var triggerDetail = new CronTriggerImpl("trigger", "group", quartzCron);
+            _scheduler.ScheduleJob(jobDetail, triggerDetail);
+        }
 
-            // Set up a timer that triggers every minute.
-            Timer timer = new Timer();
-            timer.Interval = time;
-            timer.Elapsed += new ElapsedEventHandler(this.TimerRun);
-            timer.Start();
+        public class BlaiseNISRACaseProcessorJob : IDoJob
+        {
+            public void Execute(IJobExecutionContext context)
+            {
+                log.Info("Quartz job triggered.");
+                Run();
+            }
         }
 
         protected override void OnStop()
@@ -63,7 +84,7 @@ namespace BlaiseNISRACaseProcessor
             Run();
         }
 
-        public void Run()
+        public static void Run()
         {
             // Get NISRA processing folder from app config.
             string nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
@@ -131,7 +152,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Process the survey data.
         /// </summary>
-        public void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
+        public static void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
         {
             try
             {
@@ -173,7 +194,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="sourceDL">A datalink object referencing the source data location.</param>
         /// <param name="targetDL">A datalink object referencing the target data location.</param>
-        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink, ISurvey instrument, IServerPark serverPark)
+        public static bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink, ISurvey instrument, IServerPark serverPark)
         {
             try
             {
@@ -295,7 +316,7 @@ namespace BlaiseNISRACaseProcessor
             }
         }
 
-        public void ProcessRecordHoutValues(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink, 
+        public static void ProcessRecordHoutValues(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink, 
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
@@ -336,7 +357,7 @@ namespace BlaiseNISRACaseProcessor
             }
         }
 
-        public void WriteNisraRecordToServer(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink)
+        public static void WriteNisraRecordToServer(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink)
         {
             // Get the Case_ID field objects for NISRA and the server.
             var serverCaseID = serverRecord.GetField("QID.Case_ID");
@@ -359,7 +380,7 @@ namespace BlaiseNISRACaseProcessor
         /// <param name="sourceDirectory"> The directory where the target BDI file exists. </param>
         /// <param name="instrument"> The name of the instrument (i.e OPN1901A). </param>
         /// <returns> String representation of the file path. </returns>
-        public string GetBDIFile(string sourceDirectory, string instrument = "")
+        public static string GetBDIFile(string sourceDirectory, string instrument = "")
         {
             try
             {
@@ -451,7 +472,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="bdiFile">The name of the target data file (.bdix).</param>
         /// <returns>A IDatalink connection object user to access the stored Blaise data.</returns>
-        public IDataLink GetDataLinkFromBDI(string bdiFile)
+        public static IDataLink GetDataLinkFromBDI(string bdiFile)
         {
             try
             {
@@ -526,7 +547,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Move or copy files from path to path.
         /// </summary>
-        public bool MoveFiles(string sourcePath, string targetPath, MoveType moveType, string instrumentName)
+        public static bool MoveFiles(string sourcePath, string targetPath, MoveType moveType, string instrumentName)
         {
             try
             {
@@ -580,7 +601,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Method for connecting to RabbitMQ and setting up the channels.
         /// </summary>
-        public bool SetupRabbit()
+        public static bool SetupRabbit()
         {
             log.Info("Setting up RabbitMQ.");
             try
@@ -616,7 +637,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Builds a JSON status object to be used in the SendStatus method.
         /// </summary>
-        public Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
+        public static Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
         {
             Dictionary<string, string> jsonData = new Dictionary<string, string>();
             if (recordData != null)
@@ -635,7 +656,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Sends a status message to RabbitMQ.
         /// </summary>
-        private void SendStatus(Dictionary<string, string> jsonData)
+        private static void SendStatus(Dictionary<string, string> jsonData)
         {
             string message = new JavaScriptSerializer().Serialize(jsonData);
             var body = Encoding.UTF8.GetBytes(message);
@@ -643,7 +664,8 @@ namespace BlaiseNISRACaseProcessor
             channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
             log.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
         }
-
-        
+        internal interface IDoJob : IJob
+        {
+        }
     }
 }
