@@ -32,67 +32,8 @@ namespace BlaiseNISRACaseProcessor
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Method for creating synthetic HOUT data for testing.
-        /// </summary>
-        public void EditNisraData()
-        {
-
-            var nistaProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
-            string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
-            var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
-            IDataSet nisraDataset = nisraDataLink.Read("");
-            string[] values = { "110","110", "110", "110" };
-            int count = 0;
-            while (!nisraDataset.EndOfSet && (count < values.Length))
-            {
-                var nisraRecord = nisraDataset.ActiveRecord;
-                
-                var houtVal = nisraRecord.GetField("QHAdmin.Hout");
-                houtVal.DataValue.Assign(values[count]);
-
-                var whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].WhoMade");
-                whoMadeValue.DataValue.Assign("NISRA");
-
-                var dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DayNumber");
-                dayNumberValue.DataValue.Assign("1");
-                
-                var nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].NrOfDials");
-                nrOfDialsValue.DataValue.Assign("1");
-
-                var callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DialResult");
-                callOutcomeValue.DataValue.Assign("1");
-
-                whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].WhoMade");
-                whoMadeValue.DataValue.Assign("NISRA");
-
-                dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DayNumber");
-                dayNumberValue.DataValue.Assign("1");
-
-                nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].NrOfDials");
-                nrOfDialsValue.DataValue.Assign("1");
-
-                callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DialResult");
-                callOutcomeValue.DataValue.Assign("1");
-
-                var completedVal = nisraRecord.GetField("Completed");
-                completedVal.DataValue.Assign("1");
-                
-                var excludeVal = nisraRecord.GetField("Exclude");
-                excludeVal.DataValue.Assign("1");
-
-                var webStatusVal = nisraRecord.GetField("WebFormStatus");
-                webStatusVal.DataValue.Assign("1");
-
-                nisraDataLink.Write(nisraRecord);
-                count++;
-                nisraDataset.MoveNext();
-            }
-        }
-
         public void OnDebug()
         {
-            //EditNisraData();
             this.Run();
         }
 
@@ -143,37 +84,46 @@ namespace BlaiseNISRACaseProcessor
                 foreach (var bdixFile in bdixFiles)
                 {
                     log.Info("Processing NISRA file - " + bdixFile);
-                    // Connect to the Blaise server.
-                    IConnectedServer serverManagerConnection = null;
-                    try
-                    {
-                        log.Info("Connecting to Blaise server - " + serverName);
-                        serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
-                    }
-                    catch (Exception e)
-                    {
-                        log.Error("Error connecting to Blaise server - " + serverName);
-                        log.Error(e.Message);
-                        log.Error(e.StackTrace);
-                    }
-                    // Loop through the server parks on the connected Blaise server.
-                    foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
-                    {
-                        // Loop through the surveys installed on the current server park
-                        foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
+                    var bdbxFile = bdixFile.Substring(0, bdixFile.Length - 4) + "bdbx";
+                    log.Info(bdbxFile);
+                    if (FileMethods.CheckFileLock(bdbxFile) == false)
+                    {                        
+                        // Connect to the Blaise server.
+                        IConnectedServer serverManagerConnection = null;
+                        try
                         {
-                            // If a survey is found that matches the NISRA file, process it.
-                            if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                            log.Info("Connecting to Blaise server - " + serverName);
+                            serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error("Error connecting to Blaise server - " + serverName);
+                            log.Error(e.Message);
+                            log.Error(e.StackTrace);
+                        }
+                        // Loop through the server parks on the connected Blaise server.
+                        foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
+                        {
+                            // Loop through the surveys installed on the current server park
+                            foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
                             {
-                                log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
-                                ProcessSurvey(serverPark, survey);
-                            }
-                            else
-                            {
-                                log.Warn("No survey found on Blaise server that matches NISRA file.");
+                                // If a survey is found that matches the NISRA file, process it.
+                                if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                                {
+                                    log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
+                                    ProcessSurvey(serverPark, survey);
+                                }
+                                else
+                                {
+                                    log.Warn("No survey found on Blaise server that matches NISRA file.");
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        log.Info("Unable to process due to lock on bdbx - " + bdbxFile);
+                    }                    
                 }
             }
         }
