@@ -43,7 +43,8 @@ namespace BlaiseNISRACaseProcessor
 
         protected override void OnStart(string[] args)
         {
-            log.Info("Blaise NISRA Case Processor service started.");
+            // Setup Quartz job.
+			log.Info("Blaise NISRA Case Processor service started.");
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
             _scheduler = schedulerFactory.GetScheduler();
             _scheduler.Start();
@@ -78,12 +79,17 @@ namespace BlaiseNISRACaseProcessor
         {
             // Get NISRA processing folder from app config.
             string nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
+			log.Info("NisraProcessFolder - " + nisraProcessFolder);
 
             // Get Blaise server details from app config.
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
+			log.Info("BlaiseServerHostName - " + serverName);
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
+			log.Info("BlaiseServerUserName - " + userName);
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
+			log.Debug("BlaiseServerPassword - " + password);
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
+			log.Info("BlaiseServerBinding - " + binding);
 
             // Look for BDIX files in the NISRA processing folder.
             string[] bdixFiles = Directory.GetFiles(nisraProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
@@ -133,7 +139,7 @@ namespace BlaiseNISRACaseProcessor
                     }
                     else
                     {
-                        log.Info("Unable to process due to lock on bdbx - " + bdbxFile);
+                        log.Info("Unable to process bdbx due to lock on file - " + bdbxFile);
                     }                    
                 }
             }
@@ -146,12 +152,13 @@ namespace BlaiseNISRACaseProcessor
         {
             try
             {
-                log.Info("Processing data for instrument " + instrument.Name + " on server park " + serverPark.Name + ".");
+                log.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
                 var nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
+				log.Info("NisraProcessFolder - " + nisraProcessFolder);
                 var nisraBackupFolder = ConfigurationManager.AppSettings["NisraBackupFolder"];
-                log.Debug($"NISRAProcessFolder: {nisraProcessFolder}, NISRABackupFolder: {nisraBackupFolder}");
-                // Get path for NISRA BDIX.
+                log.Info("NisraBackupFolder - " + nisraBackupFolder);
+                // Get path for NISRA bdix.
                 string nisraBDI = GetBDIFile(nisraProcessFolder, instrument.Name);
                 // Get data links for the NISRA file and Blaise server.
                 var nisraFileDataLink = GetDataLinkFromBDI(nisraBDI);
@@ -159,7 +166,7 @@ namespace BlaiseNISRACaseProcessor
                 // If we have data links for the NISRA file and the Blaise server.
                 if (nisraFileDataLink != null || blaiseServerDataLink != null)
                 {
-                    // Attempt to import the cases if necessary.
+                    // Attempt to import the cases.
                     if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink, instrument, serverPark))
                     {
                         // Move the NISRA file to backup location if it's been sucessfully processed.
@@ -173,7 +180,7 @@ namespace BlaiseNISRACaseProcessor
             }
             catch (Exception e)
             {
-                log.Error($"Error Processing survey, ServerPark: {serverPark.Name}, InstrumentName{instrument.Name}");
+                log.Error($"Error Processing survey, ServerPark: {serverPark.Name}, InstrumentName: {instrument.Name}");
                 log.Error(e.Message);
                 log.Error(e.StackTrace);
             }
@@ -204,10 +211,12 @@ namespace BlaiseNISRACaseProcessor
                     // Get the value of the key field.
                     string serialNumber = nisraRecord.Keys[0].KeyValue;
                     key.Fields[0].DataValue.Assign(serialNumber);
+					log.Info("Processing NISRA case " + serialNumber + ".");
                     // Check if a record/case with the key field value exists on the Blaise server.
                     if (serverDataLink.KeyExists(key))
                     {
-                        // Get the record/case on the server.
+                        log.Info("Matching case found on Blaise server.");
+						// Get the record/case on the server.
                         var serverRecord = serverDataLink.ReadRecord(key);
 
                         // Check if the WebFormStatus field exists in the NISRA and server record
