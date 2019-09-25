@@ -10,7 +10,6 @@ using RabbitMQ.Client;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.ServerManager;
 using System.Configuration;
-using System.Timers;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
 using System.Web.Script.Serialization;
@@ -120,10 +119,10 @@ namespace BlaiseNISRACaseProcessor
                             foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
                             {
                                 // If a survey is found that matches the NISRA file, process it.
-                                if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                                if (survey.Name.ToUpper() == Path.GetFileNameWithoutExtension(bdixFile).ToUpper())
                                 {
                                     log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
-                                    ProcessSurvey(serverPark, survey);
+                                    ProcessData(serverPark, survey);
                                 }
                                 else
                                 {
@@ -143,11 +142,11 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Process the survey data.
         /// </summary>
-        public static void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
+        public static void ProcessData(IServerPark serverPark, ISurvey instrument)
         {
             try
             {
-                log.Info($"Starting ProcessSurvey for ServerPark: {serverPark.Name}, Instrument: {instrument.Name}");
+                log.Info("Processing data for instrument " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
                 var nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
                 var nisraBackupFolder = ConfigurationManager.AppSettings["NisraBackupFolder"];
@@ -290,6 +289,7 @@ namespace BlaiseNISRACaseProcessor
                     else
                     {
                         // If no case if found, write the record stright to the Blaise server (IPS behaviour).
+                        log.Info("NISRA case " + serialNumber + " not on server park. Writing case to server park.");
                         serverDataLink.Write(nisraRecord);
                     }
                     // Move to the next record:
@@ -375,8 +375,8 @@ namespace BlaiseNISRACaseProcessor
         {
             try
             {
-                List<string> ext = new List<string> { ".bdi", ".bdix" };
-                var bdiFiles = Directory.GetFiles(sourceDirectory, String.Format("*{0}.*", instrument), SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s)));
+                List<string> ext = new List<string> { ".BDI", ".BDIX" };
+                var bdiFiles = Directory.GetFiles(sourceDirectory, String.Format("*{0}.*", instrument), SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s).ToUpper()));
                 if (bdiFiles.Count() > 0)
                     return bdiFiles.ElementAt(0);
                 else
