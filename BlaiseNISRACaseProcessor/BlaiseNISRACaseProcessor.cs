@@ -552,7 +552,7 @@ namespace BlaiseNISRACaseProcessor
                         // Use static Path methods to extract only the file name from the path.
                         string fileName = System.IO.Path.GetFileName(file);
 
-                        if (fileName.Contains(instrumentName))
+                        if (fileName.ToUpper().Contains(instrumentName.ToUpper()))
                         {
 
                             string destFile = System.IO.Path.Combine(targetPath, fileName);
