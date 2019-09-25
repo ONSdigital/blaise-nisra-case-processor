@@ -13,8 +13,10 @@ using System.Configuration;
 using System.Timers;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
-using System.Globalization;
 using System.Web.Script.Serialization;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Triggers;
 
 namespace BlaiseNISRACaseProcessor
 {
@@ -23,93 +25,49 @@ namespace BlaiseNISRACaseProcessor
         // Instantiate logger.
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        // Instantiate scheduler.
+        private static IScheduler _scheduler;
+
         // Objects for RabbitMQ.
-        public IConnection connection;
-        public IModel channel;
+        public static IConnection connection;
+        public static IModel channel;
 
         public BlaiseNISRACaseProcessor()
         {
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Method for creating synthetic HOUT data for testing.
-        /// </summary>
-        public void EditNisraData()
-        {
-
-            var nistaProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
-            string nisraBDI = GetBDIFile(nistaProcessFolder, "OPN1901A");
-            var nisraDataLink = GetDataLinkFromBDI(nisraBDI);
-            IDataSet nisraDataset = nisraDataLink.Read("");
-            string[] values = { "110","110", "110", "110" };
-            int count = 0;
-            while (!nisraDataset.EndOfSet && (count < values.Length))
-            {
-                var nisraRecord = nisraDataset.ActiveRecord;
-                
-                var houtVal = nisraRecord.GetField("QHAdmin.Hout");
-                houtVal.DataValue.Assign(values[count]);
-
-                var whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].WhoMade");
-                whoMadeValue.DataValue.Assign("NISRA");
-
-                var dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DayNumber");
-                dayNumberValue.DataValue.Assign("1");
-                
-                var nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].NrOfDials");
-                nrOfDialsValue.DataValue.Assign("1");
-
-                var callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[1].DialResult");
-                callOutcomeValue.DataValue.Assign("1");
-
-                whoMadeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].WhoMade");
-                whoMadeValue.DataValue.Assign("NISRA");
-
-                dayNumberValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DayNumber");
-                dayNumberValue.DataValue.Assign("1");
-
-                nrOfDialsValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].NrOfDials");
-                nrOfDialsValue.DataValue.Assign("1");
-
-                callOutcomeValue = nisraRecord.GetField("CatiMana.CatiCall.RegsCalls[5].DialResult");
-                callOutcomeValue.DataValue.Assign("1");
-
-                var completedVal = nisraRecord.GetField("Completed");
-                completedVal.DataValue.Assign("1");
-                
-                var excludeVal = nisraRecord.GetField("Exclude");
-                excludeVal.DataValue.Assign("1");
-
-                var webStatusVal = nisraRecord.GetField("WebFormStatus");
-                webStatusVal.DataValue.Assign("1");
-
-                nisraDataLink.Write(nisraRecord);
-                count++;
-                nisraDataset.MoveNext();
-            }
-        }
-
         public void OnDebug()
         {
-            //EditNisraData();
-            this.Run();
+            Run();
         }
 
         protected override void OnStart(string[] args)
         {
             log.Info("Blaise NISRA Case Processor service started.");
+            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            _scheduler = schedulerFactory.GetScheduler();
+            _scheduler.Start();
+            AddJob();
+        }
 
-            // Get the MinuteRunTimer env variable and convert it from minutes to miliseconds.
-            string timerString = ConfigurationManager.AppSettings["MinuteRunTimer"];
-            double time = double.Parse(timerString, CultureInfo.InvariantCulture.NumberFormat);
-            time = time * 60 * 1000;
+        public static void AddJob()
+        {
+            string quartzCron = ConfigurationManager.AppSettings["QuartzCron"];
+            log.Info("Quartz Cron - " + quartzCron);
+            IDoJob job = new BlaiseNISRACaseProcessorJob();
+            var jobDetail = new JobDetailImpl("job", "group", job.GetType());
+            var triggerDetail = new CronTriggerImpl("trigger", "group", quartzCron);
+            _scheduler.ScheduleJob(jobDetail, triggerDetail);
+        }
 
-            // Set up a timer that triggers every minute.
-            Timer timer = new Timer();
-            timer.Interval = time;
-            timer.Elapsed += new ElapsedEventHandler(this.TimerRun);
-            timer.Start();
+        public class BlaiseNISRACaseProcessorJob : IDoJob
+        {
+            public void Execute(IJobExecutionContext context)
+            {
+                log.Info("Quartz job triggered.");
+                Run();
+            }
         }
 
         protected override void OnStop()
@@ -117,12 +75,7 @@ namespace BlaiseNISRACaseProcessor
             log.Info("Blaise NISRA Case Processor service stopped.");
         }
 
-        private void TimerRun(object sender, ElapsedEventArgs args)
-        {
-            Run();
-        }
-
-        public void Run()
+        public static void Run()
         {
             // Get NISRA processing folder from app config.
             string nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
@@ -143,37 +96,46 @@ namespace BlaiseNISRACaseProcessor
                 foreach (var bdixFile in bdixFiles)
                 {
                     log.Info("Processing NISRA file - " + bdixFile);
-                    // Connect to the Blaise server.
-                    IConnectedServer serverManagerConnection = null;
-                    try
-                    {
-                        log.Info("Connecting to Blaise server - " + serverName);
-                        serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
-                    }
-                    catch (Exception e)
-                    {
-                        log.Error("Error connecting to Blaise server - " + serverName);
-                        log.Error(e.Message);
-                        log.Error(e.StackTrace);
-                    }
-                    // Loop through the server parks on the connected Blaise server.
-                    foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
-                    {
-                        // Loop through the surveys installed on the current server park
-                        foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
+                    // Check BDBX is not locked before processing.
+                    var bdbxFile = bdixFile.Substring(0, bdixFile.Length - 4) + "bdbx";
+                    if (FileMethods.CheckFileLock(bdbxFile) == false)
+                    {                        
+                        // Connect to the Blaise server.
+                        IConnectedServer serverManagerConnection = null;
+                        try
                         {
-                            // If a survey is found that matches the NISRA file, process it.
-                            if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                            log.Info("Connecting to Blaise server - " + serverName);
+                            serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
+                        }
+                        catch (Exception e)
+                        {
+                            log.Error("Error connecting to Blaise server - " + serverName);
+                            log.Error(e.Message);
+                            log.Error(e.StackTrace);
+                        }
+                        // Loop through the server parks on the connected Blaise server.
+                        foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
+                        {
+                            // Loop through the surveys installed on the current server park
+                            foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
                             {
-                                log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
-                                ProcessSurvey(serverPark, survey);
-                            }
-                            else
-                            {
-                                log.Warn("No survey found on Blaise server that matches NISRA file.");
+                                // If a survey is found that matches the NISRA file, process it.
+                                if (survey.Name == Path.GetFileNameWithoutExtension(bdixFile))
+                                {
+                                    log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
+                                    ProcessSurvey(serverPark, survey);
+                                }
+                                else
+                                {
+                                    log.Warn("No survey found on Blaise server that matches NISRA file.");
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        log.Info("Unable to process due to lock on bdbx - " + bdbxFile);
+                    }                    
                 }
             }
         }
@@ -181,7 +143,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Process the survey data.
         /// </summary>
-        public void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
+        public static void ProcessSurvey(IServerPark serverPark, ISurvey instrument)
         {
             try
             {
@@ -223,7 +185,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="sourceDL">A datalink object referencing the source data location.</param>
         /// <param name="targetDL">A datalink object referencing the target data location.</param>
-        public bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink, ISurvey instrument, IServerPark serverPark)
+        public static bool ImportDataRecords(IDataLink nisraDatalink, IDataLink4 serverDataLink, ISurvey instrument, IServerPark serverPark)
         {
             try
             {
@@ -345,7 +307,7 @@ namespace BlaiseNISRACaseProcessor
             }
         }
 
-        public void ProcessRecordHoutValues(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink, 
+        public static void ProcessRecordHoutValues(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink, 
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
@@ -386,7 +348,7 @@ namespace BlaiseNISRACaseProcessor
             }
         }
 
-        public void WriteNisraRecordToServer(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink)
+        public static void WriteNisraRecordToServer(StatNeth.Blaise.API.DataRecord.IDataRecord nisraRecord, StatNeth.Blaise.API.DataRecord.IDataRecord serverRecord, IDataLink4 serverDataLink)
         {
             // Get the Case_ID field objects for NISRA and the server.
             var serverCaseID = serverRecord.GetField("QID.Case_ID");
@@ -409,7 +371,7 @@ namespace BlaiseNISRACaseProcessor
         /// <param name="sourceDirectory"> The directory where the target BDI file exists. </param>
         /// <param name="instrument"> The name of the instrument (i.e OPN1901A). </param>
         /// <returns> String representation of the file path. </returns>
-        public string GetBDIFile(string sourceDirectory, string instrument = "")
+        public static string GetBDIFile(string sourceDirectory, string instrument = "")
         {
             try
             {
@@ -501,7 +463,7 @@ namespace BlaiseNISRACaseProcessor
         /// </summary>
         /// <param name="bdiFile">The name of the target data file (.bdix).</param>
         /// <returns>A IDatalink connection object user to access the stored Blaise data.</returns>
-        public IDataLink GetDataLinkFromBDI(string bdiFile)
+        public static IDataLink GetDataLinkFromBDI(string bdiFile)
         {
             try
             {
@@ -576,7 +538,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Move or copy files from path to path.
         /// </summary>
-        public bool MoveFiles(string sourcePath, string targetPath, MoveType moveType, string instrumentName)
+        public static bool MoveFiles(string sourcePath, string targetPath, MoveType moveType, string instrumentName)
         {
             try
             {
@@ -630,7 +592,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Method for connecting to RabbitMQ and setting up the channels.
         /// </summary>
-        public bool SetupRabbit()
+        public static bool SetupRabbit()
         {
             log.Info("Setting up RabbitMQ.");
             try
@@ -666,7 +628,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Builds a JSON status object to be used in the SendStatus method.
         /// </summary>
-        public Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
+        public static Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
         {
             Dictionary<string, string> jsonData = new Dictionary<string, string>();
             if (recordData != null)
@@ -685,7 +647,7 @@ namespace BlaiseNISRACaseProcessor
         /// <summary>
         /// Sends a status message to RabbitMQ.
         /// </summary>
-        private void SendStatus(Dictionary<string, string> jsonData)
+        private static void SendStatus(Dictionary<string, string> jsonData)
         {
             string message = new JavaScriptSerializer().Serialize(jsonData);
             var body = Encoding.UTF8.GetBytes(message);
@@ -693,7 +655,8 @@ namespace BlaiseNISRACaseProcessor
             channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
             log.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
         }
-
-        
+        internal interface IDoJob : IJob
+        {
+        }
     }
 }
