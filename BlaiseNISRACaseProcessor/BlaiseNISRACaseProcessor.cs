@@ -83,13 +83,13 @@ namespace BlaiseNISRACaseProcessor
 
             // Get Blaise server details from app config.
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
-			log.Info("BlaiseServerHostName - " + serverName);
+			log.Debug("BlaiseServerHostName - " + serverName);
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
-			log.Info("BlaiseServerUserName - " + userName);
+			log.Debug("BlaiseServerUserName - " + userName);
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
 			log.Debug("BlaiseServerPassword - " + password);
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-			log.Info("BlaiseServerBinding - " + binding);
+			log.Debug("BlaiseServerBinding - " + binding);
 
             // Look for BDIX files in the NISRA processing folder.
             string[] bdixFiles = Directory.GetFiles(nisraProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
@@ -220,7 +220,7 @@ namespace BlaiseNISRACaseProcessor
                         var serverRecord = serverDataLink.ReadRecord(key);
 
                         // Check if the WebFormStatus field exists in the NISRA and server record
-                        if (DataRecordExtensions.CheckForField(nisraRecord, "WebFormStatus") && DataRecordExtensions.CheckForField(serverRecord, "WebFormStatus"))
+                        if (DataRecordMethods.CheckForField(nisraRecord, "WebFormStatus") && DataRecordMethods.CheckForField(serverRecord, "WebFormStatus"))
                         {
                             var serverStatus = serverRecord.GetField("WebFormStatus");
                             var nisraStatus = nisraRecord.GetField("WebFormStatus");
@@ -320,7 +320,7 @@ namespace BlaiseNISRACaseProcessor
                                             ISurvey instrument, IServerPark serverPark, string serialNumber)
         {
             // Check for an HOUT field in the NISRA data.
-            if (DataRecordExtensions.CheckForField(nisraRecord, "QHAdmin.HOut"))
+            if (DataRecordMethods.CheckForField(nisraRecord, "QHAdmin.HOut"))
             {
                 // Get the NISTA HOUT.
                 var nisraHOUT = nisraRecord.GetField("QHAdmin.HOut");
@@ -368,7 +368,7 @@ namespace BlaiseNISRACaseProcessor
             nisraCaseID.DataValue.Assign(serverCaseID.DataValue.ValueAsText);
 
             // Modify the Online flag to indicate the new record is from the NISRA data set
-            nisraRecord = DataRecordExtensions.AssignValueIfFieldExists(nisraRecord, "QHAdmin.Online", "1");
+            nisraRecord = DataRecordMethods.AssignValueIfFieldExists(nisraRecord, "QHAdmin.Online", "1");
 
             // Update the server data with the NISRA data.
             serverDataLink.Write(nisraRecord);
@@ -559,24 +559,24 @@ namespace BlaiseNISRACaseProcessor
                     foreach (string file in files)
                     {
                         // Use static Path methods to extract only the file name from the path.
-                        string fileName = System.IO.Path.GetFileName(file);
+                        string fileName = Path.GetFileName(file);
 
                         if (fileName.ToUpper().Contains(instrumentName.ToUpper()))
                         {
 
-                            string destFile = System.IO.Path.Combine(targetPath, fileName);
+                            string destFile = Path.Combine(targetPath, fileName);
 
                             Directory.CreateDirectory(targetPath);
                             switch (moveType)
                             {
                                 case MoveType.Move:
-                                    System.IO.File.Delete(destFile);
-                                    System.IO.File.Move(file, destFile);
-                                    log.Info(String.Format("Successfully moved files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                    File.Delete(destFile);
+                                    File.Move(file, destFile);
+                                    log.Info(String.Format("Successfully moved file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
                                     break;
                                 case MoveType.Copy:
-                                    System.IO.File.Copy(file, destFile, true);
-                                    log.Info(String.Format("Successfully copied files from: {0} -> {1} ({2})", sourcePath, targetPath, fileName));
+                                    File.Copy(file, destFile, true);
+                                    log.Info(String.Format("Successfully copied file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
                                     break;
                             }
                         }
