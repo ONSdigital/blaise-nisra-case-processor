@@ -1,8 +1,8 @@
-﻿using StatNeth.Blaise.API.DataRecord;
+using StatNeth.Blaise.API.DataRecord;
 
 namespace BlaiseNISRACaseProcessor
 {
-    public static class DataRecordExtensions
+    public static class DataRecordMethods
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
