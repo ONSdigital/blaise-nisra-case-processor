@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security;
 using System.ServiceProcess;
 using System.Text;
@@ -15,6 +14,8 @@ using System.Web.Script.Serialization;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Triggers;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Storage.V1;
 
 namespace BlaiseNISRACaseProcessor
 {
@@ -76,27 +77,92 @@ namespace BlaiseNISRACaseProcessor
 
         public static void Run()
         {
-            // Get NISRA processing folder from app config.
-            string nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
-			log.Info("NisraProcessFolder - " + nisraProcessFolder);
-
-            // Get Blaise server details from app config.
+            // Get environment variables.
+            string googleCredJSON = ConfigurationManager.AppSettings["GoogleCredJSON"];
+            log.Info("googleCredJSON - " + googleCredJSON);
+            string bucketName = ConfigurationManager.AppSettings["BucketName"];
+            log.Info("bucketName - " + bucketName);
+            string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
+            log.Info("localProcessFolder - " + localProcessFolder);
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
-			log.Debug("BlaiseServerHostName - " + serverName);
+            log.Debug("BlaiseServerHostName - " + serverName);
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
-			log.Debug("BlaiseServerUserName - " + userName);
+            log.Debug("BlaiseServerUserName - " + userName);
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
-			log.Debug("BlaiseServerPassword - " + password);
+            log.Debug("BlaiseServerPassword - " + password);
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-			log.Debug("BlaiseServerBinding - " + binding);
+            log.Debug("BlaiseServerBinding - " + binding);
+
+            // Get creds for connecting to bucket.
+            var googleCredStream = GoogleCredential.FromStream(File.OpenRead(googleCredJSON));
+
+            // Connect to bucket.
+            var bucket = StorageClient.Create(googleCredStream);
+
+            // Create folder structure locally based on bucket objects, ignoring processed and audit objects.
+            foreach (var bucketFile in bucket.ListObjects(bucketName, ""))
+            {
+                log.Info("Checking if object is a folder - " + bucketFile.Name);
+                if (bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
+                {
+                    log.Info("Folder object found - " + bucketFile.Name);
+                    log.Info("Creating folder locally - " + localProcessFolder + "/" + bucketFile.Name);
+                    Directory.CreateDirectory(localProcessFolder + "/" + bucketFile.Name);
+                }
+            }
+
+            // Copy files/objects locally based on bucket objects, ignoring processed and audit objects.
+            foreach (var bucketFile in bucket.ListObjects(bucketName, ""))
+            {
+                log.Info("Checking if object is a file - " + bucketFile.Name);
+                if (!bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
+                {
+                    log.Info("File object found - " + bucketFile.Name);                    
+                    var outputFile = File.OpenWrite(localProcessFolder + "/" + bucketFile.Name);
+                    log.Info("Copying file locally - " + outputFile.Name);
+                    bucket.DownloadObject(bucketName, bucketFile.Name, outputFile);
+                    outputFile.Close();
+                }
+            }
+
+            // Close connection to bucket.
+            bucket.Dispose();
+
+            // Search for all files in process folder and subfolders and move to root.
+            log.Info("Moving files to local process folder root.");
+            void RecurDirSearch(string topDir)
+            {
+                try
+                {
+                    foreach (string dir in Directory.GetDirectories(topDir))
+                    {
+                        foreach (string file in Directory.GetFiles(dir))
+                        {
+                            var fileName = Path.GetFileName(file);
+                            var destFile = Path.Combine(localProcessFolder, fileName);
+                            File.Delete(destFile);
+                            File.Move(file, destFile);
+                            log.Info("File moved - " + file + " > " + destFile);
+                        }
+                        RecurDirSearch(dir);
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.Error("Error searching through files in local process folder.");
+                    log.Error(e.Message);
+                    log.Error(e.StackTrace);
+                }
+            }
+            RecurDirSearch(localProcessFolder);
 
             var bdixFiles = new List<string>();
 
-            // Look for BDIX files in the NISRA processing folder.
-            if (Directory.Exists(nisraProcessFolder))
+            // Look for BDIX files in the local NISRA processing folder.
+            if (Directory.Exists(localProcessFolder))
             {
                 log.Info("Checking for BDIX files.");
-                var allFiles = Directory.GetFiles(nisraProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
+                var allFiles = Directory.GetFiles(localProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
                 foreach(var file in allFiles)
                 {
                     bdixFiles.Add(file);
@@ -104,11 +170,11 @@ namespace BlaiseNISRACaseProcessor
             }
             else
             {
-                log.Warn("Process folder doesn't exist - " + nisraProcessFolder);
+                log.Warn("Process folder doesn't exist - " + localProcessFolder);
             }
 
             // If a BDIX file is found, process it.
-            if (bdixFiles != null)
+            if (bdixFiles != null && bdixFiles.Count != 0)
             {
                 // Process all the BDIX files found.
                 foreach (var bdixFile in bdixFiles)
@@ -156,6 +222,10 @@ namespace BlaiseNISRACaseProcessor
                     }                    
                 }
             }
+            else
+            {
+                log.Info("No BDIX files found.");
+            }
         }
 
         /// <summary>
@@ -167,12 +237,10 @@ namespace BlaiseNISRACaseProcessor
             {
                 log.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
-                var nisraProcessFolder = ConfigurationManager.AppSettings["NisraProcessFolder"];
-				log.Info("NisraProcessFolder - " + nisraProcessFolder);
-                var nisraBackupFolder = ConfigurationManager.AppSettings["NisraBackupFolder"];
-                log.Info("NisraBackupFolder - " + nisraBackupFolder);
+                var localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
+				log.Info("localProcessFolder - " + localProcessFolder);
                 // Get path for NISRA bdix.
-                string nisraBDI = BlaiseMethods.GetBDIFile(nisraProcessFolder, instrument.Name);
+                string nisraBDI = BlaiseMethods.GetBDIFile(localProcessFolder, instrument.Name);
                 // Get data links for the NISRA file and Blaise server.
                 var nisraFileDataLink = BlaiseMethods.GetDataLinkFromBDI(nisraBDI);
                 var blaiseServerDataLink = BlaiseMethods.GetRemoteDataLink(serverPark, instrument);
@@ -182,8 +250,58 @@ namespace BlaiseNISRACaseProcessor
                     // Attempt to import the cases.
                     if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink, instrument, serverPark))
                     {
-                        // Move the NISRA file to backup location if it's been sucessfully processed.
-                        MoveFiles(nisraProcessFolder, nisraBackupFolder, MoveType.Move, instrument.Name);
+                        // Move the NISRA files to the processed location if they've been sucessfully processed.
+                        log.Info("Moving processed files to processed location.");
+
+                        // Get environment variables.
+                        string googleCredJSON = ConfigurationManager.AppSettings["GoogleCredJSON"];
+                        log.Info("googleCredJSON - " + googleCredJSON);
+                        string bucketName = ConfigurationManager.AppSettings["BucketName"];
+                        log.Info("bucketName - " + bucketName);
+
+                        // Get creds for connecting to bucket.
+                        var googleCredStream = GoogleCredential.FromStream(File.OpenRead(googleCredJSON));
+
+                        // Connect to bucket.
+                        var bucket = StorageClient.Create(googleCredStream);
+
+                        foreach (var storageObject in bucket.ListObjects(bucketName, ""))
+                        {
+                            if (storageObject.Name.ToLower().Contains(instrument.Name.ToLower() + ".b"))
+                            {
+                                // Remove up to last slash.
+                                int endIndex = storageObject.Name.LastIndexOf("/");
+                                endIndex = endIndex != -1 ? endIndex : 0;
+                                var filePath = storageObject.Name.Substring(0, endIndex);
+                                var dest = filePath + "/processed/" + Path.GetFileName(storageObject.Name);
+                                // Move file/object.
+                                bucket.CopyObject(bucketName, storageObject.Name, bucketName, dest);
+                                bucket.DeleteObject(bucketName, storageObject.Name);
+                                log.Info("File/object moved - " + storageObject.Name + " > " + dest);
+                            }
+                        }
+
+                        // Close connection to bucket.
+                        bucket.Dispose();
+
+                        // Delete local process folder.
+                        void DeleteDirectory(string topDir)
+                        {
+                            string[] files = Directory.GetFiles(topDir);
+                            string[] dirs = Directory.GetDirectories(topDir);
+                            foreach (string file in files)
+                            {
+                                File.SetAttributes(file, FileAttributes.Normal);
+                                File.Delete(file);
+                            }
+                            foreach (string dir in dirs)
+                            {
+                                DeleteDirectory(dir);
+                            }
+                            Directory.Delete(topDir, false);
+                            log.Info("Folder deleted - " + topDir);
+                        }
+                        DeleteDirectory(localProcessFolder);
                     }
                 }
                 else
@@ -317,7 +435,10 @@ namespace BlaiseNISRACaseProcessor
                     // Move to the next record:
                     nisraDataSet.MoveNext();
                 }
-                connection.Close();
+                if (connection != null && connection.IsOpen == true)
+                {
+                    connection.Close();
+                }                
                 return true;
             }
             catch (Exception e)
