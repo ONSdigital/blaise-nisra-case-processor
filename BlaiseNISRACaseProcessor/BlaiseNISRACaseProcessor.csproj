@@ -96,11 +96,11 @@
     </Reference>
     <Reference Include="StatNeth.Blaise.API.DataInterface, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.DataInterface.dll</HintPath>
+      <HintPath>..\BlaiseDLLs\StatNeth.Blaise.API.DataInterface.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API.DataLink, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.DataLink.dll</HintPath>
+      <HintPath>..\BlaiseDLLs\StatNeth.Blaise.API.DataLink.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API.DataRecord">
       <HintPath>..\BlaiseDLLs\StatNeth.Blaise.API.DataRecord.dll</HintPath>
@@ -110,7 +110,7 @@
     </Reference>
     <Reference Include="StatNeth.Blaise.API.ServerManager, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\StatNeth\Blaise5\Bin\StatNeth.Blaise.API.ServerManager.dll</HintPath>
+      <HintPath>..\BlaiseDLLs\StatNeth.Blaise.API.ServerManager.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
