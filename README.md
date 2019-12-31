@@ -32,3 +32,10 @@ Build the solution to obtain the necessary references.
       - InstallUtil.exe {install location}\BlaiseNISRACaseProcessor.exe
     - Set the service to delayed start
     - Start the service
+
+# Create folders on the VM where the service is installed:
+
+    - for NisraProcessFolder : so as per the config value - e.g. C:\Blaise_NISRA_Proc
+  
+    
+    
