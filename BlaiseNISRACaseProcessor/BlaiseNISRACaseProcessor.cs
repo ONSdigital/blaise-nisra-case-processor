@@ -78,8 +78,6 @@ namespace BlaiseNISRACaseProcessor
         public static void Run()
         {
             // Get environment variables.
-            string gcpProjectId = ConfigurationManager.AppSettings["GCPProjectId"];
-            log.Info("gcpProjectId - " + gcpProjectId);
             string bucketName = ConfigurationManager.AppSettings["BucketName"];
             log.Info("bucketName - " + bucketName);
             string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
