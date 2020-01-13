@@ -36,6 +36,10 @@ Build the solution to obtain the necessary references.
 # Create folders on the VM where the service is installed:
 
     - for NisraProcessFolder : so as per the config value - e.g. C:\Blaise_NISRA_Proc
+
+# Storage Settings
+
+When running locally edit the code shown under `if DEBUG` in `BlaiseNISRACaseProcessor.cs`. When running locally, reference bucket credentials file. When running in VM the service will run as comupte account and will not a refernce to the credentials file.
   
     
     
