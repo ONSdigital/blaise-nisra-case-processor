@@ -78,8 +78,6 @@ namespace BlaiseNISRACaseProcessor
         public static void Run()
         {
             // Get environment variables.
-            string googleCredJSON = ConfigurationManager.AppSettings["GoogleCredJSON"];
-            log.Info("googleCredJSON - " + googleCredJSON);
             string bucketName = ConfigurationManager.AppSettings["BucketName"];
             log.Info("bucketName - " + bucketName);
             string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
@@ -93,11 +91,17 @@ namespace BlaiseNISRACaseProcessor
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
             log.Debug("BlaiseServerBinding - " + binding);
 
-            // Get creds for connecting to bucket.
-            var googleCredStream = GoogleCredential.FromStream(File.OpenRead(googleCredJSON));
-
-            // Connect to bucket.
+            // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
+            // Update the credFilePath variable with the full path to the file.
+#if (DEBUG)
+            var credFilePath = @"C:\dev\cred.json";
+            var googleCredStream = GoogleCredential.FromStream(File.OpenRead(credFilePath));
             var bucket = StorageClient.Create(googleCredStream);
+
+#else
+            // When running in Release, the service will be running as compute account which will have access to all buckets.
+            var bucket = StorageClient.Create();
+#endif
 
             // Create folder structure locally based on bucket objects, ignoring processed and audit objects.
             foreach (var bucketFile in bucket.ListObjects(bucketName, ""))
