@@ -80,8 +80,8 @@ namespace BlaiseNISRACaseProcessor
             // Get environment variables.
             string bucketName = ConfigurationManager.AppSettings["BucketName"];
             log.Info("bucketName - " + bucketName);
-            string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-            log.Info("localProcessFolder - " + localProcessFolder);
+            string ProcessFolder = ConfigurationManager.AppSettings["ProcessFolder"];
+            log.Info("ProcessFolder - " + ProcessFolder);
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             log.Debug("BlaiseServerHostName - " + serverName);
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
@@ -110,8 +110,8 @@ namespace BlaiseNISRACaseProcessor
                 if (bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
                 {
                     log.Info("Folder object found - " + bucketFile.Name);
-                    log.Info("Creating folder locally - " + localProcessFolder + "/" + bucketFile.Name);
-                    Directory.CreateDirectory(localProcessFolder + "/" + bucketFile.Name);
+                    log.Info("Creating folder locally - " + ProcessFolder + "/" + bucketFile.Name);
+                    Directory.CreateDirectory(ProcessFolder + "/" + bucketFile.Name);
                 }
             }
 
@@ -122,7 +122,7 @@ namespace BlaiseNISRACaseProcessor
                 if (!bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
                 {
                     log.Info("File object found - " + bucketFile.Name);                    
-                    var outputFile = File.OpenWrite(localProcessFolder + "/" + bucketFile.Name);
+                    var outputFile = File.OpenWrite(ProcessFolder + "/" + bucketFile.Name);
                     log.Info("Copying file locally - " + outputFile.Name);
                     bucket.DownloadObject(bucketName, bucketFile.Name, outputFile);
                     outputFile.Close();
@@ -143,7 +143,7 @@ namespace BlaiseNISRACaseProcessor
                         foreach (string file in Directory.GetFiles(dir))
                         {
                             var fileName = Path.GetFileName(file);
-                            var destFile = Path.Combine(localProcessFolder, fileName);
+                            var destFile = Path.Combine(ProcessFolder, fileName);
                             File.Delete(destFile);
                             File.Move(file, destFile);
                             log.Info("File moved - " + file + " > " + destFile);
@@ -158,15 +158,15 @@ namespace BlaiseNISRACaseProcessor
                     log.Error(e.StackTrace);
                 }
             }
-            RecurDirSearch(localProcessFolder);
+            RecurDirSearch(ProcessFolder);
 
             var bdixFiles = new List<string>();
 
             // Look for BDIX files in the local NISRA processing folder.
-            if (Directory.Exists(localProcessFolder))
+            if (Directory.Exists(ProcessFolder))
             {
                 log.Info("Checking for BDIX files.");
-                var allFiles = Directory.GetFiles(localProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
+                var allFiles = Directory.GetFiles(ProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
                 foreach(var file in allFiles)
                 {
                     bdixFiles.Add(file);
@@ -174,7 +174,7 @@ namespace BlaiseNISRACaseProcessor
             }
             else
             {
-                log.Warn("Process folder doesn't exist - " + localProcessFolder);
+                log.Warn("Process folder doesn't exist - " + ProcessFolder);
             }
 
             // If a BDIX file is found, process it.
@@ -241,10 +241,10 @@ namespace BlaiseNISRACaseProcessor
             {
                 log.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
-                var localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-				log.Info("localProcessFolder - " + localProcessFolder);
+                var ProcessFolder = ConfigurationManager.AppSettings["ProcessFolder"];
+				log.Info("ProcessFolder - " + ProcessFolder);
                 // Get path for NISRA bdix.
-                string nisraBDI = BlaiseMethods.GetBDIFile(localProcessFolder, instrument.Name);
+                string nisraBDI = BlaiseMethods.GetBDIFile(ProcessFolder, instrument.Name);
                 // Get data links for the NISRA file and Blaise server.
                 var nisraFileDataLink = BlaiseMethods.GetDataLinkFromBDI(nisraBDI);
                 var blaiseServerDataLink = BlaiseMethods.GetRemoteDataLink(serverPark, instrument);
@@ -305,7 +305,7 @@ namespace BlaiseNISRACaseProcessor
                             Directory.Delete(topDir, false);
                             log.Info("Folder deleted - " + topDir);
                         }
-                        DeleteDirectory(localProcessFolder);
+                        DeleteDirectory(ProcessFolder);
                     }
                 }
                 else
