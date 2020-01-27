@@ -35,7 +35,7 @@ Build the solution to obtain the necessary references.
 
 # Create folders on the VM where the service is installed:
 
-    - for NisraProcessFolder : so as per the config value - e.g. C:\Blaise_NISRA_Proc
+    - for LocalProcessFolder : so as per the config value - e.g. C:\Blaise_NISRA_Proc
 
 # Storage Settings
 
