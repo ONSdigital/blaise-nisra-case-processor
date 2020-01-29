@@ -103,26 +103,19 @@ namespace BlaiseNISRACaseProcessor
             var bucket = StorageClient.Create();
 #endif
 
-            // Create folder structure locally based on bucket objects, ignoring processed and audit objects.
-            foreach (var bucketFile in bucket.ListObjects(bucketName, ""))
-            {
-                log.Info("Checking if object is a folder - " + bucketFile.Name);
-                if (bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
-                {
-                    log.Info("Folder object found - " + bucketFile.Name);
-                    log.Info("Creating folder locally - " + localProcessFolder + "/" + bucketFile.Name);
-                    Directory.CreateDirectory(localProcessFolder + "/" + bucketFile.Name);
-                }
-            }
-
             // Copy files/objects locally based on bucket objects, ignoring processed and audit objects.
             foreach (var bucketFile in bucket.ListObjects(bucketName, ""))
             {
                 log.Info("Checking if object is a file - " + bucketFile.Name);
                 if (!bucketFile.Name.EndsWith("/") && !bucketFile.Name.ToLower().Contains("processed") && !bucketFile.Name.ToLower().Contains("audit"))
                 {
-                    log.Info("File object found - " + bucketFile.Name);                    
-                    var outputFile = File.OpenWrite(localProcessFolder + "/" + bucketFile.Name);
+                    log.Info("File object found - " + bucketFile.Name);
+                    string pathToFile = localProcessFolder + "/" + bucketFile.Name;
+
+                    DirectoryInfo directoryInfo = Directory.CreateDirectory(Path.GetDirectoryName(pathToFile));
+                    log.Info("Directory structure created successfully on " + directoryInfo.CreationTime.ToString());
+
+                    var outputFile = File.OpenWrite(pathToFile);
                     log.Info("Copying file locally - " + outputFile.Name);
                     bucket.DownloadObject(bucketName, bucketFile.Name, outputFile);
                     outputFile.Close();
