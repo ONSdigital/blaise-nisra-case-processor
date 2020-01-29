@@ -111,7 +111,9 @@ namespace BlaiseNISRACaseProcessor
                 {
                     log.Info("File object found - " + bucketFile.Name);
                     string pathToFile = localProcessFolder + "/" + bucketFile.Name;
-                    Directory.CreateDirectory(Path.GetDirectoryName(pathToFile));
+
+                    DirectoryInfo directoryInfo = Directory.CreateDirectory(Path.GetDirectoryName(pathToFile));
+                    log.Info("Directory structure created successfully on " + directoryInfo.CreationTime.ToString());
 
                     var outputFile = File.OpenWrite(pathToFile);
                     log.Info("Copying file locally - " + outputFile.Name);
