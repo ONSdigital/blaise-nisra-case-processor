@@ -249,18 +249,17 @@ namespace BlaiseNISRACaseProcessor
                     {
                         // Move the NISRA files to the processed location if they've been sucessfully processed.
                         log.Info("Moving processed files to processed location.");
-
-                        // Get environment variables.
-                        string googleCredJSON = ConfigurationManager.AppSettings["GoogleCredJSON"];
-                        log.Info("googleCredJSON - " + googleCredJSON);
-                        string bucketName = ConfigurationManager.AppSettings["BucketName"];
-                        log.Info("bucketName - " + bucketName);
-
-                        // Get creds for connecting to bucket.
-                        var googleCredStream = GoogleCredential.FromStream(File.OpenRead(googleCredJSON));
-
-                        // Connect to bucket.
+                        // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
+                        // Update the credFilePath variable with the full path to the file.
+#if (DEBUG)
+                        var credFilePath = @"C:\dev\cred.json";
+                        var googleCredStream = GoogleCredential.FromStream(File.OpenRead(credFilePath));
                         var bucket = StorageClient.Create(googleCredStream);
+
+#else
+                        // When running in Release, the service will be running as compute account which will have access to all buckets.
+                        var bucket = StorageClient.Create();
+#endif
 
                         foreach (var storageObject in bucket.ListObjects(bucketName, ""))
                         {
@@ -331,7 +330,7 @@ namespace BlaiseNISRACaseProcessor
                 log.Info("Looping through NISRA data.");
                 while (!nisraDataSet.EndOfSet)
                 {
-                    // Read the current record/case.
+                    // Read the current record.
                     var nisraRecord = nisraDataSet.ActiveRecord;
                     // Get the key field from the model.
                     IDatamodel sourceModel = nisraRecord.Datamodel;
@@ -339,12 +338,12 @@ namespace BlaiseNISRACaseProcessor
                     // Get the value of the key field.
                     string serialNumber = nisraRecord.Keys[0].KeyValue;
                     key.Fields[0].DataValue.Assign(serialNumber);
-					log.Info("Processing NISRA case " + serialNumber + ".");
-                    // Check if a record/case with the key field value exists on the Blaise server.
+					log.Info("Processing NISRA record with serial number: " + serialNumber + ".");
+                    // Check if a record with the key field value exists on the Blaise server.
                     if (serverDataLink.KeyExists(key))
                     {
-                        log.Info("Matching case found on Blaise server.");
-						// Get the record/case on the server.
+                        log.Info("Matching record found on Blaise server.");
+						// Get the record on the server.
                         var serverRecord = serverDataLink.ReadRecord(key);
 
                         // Check if the WebFormStatus field exists in the NISRA and server record
@@ -375,7 +374,7 @@ namespace BlaiseNISRACaseProcessor
                                 }
                             }
                             // If the server status value is "Partial" and the NISRA status is also "Partial" then process the record's Hout values. (1 = Complete, 2 = Partial)  
-                            // Otherwise write the completed NISRA case to the server.
+                            // Otherwise write the completed NISRA record to the server.
                             else if (serverStatus.DataValue.EnumerationValue == 2)
                             {
                                 if (nisraStatus.DataValue.EnumerationValue == 2)
@@ -392,7 +391,7 @@ namespace BlaiseNISRACaseProcessor
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                                     // Make the JSON status update message.
-                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                                     // Send the JSON status update message.
                                     SendStatus(json);
@@ -410,7 +409,7 @@ namespace BlaiseNISRACaseProcessor
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                                     // Make the JSON status update message.
-                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                                     // Send the JSON status update message.
                                     SendStatus(json);
@@ -425,8 +424,8 @@ namespace BlaiseNISRACaseProcessor
                     }
                     else
                     {
-                        // If no case if found, write the record stright to the Blaise server (IPS behaviour).
-                        log.Info("NISRA case " + serialNumber + " not on server park. Writing case to server park.");
+                        // If no record is found, write the record straight to the Blaise server (IPS behaviour).
+                        log.Info("NISRA record with serial number: " + serialNumber + " not on server park. Writing record to server park.");
                         serverDataLink.Write(nisraRecord);
                     }
                     // Move to the next record:
@@ -471,7 +470,7 @@ namespace BlaiseNISRACaseProcessor
                         WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                         // Make the JSON status update message.
-                        var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA Case Imported");
+                        var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                         // Send the JSON status update message.
                         SendStatus(json);
