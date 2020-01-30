@@ -234,8 +234,11 @@ namespace BlaiseNISRACaseProcessor
             {
                 log.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
-                var localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-				log.Info("localProcessFolder - " + localProcessFolder);
+                string bucketName = ConfigurationManager.AppSettings["BucketName"];
+                log.Info("bucketName - " + bucketName);
+                string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
+                log.Info("localProcessFolder - " + localProcessFolder);
+                
                 // Get path for NISRA bdix.
                 string nisraBDI = BlaiseMethods.GetBDIFile(localProcessFolder, instrument.Name);
                 // Get data links for the NISRA file and Blaise server.
