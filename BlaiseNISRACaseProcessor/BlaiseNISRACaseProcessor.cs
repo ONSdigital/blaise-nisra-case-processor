@@ -104,6 +104,7 @@ namespace BlaiseNISRACaseProcessor
 #endif
 
             // Copy objects/files inside bucket to local processing folder.
+            log.Info("Checking bucket contents.");
             foreach (var bucketObj in bucket.ListObjects(bucketName, ""))
             {
                 // Ignore processed and audit objects/files.
@@ -111,10 +112,8 @@ namespace BlaiseNISRACaseProcessor
                 {
                     log.Info("Object/file found - " + bucketObj.Name);
                     string localProcessFilePath = localProcessFolder + "/" + bucketObj.Name;
-
-                    DirectoryInfo localProcessPathDir = Directory.CreateDirectory(Path.GetDirectoryName(localProcessFilePath));
-                    log.Info("Local folder structure created - " + localProcessPathDir);
-
+                    log.Info("Creating local folder structure - " + (Path.GetDirectoryName(localProcessFilePath)));
+                    DirectoryInfo dirInfo = Directory.CreateDirectory(Path.GetDirectoryName(localProcessFilePath));
                     var outputFile = File.OpenWrite(localProcessFilePath);
                     log.Info("Copying object/file locally - " + outputFile.Name);
                     bucket.DownloadObject(bucketName, bucketObj.Name, outputFile);
