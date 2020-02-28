@@ -112,7 +112,7 @@ namespace BlaiseNISRACaseProcessor
                     log.Info("Object/file found - " + bucketObj.Name);
                     string localProcessFilePath = localProcessFolder + "/" + bucketObj.Name;
 
-                    DirectoryInfo localProcessPathDir = Directory.CreateDirectory(Path.GetDirectoryName(localProcessPath));
+                    DirectoryInfo localProcessPathDir = Directory.CreateDirectory(Path.GetDirectoryName(localProcessFilePath));
                     log.Info("Local folder structure created - " + localProcessPathDir);
 
                     var outputFile = File.OpenWrite(localProcessFilePath);
