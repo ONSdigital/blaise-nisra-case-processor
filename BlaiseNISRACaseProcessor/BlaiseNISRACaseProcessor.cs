@@ -79,7 +79,9 @@ namespace BlaiseNISRACaseProcessor
         {
             // Get environment variables.
             string bucketName = ConfigurationManager.AppSettings["BucketName"];
+	    log.Info("bucketName - " + bucketName);
             string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
+	    log.Info("localProcessFolder - " + localProcessFolder);
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
