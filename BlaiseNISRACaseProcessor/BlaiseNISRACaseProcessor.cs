@@ -83,13 +83,9 @@ namespace BlaiseNISRACaseProcessor
             string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
             log.Info("localProcessFolder - " + localProcessFolder);
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
-            log.Debug("BlaiseServerHostName - " + serverName);
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
-            log.Debug("BlaiseServerUserName - " + userName);
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
-            log.Debug("BlaiseServerPassword - " + password);
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-            log.Debug("BlaiseServerBinding - " + binding);
 
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
