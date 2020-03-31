@@ -195,8 +195,6 @@ namespace BlaiseNISRACaseProcessor
                             // Loop through the surveys installed on the current server park
                             foreach (ISurvey survey in serverManagerConnection.GetServerPark(serverPark.Name).Surveys)
                             {
-                                log.Info("Survey name: " + survey.Name);
-                                log.Info("bdixFile name: " + Path.GetFileNameWithoutExtension(bdixFile));
                                 // If a survey is found that matches the NISRA file, process it.
                                 if (survey.Name.ToUpper() == Path.GetFileNameWithoutExtension(bdixFile).ToUpper())
                                 {
