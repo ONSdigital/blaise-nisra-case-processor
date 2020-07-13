@@ -11,7 +11,6 @@ using Google.Cloud.Storage.V1;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Triggers;
-using RabbitMQ.Client;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
@@ -22,14 +21,10 @@ namespace BlaiseNisraCaseProcessor
     public partial class BlaiseNisraCaseProcessor : ServiceBase
     {
         // Instantiate logger.
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog _logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // Instantiate scheduler.
         private static IScheduler _scheduler;
-
-        // Objects for RabbitMQ.
-        public static IConnection connection;
-        public static IModel channel;
 
         public BlaiseNisraCaseProcessor()
         {
@@ -44,7 +39,7 @@ namespace BlaiseNisraCaseProcessor
         protected override void OnStart(string[] args)
         {
             // Setup Quartz job.
-			log.Info("Blaise NISRA Case Processor service started.");
+			_logger.Info("Blaise NISRA Case Processor service started.");
             ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
             _scheduler = schedulerFactory.GetScheduler();
             _scheduler.Start();
@@ -54,7 +49,7 @@ namespace BlaiseNisraCaseProcessor
         public static void AddJob()
         {
             string quartzCron = ConfigurationManager.AppSettings["QuartzCron"];
-            log.Info("Quartz Cron - " + quartzCron);
+            _logger.Info("Quartz Cron - " + quartzCron);
             IDoJob job = new BlaiseNISRACaseProcessorJob();
             var jobDetail = new JobDetailImpl("job", "group", job.GetType());
             var triggerDetail = new CronTriggerImpl("trigger", "group", quartzCron);
@@ -65,23 +60,23 @@ namespace BlaiseNisraCaseProcessor
         {
             public void Execute(IJobExecutionContext context)
             {
-                log.Info("Quartz job triggered.");
+                _logger.Info("Quartz job triggered.");
                 Run();
             }
         }
 
         protected override void OnStop()
         {
-            log.Info("Blaise NISRA Case Processor service stopped.");
+            _logger.Info("Blaise NISRA Case Processor service stopped.");
         }
 
         public static void Run()
         {
             // Get environment variables.
             string bucketName = ConfigurationManager.AppSettings["BucketName"];
-            log.Info("bucketName - " + bucketName);
+            _logger.Info("bucketName - " + bucketName);
             string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-            log.Info("localProcessFolder - " + localProcessFolder);
+            _logger.Info("localProcessFolder - " + localProcessFolder);
             string serverName = ConfigurationManager.AppSettings["BlaiseServerHostName"];
             string userName = ConfigurationManager.AppSettings["BlaiseServerUserName"];
             string password = ConfigurationManager.AppSettings["BlaiseServerPassword"];
@@ -100,18 +95,18 @@ namespace BlaiseNisraCaseProcessor
 #endif
 
             // Copy objects/files inside bucket to local processing folder.
-            log.Info("Checking bucket contents.");
+            _logger.Info("Checking bucket contents.");
             foreach (var bucketObj in bucket.ListObjects(bucketName, ""))
             {
                 // Ignore processed and audit objects/files.
                 if (!bucketObj.Name.ToLower().Contains("processed") && !bucketObj.Name.ToLower().Contains("audit"))
                 {
-                    log.Info("Object/file found - " + bucketObj.Name);
+                    _logger.Info("Object/file found - " + bucketObj.Name);
                     string localProcessFilePath = localProcessFolder + "/" + bucketObj.Name;
-                    log.Info("Creating local folder structure - " + (Path.GetDirectoryName(localProcessFilePath)));
+                    _logger.Info("Creating local folder structure - " + (Path.GetDirectoryName(localProcessFilePath)));
                     DirectoryInfo dirInfo = Directory.CreateDirectory(Path.GetDirectoryName(localProcessFilePath));
                     var outputFile = File.OpenWrite(localProcessFilePath);
-                    log.Info("Copying object/file locally - " + outputFile.Name);
+                    _logger.Info("Copying object/file locally - " + outputFile.Name);
                     bucket.DownloadObject(bucketName, bucketObj.Name, outputFile);
                     outputFile.Close();
                 }
@@ -121,7 +116,7 @@ namespace BlaiseNisraCaseProcessor
             bucket.Dispose();
 
             // Search for all files in process folder and subfolders and move to root.
-            log.Info("Moving files to local process folder root.");
+            _logger.Info("Moving files to local process folder root.");
             void RecurDirSearch(string topDir)
             {
                 try
@@ -134,16 +129,16 @@ namespace BlaiseNisraCaseProcessor
                             var destFile = Path.Combine(localProcessFolder, fileName);
                             File.Delete(destFile);
                             File.Move(file, destFile);
-                            log.Info("File moved - " + file + " > " + destFile);
+                            _logger.Info("File moved - " + file + " > " + destFile);
                         }
                         RecurDirSearch(dir);
                     }
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error searching through files in local process folder.");
-                    log.Error(e.Message);
-                    log.Error(e.StackTrace);
+                    _logger.Error("Error searching through files in local process folder.");
+                    _logger.Error(e.Message);
+                    _logger.Error(e.StackTrace);
                 }
             }
             RecurDirSearch(localProcessFolder);
@@ -153,7 +148,7 @@ namespace BlaiseNisraCaseProcessor
             // Look for BDIX files in the local NISRA processing folder.
             if (Directory.Exists(localProcessFolder))
             {
-                log.Info("Checking for BDIX files.");
+                _logger.Info("Checking for BDIX files.");
                 var allFiles = Directory.GetFiles(localProcessFolder, "*.bdix", SearchOption.TopDirectoryOnly);
                 foreach(var file in allFiles)
                 {
@@ -162,7 +157,7 @@ namespace BlaiseNisraCaseProcessor
             }
             else
             {
-                log.Warn("Process folder doesn't exist - " + localProcessFolder);
+                _logger.Warn("Process folder doesn't exist - " + localProcessFolder);
             }
 
             // If a BDIX file is found, process it.
@@ -171,7 +166,7 @@ namespace BlaiseNisraCaseProcessor
                 // Process all the BDIX files found.
                 foreach (var bdixFile in bdixFiles)
                 {
-                    log.Info("Processing NISRA file - " + bdixFile);
+                    _logger.Info("Processing NISRA file - " + bdixFile);
                     // Check BDBX is not locked before processing.
                     var bdbxFile = bdixFile.Substring(0, bdixFile.Length - 4) + "bdbx";
                     if (FileMethods.CheckFileLock(bdbxFile) == false)
@@ -180,14 +175,14 @@ namespace BlaiseNisraCaseProcessor
                         IConnectedServer serverManagerConnection = null;
                         try
                         {
-                            log.Info("Connecting to Blaise server - " + serverName);
+                            _logger.Info("Connecting to Blaise server - " + serverName);
                             serverManagerConnection = ServerManager.ConnectToServer(serverName, 8031, userName, GetPassword(password), binding);
                         }
                         catch (Exception e)
                         {
-                            log.Error("Error connecting to Blaise server - " + serverName);
-                            log.Error(e.Message);
-                            log.Error(e.StackTrace);
+                            _logger.Error("Error connecting to Blaise server - " + serverName);
+                            _logger.Error(e.Message);
+                            _logger.Error(e.StackTrace);
                         }
                         // Loop through the server parks on the connected Blaise server.
                         foreach (IServerPark serverPark in serverManagerConnection.ServerParks)
@@ -198,25 +193,25 @@ namespace BlaiseNisraCaseProcessor
                                 // If a survey is found that matches the NISRA file, process it.
                                 if (survey.Name.ToUpper() == Path.GetFileNameWithoutExtension(bdixFile).ToUpper())
                                 {
-                                    log.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
+                                    _logger.Info("Survey found on server (" + serverPark.Name + "/" + survey.Name + ") that matches NISRA file.");
                                     ProcessData(serverPark, survey);
                                 }
                                 else
                                 {
-                                    log.Warn("No survey found on Blaise server that matches NISRA file.");
+                                    _logger.Warn("No survey found on Blaise server that matches NISRA file.");
                                 }
                             }
                         }
                     }
                     else
                     {
-                        log.Info("Unable to process bdbx due to lock on file - " + bdbxFile);
+                        _logger.Info("Unable to process bdbx due to lock on file - " + bdbxFile);
                     }                    
                 }
             }
             else
             {
-                log.Info("No BDIX files found.");
+                _logger.Info("No BDIX files found.");
             }
         }
 
@@ -227,12 +222,12 @@ namespace BlaiseNisraCaseProcessor
         {
             try
             {
-                log.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
+                _logger.Info("Processing data for survey " + instrument.Name + " on server park " + serverPark.Name + ".");
                 // Get process and backup folder locations from app config.
                 string bucketName = ConfigurationManager.AppSettings["BucketName"];
-                log.Info("bucketName - " + bucketName);
+                _logger.Info("bucketName - " + bucketName);
                 string localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-                log.Info("localProcessFolder - " + localProcessFolder);
+                _logger.Info("localProcessFolder - " + localProcessFolder);
                 
                 // Get path for NISRA bdix.
                 string nisraBDI = BlaiseMethods.GetBDIFile(localProcessFolder, instrument.Name);
@@ -246,7 +241,7 @@ namespace BlaiseNisraCaseProcessor
                     if (ImportDataRecords(nisraFileDataLink, blaiseServerDataLink, instrument, serverPark))
                     {
                         // Move the NISRA files to the processed location if they've been sucessfully processed.
-                        log.Info("Moving processed files to processed location.");
+                        _logger.Info("Moving processed files to processed location.");
                         // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
                         // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
@@ -271,7 +266,7 @@ namespace BlaiseNisraCaseProcessor
                                 // Move file/object.
                                 bucket.CopyObject(bucketName, storageObject.Name, bucketName, dest);
                                 bucket.DeleteObject(bucketName, storageObject.Name);
-                                log.Info("File/object moved - " + storageObject.Name + " > " + dest);
+                                _logger.Info("File/object moved - " + storageObject.Name + " > " + dest);
                             }
                         }
 
@@ -293,21 +288,21 @@ namespace BlaiseNisraCaseProcessor
                                 DeleteDirectory(dir);
                             }
                             Directory.Delete(topDir, false);
-                            log.Info("Folder deleted - " + topDir);
+                            _logger.Info("Folder deleted - " + topDir);
                         }
                         DeleteDirectory(localProcessFolder);
                     }
                 }
                 else
                 {
-                    log.Warn("Could not get data links for NISRA file and/or Blaise server.");
+                    _logger.Warn("Could not get data links for NISRA file and/or Blaise server.");
                 }
             }
             catch (Exception e)
             {
-                log.Error($"Error Processing survey, ServerPark: {serverPark.Name}, InstrumentName: {instrument.Name}");
-                log.Error(e.Message);
-                log.Error(e.StackTrace);
+                _logger.Error($"Error Processing survey, ServerPark: {serverPark.Name}, InstrumentName: {instrument.Name}");
+                _logger.Error(e.Message);
+                _logger.Error(e.StackTrace);
             }
         }
 
@@ -323,9 +318,9 @@ namespace BlaiseNisraCaseProcessor
                 // Read the NISRA data into a dataset object.
                 IDataSet nisraDataSet = nisraDatalink.Read("");
                 // Connect to Rabbit.
-                SetupRabbit();
+
                 // Loop through every record within the NISRA dataset.
-                log.Info("Looping through NISRA data.");
+                _logger.Info("Looping through NISRA data.");
                 while (!nisraDataSet.EndOfSet)
                 {
                     // Read the current record.
@@ -336,11 +331,11 @@ namespace BlaiseNisraCaseProcessor
                     // Get the value of the key field.
                     string serialNumber = nisraRecord.Keys[0].KeyValue;
                     key.Fields[0].DataValue.Assign(serialNumber);
-					log.Info("Processing NISRA record with serial number: " + serialNumber + ".");
+					_logger.Info("Processing NISRA record with serial number: " + serialNumber + ".");
                     // Check if a record with the key field value exists on the Blaise server.
                     if (serverDataLink.KeyExists(key))
                     {
-                        log.Info("Matching record found on Blaise server.");
+                        _logger.Info("Matching record found on Blaise server.");
 						// Get the record on the server.
                         var serverRecord = serverDataLink.ReadRecord(key);
 
@@ -383,7 +378,7 @@ namespace BlaiseNisraCaseProcessor
                                 else
                                 {
                                     // Replace server record with NISRA record
-                                    log.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
+                                    _logger.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
 
                                     //Replace Server record with NISRA
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
@@ -401,7 +396,7 @@ namespace BlaiseNisraCaseProcessor
                                 if (nisraStatus.DataValue.EnumerationValue > 0)
                                 {
                                     // Replace server record with NISRA record
-                                    log.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
+                                    _logger.Info(String.Format("Serial {0} - NISRA has better WebFormStatus (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraStatus.DataValue.EnumerationValue, serverStatus.DataValue.EnumerationValue));
 
                                     //Replace Server record with NISRA
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
@@ -423,23 +418,20 @@ namespace BlaiseNisraCaseProcessor
                     else
                     {
                         // If no record is found, write the record straight to the Blaise server (IPS behaviour).
-                        log.Info("NISRA record with serial number: " + serialNumber + " not on server park. Writing record to server park.");
+                        _logger.Info("NISRA record with serial number: " + serialNumber + " not on server park. Writing record to server park.");
                         serverDataLink.Write(nisraRecord);
                     }
                     // Move to the next record:
                     nisraDataSet.MoveNext();
                 }
-                if (connection != null && connection.IsOpen == true)
-                {
-                    connection.Close();
-                }                
+             
                 return true;
             }
             catch (Exception e)
             {
-                log.Error("Error importing data records.");
-                log.Error(e.Message);
-                log.Error(e.StackTrace);
+                _logger.Error("Error importing data records.");
+                _logger.Error(e.Message);
+                _logger.Error(e.StackTrace);
                 return false;
             }
         }
@@ -452,7 +444,7 @@ namespace BlaiseNisraCaseProcessor
             {
                 // Get the NISTA HOUT.
                 var nisraHOUT = nisraRecord.GetField("QHAdmin.HOut");
-                log.Info("NISRA record: " + nisraRecord + " HOut: " + nisraHOUT);
+                _logger.Info("NISRA record: " + nisraRecord + " HOut: " + nisraHOUT);
                 // If HOUT is not 0.
                 if (!(nisraHOUT.DataValue.IntegerValue == 0))
                 {
@@ -462,7 +454,7 @@ namespace BlaiseNisraCaseProcessor
                     // Write the NISRA record/case to the server if it's HOUT is lower.
                     if (nisraHOUT.DataValue.IntegerValue < serverHOUT.DataValue.IntegerValue || serverHOUT.DataValue.IntegerValue == 0)
                     {
-                        log.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                        _logger.Info(String.Format("Serial {0} - NISRA has better HOUT (NISRA: {1} / Server: {2}). Updating server.", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
 
                         //Replace Server record with NISRA
                         WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
@@ -475,12 +467,12 @@ namespace BlaiseNisraCaseProcessor
                     }
                     else
                     {
-                        log.Info(String.Format("Serial {0} - Server has better or equal HOUT (NISRA: {1} / Server: {2}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
+                        _logger.Info(String.Format("Serial {0} - Server has better or equal HOUT (NISRA: {1} / Server: {2}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue, serverHOUT.DataValue.IntegerValue));
                     }
                 }
                 else
                 {
-                    log.Info(String.Format("Serial {0} - NISRA has not been processed (NISRA: {1}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue));
+                    _logger.Info(String.Format("Serial {0} - NISRA has not been processed (NISRA: {1}).", serialNumber.Trim(' '), nisraHOUT.DataValue.IntegerValue));
                 }
             }
         }
@@ -555,11 +547,11 @@ namespace BlaiseNisraCaseProcessor
                                 case MoveType.Move:
                                     File.Delete(destFile);
                                     File.Move(file, destFile);
-                                    log.Info(String.Format("Successfully moved file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
+                                    _logger.Info(String.Format("Successfully moved file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
                                     break;
                                 case MoveType.Copy:
                                     File.Copy(file, destFile, true);
-                                    log.Info(String.Format("Successfully copied file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
+                                    _logger.Info(String.Format("Successfully copied file - {0} > {1} ({2})", sourcePath, targetPath, fileName));
                                     break;
                             }
                         }
@@ -568,55 +560,20 @@ namespace BlaiseNisraCaseProcessor
                 }
                 else
                 {
-                    log.Error(String.Format("Unable to copy. Source path doesnt exist: {0}", sourcePath));
+                    _logger.Error(String.Format("Unable to copy. Source path doesnt exist: {0}", sourcePath));
                     return false;
                 }
             }
             catch (Exception e)
             {
-                log.Error(String.Format("Error moving files: {0} -> {1}", sourcePath, targetPath));
-                log.Error(e.Message);
-                log.Error(e.StackTrace);
+                _logger.Error(String.Format("Error moving files: {0} -> {1}", sourcePath, targetPath));
+                _logger.Error(e.Message);
+                _logger.Error(e.StackTrace);
                 return false;
             }
         }
 
-        /// <summary>
-        /// Method for connecting to RabbitMQ and setting up the channels.
-        /// </summary>
-        public static bool SetupRabbit()
-        {
-            log.Info("Setting up RabbitMQ.");
-            try
-            {
-                // Create a connection to RabbitMQ using the Rabbit credentials stored in the app.config file.
-                var connFactory = new ConnectionFactory()
-                {
-                    HostName = ConfigurationManager.AppSettings["RabbitHostName"],
-                    UserName = ConfigurationManager.AppSettings["RabbitUserName"],
-                    Password = ConfigurationManager.AppSettings["RabbitPassword"]
-                };
-                connection = connFactory.CreateConnection();
-                channel = connection.CreateModel();
-                // Get the exchange and queue details from the app.config file.
-                string exchangeName = ConfigurationManager.AppSettings["RabbitExchange"];
-                string queueName = ConfigurationManager.AppSettings["CaseStatusQueueName"];
-                // Declare the exchange for sending messages.
-                channel.ExchangeDeclare(exchange: exchangeName, type: "direct", durable: true);
-                log.Info("Exchange declared - " + exchangeName);
-                // Declare the queue for sending message updates.
-                channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                log.Info("Queue declared - " + queueName);
-                log.Info("RabbitMQ setup complete.");
-                return true;
-            }
-            catch
-            {
-                log.Info("Unable to establish RabbitMQ connection.");
-                return false;
-            }
-        }
-
+       
         /// <summary>
         /// Builds a JSON status object to be used in the SendStatus method.
         /// </summary>
@@ -644,8 +601,8 @@ namespace BlaiseNisraCaseProcessor
             string message = new JavaScriptSerializer().Serialize(jsonData);
             var body = Encoding.UTF8.GetBytes(message);
             string caseStatusQueueName = ConfigurationManager.AppSettings["CaseStatusQueueName"];
-            channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
-            log.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
+           // channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
+            _logger.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
         }
         internal interface IDoJob : IJob
         {
