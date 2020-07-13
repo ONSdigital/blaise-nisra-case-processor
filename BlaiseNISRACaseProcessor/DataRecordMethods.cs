@@ -1,6 +1,6 @@
 using StatNeth.Blaise.API.DataRecord;
 
-namespace BlaiseNISRACaseProcessor
+namespace BlaiseNisraCaseProcessor
 {
     public static class DataRecordMethods
     {

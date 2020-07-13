@@ -1,6 +1,6 @@
-﻿namespace BlaiseNISRACaseProcessor
+﻿namespace BlaiseNisraCaseProcessor
 {
-    partial class BlaiseNISRACaseProcessor
+    partial class BlaiseNisraCaseProcessor
     {
         /// <summary> 
         /// Required designer variable.

@@ -8,8 +8,8 @@
     <ProjectGuid>{2D539782-C662-4F48-8DA8-05F5E48FFC79}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BlaiseNISRACaseProcessor_UnitTests</RootNamespace>
-    <AssemblyName>BlaiseNISRACaseProcessor_UnitTests</AssemblyName>
+    <RootNamespace>BlaiseNisraCaseProcessor.Tests</RootNamespace>
+    <AssemblyName>BlaiseNisraCaseProcessor.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -103,9 +103,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BlaiseNISRACaseProcessor\BlaiseNISRACaseProcessor.csproj">
+    <ProjectReference Include="..\BlaiseNISRACaseProcessor\BlaiseNisraCaseProcessor.csproj">
       <Project>{80afb125-a799-46f8-9a45-f1edf5496e15}</Project>
-      <Name>BlaiseNISRACaseProcessor</Name>
+      <Name>BlaiseNisraCaseProcessor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

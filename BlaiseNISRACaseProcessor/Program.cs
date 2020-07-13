@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BlaiseNISRACaseProcessor
+﻿namespace BlaiseNisraCaseProcessor
 {
     static class Program
     {
@@ -15,7 +8,7 @@ namespace BlaiseNISRACaseProcessor
         {
 #if DEBUG
             log.Info("Blaise NISRA Case Processor service starting in DEBUG mode.");
-            BlaiseNISRACaseProcessor bncpService = new BlaiseNISRACaseProcessor();
+            BlaiseNisraCaseProcessor bncpService = new BlaiseNisraCaseProcessor();
             bncpService.OnDebug();
 #else
             log.Info("Blaise NISRA Case Processor service starting in RELEASE mode.");

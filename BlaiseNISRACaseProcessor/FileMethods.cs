@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace BlaiseNISRACaseProcessor
+namespace BlaiseNisraCaseProcessor
 {
     public static class FileMethods
     {

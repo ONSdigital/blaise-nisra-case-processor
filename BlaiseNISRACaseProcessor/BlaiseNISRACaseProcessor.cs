@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Security;
 using System.ServiceProcess;
 using System.Text;
-using RabbitMQ.Client;
-using StatNeth.Blaise.API.DataLink;
-using StatNeth.Blaise.API.ServerManager;
-using StatNeth.Blaise.API.DataRecord;
-using StatNeth.Blaise.API.Meta;
-using System.Configuration;
 using System.Web.Script.Serialization;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Storage.V1;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Triggers;
-using Google.Apis.Auth.OAuth2;
-using Google.Cloud.Storage.V1;
+using RabbitMQ.Client;
+using StatNeth.Blaise.API.DataLink;
+using StatNeth.Blaise.API.DataRecord;
+using StatNeth.Blaise.API.Meta;
+using StatNeth.Blaise.API.ServerManager;
 
-namespace BlaiseNISRACaseProcessor
+namespace BlaiseNisraCaseProcessor
 {
-    public partial class BlaiseNISRACaseProcessor : ServiceBase
+    public partial class BlaiseNisraCaseProcessor : ServiceBase
     {
         // Instantiate logger.
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -31,7 +31,7 @@ namespace BlaiseNISRACaseProcessor
         public static IConnection connection;
         public static IModel channel;
 
-        public BlaiseNISRACaseProcessor()
+        public BlaiseNisraCaseProcessor()
         {
             InitializeComponent();
         }

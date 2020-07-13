@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{80AFB125-A799-46F8-9A45-F1EDF5496E15}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>BlaiseNISRACaseProcessor</RootNamespace>
-    <AssemblyName>BlaiseNISRACaseProcessor</AssemblyName>
+    <RootNamespace>BlaiseNisraCaseProcessor</RootNamespace>
+    <AssemblyName>BlaiseNisraCaseProcessor</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

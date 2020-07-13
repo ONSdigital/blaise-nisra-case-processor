@@ -1,4 +1,4 @@
-﻿namespace BlaiseNISRACaseProcessor
+﻿namespace BlaiseNisraCaseProcessor
 {
     partial class ProjectInstaller
     {

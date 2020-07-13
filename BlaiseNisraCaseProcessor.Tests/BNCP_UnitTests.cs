@@ -1,7 +1,7 @@
 using System.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BlaiseNISRACaseProcessor_UnitTests
+namespace BlaiseNisraCaseProcessor.Tests
 {
     [TestClass]
     public class BNCP_UnitTests
@@ -9,42 +9,42 @@ namespace BlaiseNISRACaseProcessor_UnitTests
         [TestMethod]
         public void Test_Get_BDI_File()
         {
-            var fileName = BlaiseNISRACaseProcessor.BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop", "OPN1911A");
+            var fileName = BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop", "OPN1911A");
             Assert.AreNotEqual("", fileName);
         }
 
         [TestMethod]
         public void Test_Get_BDI_File_Fail_Source()
         {
-            var fileName = BlaiseNISRACaseProcessor.BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop_FOOBAR", "OPN1911A");
+            var fileName = BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop_FOOBAR", "OPN1911A");
             Assert.AreEqual("", fileName);
         }
 
         [TestMethod]
         public void Test_Get_BDI_File_Fail_Instrument()
         {
-            var fileName = BlaiseNISRACaseProcessor.BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop", "FOOBAR");
+            var fileName = BlaiseMethods.GetBDIFile("c:\\Blaise_NISRA_Drop", "FOOBAR");
             Assert.AreEqual("", fileName);
         }
 
         [TestMethod]
         public void Test_Get_Data_File_Name()
         {
-            string dfName = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName("LocalDevelopment", "OPN1911A");
+            string dfName = BlaiseMethods.GetDataFileName("LocalDevelopment", "OPN1911A");
             Assert.AreNotEqual("", dfName);
         }
 
         [TestMethod]
         public void Test_Get_Data_File_Name_Fail_SP()
         {
-            string dfName = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName("FOOBAR", "OPN1911A");
+            string dfName = BlaiseMethods.GetDataFileName("FOOBAR", "OPN1911A");
             Assert.AreEqual("", dfName);
         }
 
         [TestMethod]
         public void Test_Get_Data_File_Name_Fail_Instrument()
         {
-            string dfName = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName("LocalDevelopment", "FOOBAR");
+            string dfName = BlaiseMethods.GetDataFileName("LocalDevelopment", "FOOBAR");
             Assert.AreEqual("", dfName);
         }
         
@@ -55,7 +55,7 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
             string binding = ConfigurationManager.AppSettings.Get("BlaiseServerBinding");
-            var connection = BlaiseNISRACaseProcessor.BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
+            var connection = BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
             Assert.AreNotEqual(null, connection);
         }
 
@@ -66,7 +66,7 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = "FOOBAR";
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-            var connection = BlaiseNISRACaseProcessor.BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
+            var connection = BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
             Assert.AreEqual(null, connection);
         }
 
@@ -77,7 +77,7 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string username = "FOOBAR";
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-            var connection = BlaiseNISRACaseProcessor.BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
+            var connection = BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
             Assert.AreEqual(null, connection);
         }
 
@@ -88,14 +88,14 @@ namespace BlaiseNISRACaseProcessor_UnitTests
             string username = ConfigurationManager.AppSettings.Get("BlaiseServerUserName");
             string password = ConfigurationManager.AppSettings.Get("BlaiseServerPassword");
             string binding = ConfigurationManager.AppSettings["BlaiseServerBinding"];
-            var connection = BlaiseNISRACaseProcessor.BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
+            var connection = BlaiseMethods.ConnectToBlaiseServer(serverName, username, password, binding);
             Assert.AreEqual(null, connection);
         }
 
         [TestMethod]
         public void Test_Get_Password()
         {
-            var securePassword = BlaiseNISRACaseProcessor.BlaiseNISRACaseProcessor.GetPassword("password");
+            var securePassword = global::BlaiseNisraCaseProcessor.BlaiseNisraCaseProcessor.GetPassword("password");
             Assert.AreEqual(8, securePassword.Length);
         }
 
@@ -104,8 +104,8 @@ namespace BlaiseNISRACaseProcessor_UnitTests
         {
             string serverPark = "LocalDevelopment";
             string instrument = "OPN1911A";
-            string originalBDI = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName(serverPark, instrument);
-            var originalDataLink = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataLinkFromBDI(originalBDI);
+            string originalBDI = BlaiseMethods.GetDataFileName(serverPark, instrument);
+            var originalDataLink = BlaiseMethods.GetDataLinkFromBDI(originalBDI);
             Assert.AreNotEqual(null, originalDataLink);
         }
 
@@ -114,8 +114,8 @@ namespace BlaiseNISRACaseProcessor_UnitTests
         {
             string serverPark = "FOOBAR";
             string instrument = "OPN1911A";
-            string originalBDI = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName(serverPark, instrument);
-            var originalDataLink = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataLinkFromBDI(originalBDI);
+            string originalBDI = BlaiseMethods.GetDataFileName(serverPark, instrument);
+            var originalDataLink = BlaiseMethods.GetDataLinkFromBDI(originalBDI);
             Assert.AreEqual(null, originalDataLink);
         }
 
@@ -124,8 +124,8 @@ namespace BlaiseNISRACaseProcessor_UnitTests
         {
             string serverPark = "LocalDevelopment";
             string instrument = "FOOBAR";
-            string originalBDI = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataFileName(serverPark, instrument);
-            var originalDataLink = BlaiseNISRACaseProcessor.BlaiseMethods.GetDataLinkFromBDI(originalBDI);
+            string originalBDI = BlaiseMethods.GetDataFileName(serverPark, instrument);
+            var originalDataLink = BlaiseMethods.GetDataLinkFromBDI(originalBDI);
             Assert.AreEqual(null, originalDataLink);
         }
     }

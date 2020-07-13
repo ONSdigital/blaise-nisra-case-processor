@@ -6,7 +6,7 @@ using System.Linq;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.ServerManager;
 
-namespace BlaiseNISRACaseProcessor
+namespace BlaiseNisraCaseProcessor
 {
     public static class BlaiseMethods
     {
@@ -79,7 +79,7 @@ namespace BlaiseNISRACaseProcessor
             {
                 instrumentID = instrument.InstrumentID;
                 // Connect to the data.
-                IRemoteDataServer dataLinkConn = DataLinkManager.GetRemoteDataServer(serverName, 8033, binding, userName, BlaiseNISRACaseProcessor.GetPassword(password));
+                IRemoteDataServer dataLinkConn = DataLinkManager.GetRemoteDataServer(serverName, 8033, binding, userName, BlaiseNisraCaseProcessor.GetPassword(password));
                 return dataLinkConn.GetDataLink(instrumentID, serverPark.Name);
             }
             catch (Exception e)
@@ -145,7 +145,7 @@ namespace BlaiseNISRACaseProcessor
             try
             {
                 IConnectedServer2 connServer =
-                    (IConnectedServer2)ServerManager.ConnectToServer(serverName, port, userName, BlaiseNISRACaseProcessor.GetPassword(password), binding);
+                    (IConnectedServer2)ServerManager.ConnectToServer(serverName, port, userName, BlaiseNisraCaseProcessor.GetPassword(password), binding);
 
                 return connServer;
             }
