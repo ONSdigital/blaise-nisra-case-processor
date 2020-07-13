@@ -384,10 +384,10 @@ namespace BlaiseNisraCaseProcessor
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                                     // Make the JSON status update message.
-                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
+                                    //var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                                     // Send the JSON status update message.
-                                    SendStatus(json);
+                                    //SendStatus(json);
                                 }
                             }
                             // If the nisraStatus value is Partial or Complete write it over the untouched server record.
@@ -402,10 +402,10 @@ namespace BlaiseNisraCaseProcessor
                                     WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                                     // Make the JSON status update message.
-                                    var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
+                                    //var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                                     // Send the JSON status update message.
-                                    SendStatus(json);
+                                   // SendStatus(json);
                                 }
                             }
                         }
@@ -460,10 +460,10 @@ namespace BlaiseNisraCaseProcessor
                         WriteNisraRecordToServer(nisraRecord, serverRecord, serverDataLink);
 
                         // Make the JSON status update message.
-                        var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
+                        //var json = MakeJsonStatus(nisraRecord, instrument.Name, serverPark.Name, "NISRA record imported");
 
                         // Send the JSON status update message.
-                        SendStatus(json);
+                        //SendStatus(json);
                     }
                     else
                     {
@@ -573,37 +573,6 @@ namespace BlaiseNisraCaseProcessor
             }
         }
 
-       
-        /// <summary>
-        /// Builds a JSON status object to be used in the SendStatus method.
-        /// </summary>
-        public static Dictionary<string, string> MakeJsonStatus(StatNeth.Blaise.API.DataRecord.IDataRecord recordData, string instrumentName, string serverPark, string status)
-        {
-            Dictionary<string, string> jsonData = new Dictionary<string, string>();
-            if (recordData != null)
-            {
-                foreach (IField qidField in recordData.GetField("QID").Fields)
-                {
-                    jsonData[qidField.LocalName] = qidField.DataValue.ValueAsText.ToLower();
-                }
-            }
-            jsonData["instrument_name"] = instrumentName;
-            jsonData["server_park"] = serverPark;
-            jsonData["status"] = status;
-            return jsonData;
-        }
-
-        /// <summary>
-        /// Sends a status message to RabbitMQ.
-        /// </summary>
-        private static void SendStatus(Dictionary<string, string> jsonData)
-        {
-            string message = new JavaScriptSerializer().Serialize(jsonData);
-            var body = Encoding.UTF8.GetBytes(message);
-            string caseStatusQueueName = ConfigurationManager.AppSettings["CaseStatusQueueName"];
-           // channel.BasicPublish(exchange: "", routingKey: caseStatusQueueName, body: body);
-            _logger.Info("Message sent to RabbitMQ " + caseStatusQueueName + " queue - " + message);
-        }
         internal interface IDoJob : IJob
         {
         }

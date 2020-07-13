@@ -1,5 +1,6 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Providers;
 using BlaiseNisraCaseProcessor.Services;
 using Moq;
 using NUnit.Framework;

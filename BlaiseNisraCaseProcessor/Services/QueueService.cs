@@ -1,5 +1,7 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Providers;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 
 namespace BlaiseNisraCaseProcessor.Services
 {

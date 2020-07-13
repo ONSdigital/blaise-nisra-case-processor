@@ -2,6 +2,7 @@
 using BlaiseNisraCaseProcessor.Enums;
 using BlaiseNisraCaseProcessor.Helpers;
 using BlaiseNisraCaseProcessor.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using Newtonsoft.Json;
 using StatNeth.Blaise.API.DataRecord;
 

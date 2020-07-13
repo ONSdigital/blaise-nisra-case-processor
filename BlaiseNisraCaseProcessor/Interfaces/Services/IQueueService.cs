@@ -1,5 +1,5 @@
 ﻿
-namespace BlaiseNisraCaseProcessor.Interfaces
+namespace BlaiseNisraCaseProcessor.Interfaces.Services
 {
     public interface IQueueService
     {

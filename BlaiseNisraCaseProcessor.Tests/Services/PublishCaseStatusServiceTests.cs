@@ -1,6 +1,8 @@
 ﻿using BlaiseCaseMonitor.Services;
 using BlaiseNisraCaseProcessor.Enums;
 using BlaiseNisraCaseProcessor.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Mappers;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using Moq;
 using NUnit.Framework;
