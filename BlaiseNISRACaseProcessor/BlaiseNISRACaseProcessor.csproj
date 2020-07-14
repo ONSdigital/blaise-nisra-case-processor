@@ -84,13 +84,13 @@
       <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.7.10.2\lib\net472\Blaise.Nuget.Api.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.7.14.2\lib\net472\Blaise.Nuget.Api.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.7.10.2\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.7.14.2\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.7.10.2\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.7.14.2\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.6.18.3\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
@@ -248,6 +248,9 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.IO.Abstractions, Version=12.0.0.0, Culture=neutral, PublicKeyToken=96bf224d23c43e59, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Abstractions.12.0.5\lib\net461\System.IO.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
@@ -325,11 +328,12 @@
     <Compile Include="FileMethods.cs" />
     <Compile Include="DataRecordMethods.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\ParameterValidationHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
-    <Compile Include="Interfaces\Services\IJobSchedulerService.cs" />
-    <Compile Include="Interfaces\Services\IPublishCaseStatusService.cs" />
-    <Compile Include="Interfaces\Services\IQueueService.cs" />
+    <Compile Include="Interfaces\Services\Jobs\IJobSchedulerService.cs" />
+    <Compile Include="Interfaces\Services\Publish\IPublishCaseStatusService.cs" />
+    <Compile Include="Interfaces\Services\Publish\IQueueService.cs" />
     <Compile Include="Interfaces\Providers\IStorageClientProvider.cs" />
     <Compile Include="Mappers\CaseMapper.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -349,9 +353,26 @@
     <Compile Include="Providers\ConfigurationProvider.cs" />
     <Compile Include="Providers\LocalStorageClientProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
-    <Compile Include="Services\JobSchedulerService.cs" />
-    <Compile Include="Services\PublishCaseStatusService.cs" />
-    <Compile Include="Services\QueueService.cs" />
+    <Compile Include="Services\Blaise\BlaiseApiService.cs" />
+    <Compile Include="Interfaces\Services\Data\IUpdateDataRecordByHoutService.cs" />
+    <Compile Include="Interfaces\Services\Data\IUpdateRecordByWebFormStatusService.cs" />
+    <Compile Include="Services\Data\UpdateDataRecordByHoutService.cs" />
+    <Compile Include="Services\Data\UpdateRecordByWebFormStatusService.cs" />
+    <Compile Include="Services\Files\CloudBucketFileService.cs" />
+    <Compile Include="Interfaces\Services\Files\ICloudBucketFileService.cs" />
+    <Compile Include="Services\Files\FileService.cs" />
+    <Compile Include="Interfaces\Services\Files\IFileService.cs" />
+    <Compile Include="Interfaces\Services\Files\IImportFileService.cs" />
+    <Compile Include="Interfaces\Services\Blaise\IBlaiseApiService.cs" />
+    <Compile Include="Services\Files\ImportFileService.cs" />
+    <Compile Include="Interfaces\Services\Files\IProcessFilesService.cs" />
+    <Compile Include="Interfaces\Services\IProcessNisraFilesService.cs" />
+    <Compile Include="Services\Jobs\JobSchedulerService.cs" />
+    <Compile Include="Services\Files\ProcessFilesService.cs" />
+    <Compile Include="Jobs\ProcessNisraFilesJob.cs" />
+    <Compile Include="Services\ProcessNisraFilesService.cs" />
+    <Compile Include="Services\Publish\PublishCaseStatusService.cs" />
+    <Compile Include="Services\Publish\QueueService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

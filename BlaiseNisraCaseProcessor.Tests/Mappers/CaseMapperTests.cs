@@ -77,7 +77,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
 
             //assert
             Assert.NotNull(result);
-            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""Case Completed""}", 
+            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}", 
                 result);
         }
 
@@ -111,7 +111,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
 
             //assert
             Assert.NotNull(result);
-            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""Case Completed""}",
+            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}",
                 result);
         }
 

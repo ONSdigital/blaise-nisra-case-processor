@@ -1,4 +1,4 @@
-﻿namespace BlaiseNisraCaseProcessor.Interfaces.Services
+﻿namespace BlaiseNisraCaseProcessor.Interfaces.Services.Jobs
 {
     public interface IJobSchedulerService
     {

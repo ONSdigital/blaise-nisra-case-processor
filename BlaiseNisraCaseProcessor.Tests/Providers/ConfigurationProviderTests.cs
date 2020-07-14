@@ -34,5 +34,44 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             //assert
             Assert.AreEqual("TopicIdTest", result);
         }
+
+        [Test]
+        public void Given_I_Call_BucketName_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.BucketName;
+
+            //assert
+            Assert.AreEqual("BucketNameTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_LocalProcessFolder_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.LocalProcessFolder;
+
+            //assert
+            Assert.AreEqual("LocalProcessFolderTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_CloudStorageKey_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.CloudStorageKey;
+
+            //assert
+            Assert.AreEqual("CloudStorageKeyTest", result);
+        }
     }
 }

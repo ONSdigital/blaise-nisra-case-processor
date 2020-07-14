@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using BlaiseNisraCaseProcessor.Enums;
 using BlaiseNisraCaseProcessor.Helpers;
-using BlaiseNisraCaseProcessor.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using Newtonsoft.Json;
 using StatNeth.Blaise.API.DataRecord;
@@ -28,6 +27,19 @@ namespace BlaiseNisraCaseProcessor.Mappers
             jsonData["status"] = EnumHelper.GetEnumDescription(caseStatusType);
 
             return JsonConvert.SerializeObject(jsonData);
+        }
+
+        public Dictionary<string, string> MapFieldDictionaryFromRecordFields(IDataRecord2 recordData)
+        {
+            var fieldDictionary = new Dictionary<string, string>();
+            var dataFields = recordData.GetDataFields();
+
+            foreach (var dataField in dataFields)
+            {
+                fieldDictionary.Add(dataField.FullName, dataField.DataValue.ValueAsText);
+            }
+
+            return fieldDictionary;
         }
     }
 }
