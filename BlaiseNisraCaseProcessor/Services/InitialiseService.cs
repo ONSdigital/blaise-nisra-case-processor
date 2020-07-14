@@ -1,7 +1,7 @@
 ﻿using System;
+using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
-using BlaiseNisraCaseProcessor.Interfaces.Services.Jobs;
 using log4net;
 
 namespace BlaiseNisraCaseProcessor.Services
@@ -9,26 +9,29 @@ namespace BlaiseNisraCaseProcessor.Services
     public class InitialiseService : IInitialiseService
     {
         private readonly ILog _logger;
+        private readonly IQueueService _queueService;
+        private readonly IMessageHandler _messageHandler;
         private readonly IConfigurationProvider _configurationProvider;
-        private readonly IJobSchedulerService _jobSchedulerService;
 
         public InitialiseService(
-            ILog logger, 
-            IConfigurationProvider configurationProvider, 
-            IJobSchedulerService jobSchedulerService)
+            ILog logger,
+            IQueueService queueService,
+            IMessageHandler messageHandler,
+            IConfigurationProvider configurationProvider)
         {
             _logger = logger;
+            _queueService = queueService;
+            _messageHandler = messageHandler;
             _configurationProvider = configurationProvider;
-            _jobSchedulerService = jobSchedulerService;
         }
 
         public void Start()
         {
-            _logger.Info($"Nisra Case processing service service on '{_configurationProvider.VmName}'");
-          
+            _logger.Info($"Starting Nisra Case processing service on '{_configurationProvider.VmName}'");
+
             try
             {
-                _jobSchedulerService.ScheduleJob();
+                _queueService.Subscribe(_messageHandler);
             }
             catch (Exception ex)
             {
@@ -40,6 +43,10 @@ namespace BlaiseNisraCaseProcessor.Services
 
         public void Stop()
         {
+            _logger.Info($"Stopping Nisra Case processing service on '{_configurationProvider.VmName}'");
+
+            _queueService.CancelAllSubscriptions();
+
             _logger.Info($"Nisra Case processing service stopped on '{_configurationProvider.VmName}'");
         }
     }

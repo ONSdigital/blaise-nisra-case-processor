@@ -6,7 +6,11 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
     {
         string ProjectId { get; }
 
-        string TopicId { get; }
+        string PublishTopicId { get; }
+
+        string SubscriptionTopicId { get; }
+
+        string SubscriptionId { get; }
 
         string LocalProcessFolder { get; }
 
@@ -15,8 +19,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
         IList<string> IgnoreFilesInBucketList { get; }
 
         string CloudStorageKey { get; }
-
-        string QuartzCron { get; }
 
         string VmName { get; }
     }

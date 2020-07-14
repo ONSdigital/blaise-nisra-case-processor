@@ -23,16 +23,42 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
         }
 
         [Test]
-        public void Given_I_Call_TopicId_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_PublishTopicId_I_Get_The_Correct_Value_Back()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
             //act
-            var result = configurationProvider.TopicId;
+            var result = configurationProvider.PublishTopicId;
 
             //assert
-            Assert.AreEqual("TopicIdTest", result);
+            Assert.AreEqual("PublishTopicIdTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_SubscriptionTopicId_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.SubscriptionTopicId;
+
+            //assert
+            Assert.AreEqual("SubscriptionTopicIdTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_SubscriptionId_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.SubscriptionId;
+
+            //assert
+            Assert.AreEqual("SubscriptionIdTest", result);
         }
 
         [Test]
@@ -72,19 +98,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
 
             //assert
             Assert.AreEqual("CloudStorageKeyTest", result);
-        }
-
-        [Test]
-        public void Given_I_Call_QuartzCron_I_Get_The_Correct_Value_Back()
-        {
-            //arrange
-            var configurationProvider = new ConfigurationProvider();
-
-            //act
-            var result = configurationProvider.QuartzCron;
-
-            //assert
-            Assert.AreEqual("0 30 * * * ? *", result);
         }
     }
 }

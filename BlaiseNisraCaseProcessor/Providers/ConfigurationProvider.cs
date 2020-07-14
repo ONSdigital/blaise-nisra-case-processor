@@ -9,7 +9,11 @@ namespace BlaiseNisraCaseProcessor.Providers
     {
         public string ProjectId => ConfigurationManager.AppSettings["ProjectId"];
 
-        public string TopicId => ConfigurationManager.AppSettings["TopicId"];
+        public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
+
+        public string PublishTopicId => ConfigurationManager.AppSettings["PublishTopicId"];
+
+        public string SubscriptionTopicId => ConfigurationManager.AppSettings["SubscriptionTopicId"];
 
         public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
 
@@ -32,7 +36,6 @@ namespace BlaiseNisraCaseProcessor.Providers
 
         public string CloudStorageKey => ConfigurationManager.AppSettings["CloudStorageKey"];
 
-        public string QuartzCron => ConfigurationManager.AppSettings["QuartzCron"];
         public string VmName => Environment.MachineName;
     }
 }

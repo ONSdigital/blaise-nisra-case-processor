@@ -1,4 +1,6 @@
-﻿namespace BlaiseNisraCaseProcessor
+﻿using System.ServiceProcess;
+
+namespace BlaiseNisraCaseProcessor
 {
     static class Program
     {
@@ -15,7 +17,7 @@
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 
-                new BlaiseNISRACaseProcessor() 
+                new BlaiseNisraCaseProcessor() 
             };
             ServiceBase.Run(ServicesToRun);
 #endif

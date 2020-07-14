@@ -22,7 +22,6 @@ namespace BlaiseNisraCaseProcessor.Tests
 
             //assert
             Assert.NotNull(result.InitialiseService);
-
         }
     }
 }

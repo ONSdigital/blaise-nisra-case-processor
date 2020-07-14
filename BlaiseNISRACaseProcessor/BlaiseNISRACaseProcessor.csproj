@@ -101,12 +101,6 @@
     <Reference Include="Blaise.Nuget.PubSub.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.6.18.3\lib\net472\Blaise.Nuget.PubSub.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -204,9 +198,6 @@
     </Reference>
     <Reference Include="Nito.Disposables, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nito.Disposables.2.0.0\lib\netstandard2.0\Nito.Disposables.dll</HintPath>
-    </Reference>
-    <Reference Include="Quartz, Version=2.6.2.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Quartz.2.6.2\lib\net40\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
       <HintPath>..\packages\StatNeth.Blaise.API.x64.5.7.5\lib\net472\StatNeth.Blaise.API.dll</HintPath>
@@ -331,10 +322,10 @@
     <Compile Include="Helpers\ParameterValidationHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
+    <Compile Include="Interfaces\Providers\IIocProvider.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
-    <Compile Include="Interfaces\Services\Jobs\IJobSchedulerService.cs" />
-    <Compile Include="Interfaces\Services\Publish\IPublishCaseStatusService.cs" />
-    <Compile Include="Interfaces\Services\Publish\IQueueService.cs" />
+    <Compile Include="Interfaces\Services\IPublishCaseStatusService.cs" />
+    <Compile Include="Interfaces\Services\IQueueService.cs" />
     <Compile Include="Interfaces\Providers\IStorageClientProvider.cs" />
     <Compile Include="Mappers\CaseMapper.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -354,27 +345,25 @@
     <Compile Include="Providers\ConfigurationProvider.cs" />
     <Compile Include="Providers\LocalStorageClientProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
-    <Compile Include="Services\Blaise\BlaiseApiService.cs" />
-    <Compile Include="Interfaces\Services\Data\IUpdateDataRecordByHoutService.cs" />
-    <Compile Include="Interfaces\Services\Data\IUpdateRecordByWebFormStatusService.cs" />
-    <Compile Include="Services\Data\UpdateDataRecordByHoutService.cs" />
-    <Compile Include="Services\Data\UpdateRecordByWebFormStatusService.cs" />
-    <Compile Include="Services\Files\CloudBucketFileService.cs" />
-    <Compile Include="Interfaces\Services\Files\ICloudBucketFileService.cs" />
-    <Compile Include="Services\Files\FileService.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileService.cs" />
-    <Compile Include="Interfaces\Services\Files\IImportFileService.cs" />
-    <Compile Include="Interfaces\Services\Blaise\IBlaiseApiService.cs" />
-    <Compile Include="Services\Files\ImportFileService.cs" />
-    <Compile Include="Interfaces\Services\Files\IProcessFilesService.cs" />
-    <Compile Include="Interfaces\Services\IProcessNisraFilesService.cs" />
+    <Compile Include="Providers\UnityProvider.cs" />
+    <Compile Include="Services\BlaiseApiService.cs" />
+    <Compile Include="Interfaces\Services\IUpdateDataRecordByHoutService.cs" />
+    <Compile Include="Interfaces\Services\IUpdateRecordByWebFormStatusService.cs" />
+    <Compile Include="Services\UpdateDataRecordByHoutService.cs" />
+    <Compile Include="Services\UpdateRecordByWebFormStatusService.cs" />
+    <Compile Include="Services\CloudBucketFileService.cs" />
+    <Compile Include="Interfaces\Services\ICloudBucketFileService.cs" />
+    <Compile Include="Services\FileService.cs" />
+    <Compile Include="Interfaces\Services\IFileService.cs" />
+    <Compile Include="Interfaces\Services\IImportFileService.cs" />
+    <Compile Include="Interfaces\Services\IBlaiseApiService.cs" />
+    <Compile Include="Services\ImportFileService.cs" />
+    <Compile Include="Interfaces\Services\IProcessFilesService.cs" />
     <Compile Include="Services\InitialiseService.cs" />
-    <Compile Include="Services\Jobs\JobSchedulerService.cs" />
-    <Compile Include="Services\Files\ProcessFilesService.cs" />
-    <Compile Include="Jobs\ProcessNisraFilesJob.cs" />
-    <Compile Include="Services\ProcessNisraFilesService.cs" />
-    <Compile Include="Services\Publish\PublishCaseStatusService.cs" />
-    <Compile Include="Services\Publish\QueueService.cs" />
+    <Compile Include="Services\ProcessFilesService.cs" />
+    <Compile Include="MessageHandler\NisraMessageHandler.cs" />
+    <Compile Include="Services\PublishCaseStatusService.cs" />
+    <Compile Include="Services\QueueService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -382,10 +371,18 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="PublicKeys\dev-key.gpg" />
-    <None Include="PublicKeys\local-key.gpg" />
-    <None Include="PublicKeys\preprod-key.gpg" />
-    <None Include="PublicKeys\prod-key.gpg" />
+    <None Include="PublicKeys\dev-key.gpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="PublicKeys\local-key.gpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="PublicKeys\preprod-key.gpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="PublicKeys\prod-key.gpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">
