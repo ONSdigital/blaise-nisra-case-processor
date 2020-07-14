@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BlaiseNisraCaseProcessor.Enums;
 using BlaiseNisraCaseProcessor.Helpers;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
+using BlaiseNisraCaseProcessor.Models;
 using Newtonsoft.Json;
 using StatNeth.Blaise.API.DataRecord;
 
@@ -40,6 +42,19 @@ namespace BlaiseNisraCaseProcessor.Mappers
             }
 
             return fieldDictionary;
+        }
+
+        public NisraCaseActionModel MapToNisraCaseActionModel(string message)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<NisraCaseActionModel>(message);
+            }
+            catch //horrible I know but we currently don't really care about the message as it is only a trigger
+            {
+            }
+
+            return new NisraCaseActionModel { Action = ActionType.NotSupported };
         }
     }
 }

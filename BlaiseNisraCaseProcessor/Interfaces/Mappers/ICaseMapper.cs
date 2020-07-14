@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BlaiseNisraCaseProcessor.Enums;
+using BlaiseNisraCaseProcessor.Models;
 using StatNeth.Blaise.API.DataRecord;
 
 namespace BlaiseNisraCaseProcessor.Interfaces.Mappers
@@ -9,5 +10,7 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Mappers
         string MapToSerializedJson(IDataRecord recordData, string instrumentName, string serverPark, string primaryKey, CaseStatusType caseStatusType);
 
         Dictionary<string, string> MapFieldDictionaryFromRecordFields(IDataRecord2 recordData);
+
+        NisraCaseActionModel MapToNisraCaseActionModel(string message);
     }
 }

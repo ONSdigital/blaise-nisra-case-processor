@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using BlaiseNisraCaseProcessor.Enums;
+using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.MessageHandler;
+using BlaiseNisraCaseProcessor.Models;
 using log4net;
 using Moq;
 using NUnit.Framework;
@@ -13,8 +16,10 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
         private Mock<ILog> _loggingMock;
         private Mock<ICloudBucketFileService> _cloudBucketFileServiceMock;
         private Mock<IProcessFilesService> _processFilesServiceMock;
+        private Mock<ICaseMapper> _mapperMock;
 
         private readonly string _message;
+        private readonly NisraCaseActionModel _actionModel;
         private readonly List<string> _availableFiles;
 
         private NisraMessageHandler _sut;
@@ -22,6 +27,7 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
         public NisraMessageHandlerTests()
         {
             _message = "Message";
+            _actionModel = new NisraCaseActionModel { Action = ActionType.Process};
             _availableFiles = new List<string> { "File1.bdbx", "File2.bdbx" };
         }
 
@@ -34,10 +40,46 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
 
             _processFilesServiceMock = new Mock<IProcessFilesService>();
 
+            _mapperMock = new Mock<ICaseMapper>();
+            _mapperMock.Setup(m => m.MapToNisraCaseActionModel(_message)).Returns(_actionModel);
+
             _sut = new NisraMessageHandler(
                 _loggingMock.Object,
                 _cloudBucketFileServiceMock.Object,
-                _processFilesServiceMock.Object);
+                _processFilesServiceMock.Object,
+                _mapperMock.Object);
+        }
+
+        [Test]
+        public void Given_Process_Action_Is_Not_Set_When_I_Call_HandleMessage_Then_True_Is_Returned()
+        {
+            //arrange
+            _cloudBucketFileServiceMock.Setup(c => c.GetFilesFromBucket()).Returns(_availableFiles);
+
+            _actionModel.Action = ActionType.NotSupported;
+
+            //act
+            var result = _sut.HandleMessage(_message);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void Given_Process_Action_Is_Not_Set_When_I_Call_HandleMessage_Then_Nothing_Is_Processed()
+        {
+            //arrange
+            _cloudBucketFileServiceMock.Setup(c => c.GetFilesFromBucket()).Returns(_availableFiles);
+
+            _actionModel.Action = ActionType.NotSupported;
+
+            //act
+            _sut.HandleMessage(_message);
+
+            //assert
+            _cloudBucketFileServiceMock.VerifyNoOtherCalls();
+            _processFilesServiceMock.VerifyNoOtherCalls();
         }
 
         [Test]

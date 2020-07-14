@@ -2,6 +2,7 @@
 using BlaiseNisraCaseProcessor.Enums;
 using BlaiseNisraCaseProcessor.Helpers;
 using BlaiseNisraCaseProcessor.Mappers;
+using BlaiseNisraCaseProcessor.Models;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -169,6 +170,38 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
             Assert.AreEqual(field1Value, result[field1Name]);
             Assert.IsTrue(result.ContainsKey(field2Name));
             Assert.AreEqual(field2Value, result[field2Name]);
+        }
+
+        [Test]
+        public void Given_A_Message_With_A_Process_Action_When_I_Call_MapToNisraCaseActionModel_Then_I_Get_An_Expected_Model_Back()
+        {
+            //arrange
+            const string message =
+                @"{ ""ACTION"":""process""}";
+
+            //act
+            var result = _sut.MapToNisraCaseActionModel(message);
+
+            //assert`
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<NisraCaseActionModel>(result);
+            Assert.AreEqual(ActionType.Process, result.Action);
+        }
+
+        [Test]
+        public void Given_An_Invalid_Message_With_A_Process_Action_When_I_Call_MapToNisraCaseActionModel_Then_I_Get_A_Default_Model_Back()
+        {
+            //arrange
+            const string message =
+                @"{ ""ACTION"":""none""}";
+
+            //act
+            var result = _sut.MapToNisraCaseActionModel(message);
+
+            //assert`
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<NisraCaseActionModel>(result);
+            Assert.AreEqual(ActionType.NotSupported, result.Action);
         }
     }
 }
