@@ -132,6 +132,7 @@
     <Compile Include="Mappers\CaseMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ConfigurationProviderTests.cs" />
+    <Compile Include="Services\Blaise\BlaiseApiServiceTests.cs" />
     <Compile Include="Services\Data\UpdateRecordByWebFormStatusServiceTests.cs" />
     <Compile Include="Services\Data\UpdateDataRecordByHoutServiceTests.cs" />
     <Compile Include="Services\Files\FileServiceTests.cs" />

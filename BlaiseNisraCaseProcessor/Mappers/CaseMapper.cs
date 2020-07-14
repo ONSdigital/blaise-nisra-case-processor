@@ -36,7 +36,7 @@ namespace BlaiseNisraCaseProcessor.Mappers
 
             foreach (var dataField in dataFields)
             {
-                fieldDictionary.Add(dataField.FullName, dataField.DataValue.ValueAsText);
+                fieldDictionary[dataField.FullName] = dataField.DataValue.ValueAsText;
             }
 
             return fieldDictionary;
