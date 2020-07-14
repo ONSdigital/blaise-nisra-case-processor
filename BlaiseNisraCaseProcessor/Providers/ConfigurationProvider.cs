@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 
@@ -30,5 +31,8 @@ namespace BlaiseNisraCaseProcessor.Providers
         } 
 
         public string CloudStorageKey => ConfigurationManager.AppSettings["CloudStorageKey"];
+
+        public string QuartzCron => ConfigurationManager.AppSettings["QuartzCron"];
+        public string VmName => Environment.MachineName;
     }
 }

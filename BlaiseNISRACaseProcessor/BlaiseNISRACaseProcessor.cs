@@ -2,19 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.IO.Abstractions;
 using System.Security;
 using System.ServiceProcess;
-using System.Text;
-using System.Web.Script.Serialization;
+using Blaise.Nuget.Api;
+using Blaise.Nuget.Api.Contracts.Interfaces;
+using Blaise.Nuget.PubSub.Api;
+using Blaise.Nuget.PubSub.Contracts.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Mappers;
+using BlaiseNisraCaseProcessor.Interfaces.Providers;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
+using BlaiseNisraCaseProcessor.Interfaces.Services.Blaise;
+using BlaiseNisraCaseProcessor.Interfaces.Services.Data;
+using BlaiseNisraCaseProcessor.Interfaces.Services.Files;
+using BlaiseNisraCaseProcessor.Interfaces.Services.Jobs;
+using BlaiseNisraCaseProcessor.Interfaces.Services.Publish;
+using BlaiseNisraCaseProcessor.Jobs;
+using BlaiseNisraCaseProcessor.Mappers;
+using BlaiseNisraCaseProcessor.Providers;
+using BlaiseNisraCaseProcessor.Services;
+using BlaiseNisraCaseProcessor.Services.Blaise;
+using BlaiseNisraCaseProcessor.Services.Data;
+using BlaiseNisraCaseProcessor.Services.Files;
+using BlaiseNisraCaseProcessor.Services.Jobs;
+using BlaiseNisraCaseProcessor.Services.Publish;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
+using log4net;
 using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Triggers;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.DataRecord;
 using StatNeth.Blaise.API.Meta;
 using StatNeth.Blaise.API.ServerManager;
+using Unity;
 
 namespace BlaiseNisraCaseProcessor
 {
@@ -23,12 +43,63 @@ namespace BlaiseNisraCaseProcessor
         // Instantiate logger.
         private static readonly log4net.ILog _logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        // Instantiate scheduler.
-        private static IScheduler _scheduler;
+        public IInitialiseService InitialiseService;
 
         public BlaiseNisraCaseProcessor()
         {
             InitializeComponent();
+            var unityContainer = new UnityContainer();
+
+            //blaise services
+            unityContainer.RegisterType<IFluentBlaiseApi, FluentBlaiseApi>();
+
+            //system abstractions
+            unityContainer.RegisterType<IFileSystem, FileSystem>();
+
+            //providers
+            unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
+
+            // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
+            // Update the credFilePath variable with the full path to the file.
+#if (DEBUG)
+            unityContainer.RegisterType<IStorageClientProvider, LocalStorageClientProvider>();
+            var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
+
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
+#else
+            // When running in Release, the service will be running as compute account which will have access to all buckets.
+            unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
+#endif
+
+            unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
+            unityContainer.RegisterFactory<ILog>(f => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
+
+            //mappers
+            unityContainer.RegisterType<ICaseMapper, CaseMapper>();
+
+            //jobs
+            unityContainer.RegisterType<IJob, ProcessNisraFilesJob>();
+            unityContainer.RegisterType<IJobSchedulerService, JobSchedulerService>();
+
+            //services   
+            unityContainer.RegisterType<IPublishCaseStatusService, PublishCaseStatusService>();
+            unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
+            unityContainer.RegisterType<IUpdateDataRecordByHoutService, UpdateDataRecordByHoutService>();
+            unityContainer.RegisterType<IUpdateRecordByWebFormStatusService, UpdateRecordByWebFormStatusService>();
+            unityContainer.RegisterType<ICloudBucketFileService, CloudBucketFileService>();
+            unityContainer.RegisterType<IFileService, FileService>();
+            unityContainer.RegisterType<IImportFileService, ImportFileService>();
+            unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();
+            unityContainer.RegisterType<IProcessNisraFilesService, ProcessNisraFilesService>();
+
+            //queue service
+            unityContainer.RegisterType<IQueueService, QueueService>();
+
+            //main service
+            unityContainer.RegisterType<IInitialiseService, InitialiseService>();
+
+            //resolve all dependencies as CaseCreationService is the entry point
+            InitialiseService = unityContainer.Resolve<IInitialiseService>();
         }
 
         public void OnDebug()
@@ -38,36 +109,41 @@ namespace BlaiseNisraCaseProcessor
 
         protected override void OnStart(string[] args)
         {
-            // Setup Quartz job.
-			_logger.Info("Blaise NISRA Case Processor service started.");
-            ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            _scheduler = schedulerFactory.GetScheduler();
-            _scheduler.Start();
-            AddJob();
+            InitialiseService.Start();
         }
 
-        public static void AddJob()
-        {
-            string quartzCron = ConfigurationManager.AppSettings["QuartzCron"];
-            _logger.Info("Quartz Cron - " + quartzCron);
-            IDoJob job = new BlaiseNISRACaseProcessorJob();
-            var jobDetail = new JobDetailImpl("job", "group", job.GetType());
-            var triggerDetail = new CronTriggerImpl("trigger", "group", quartzCron);
-            _scheduler.ScheduleJob(jobDetail, triggerDetail);
-        }
+   //     protected override void OnStart(string[] args)
+   //     {
+   //         // Setup Quartz job.
+			//_logger.Info("Blaise NISRA Case Processor service started.");
+   //         ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
+   //         _scheduler = schedulerFactory.GetScheduler();
+   //         _scheduler.Start();
+   //         AddJob();
+   //     }
 
-        public class BlaiseNISRACaseProcessorJob : IDoJob
-        {
-            public void Execute(IJobExecutionContext context)
-            {
-                _logger.Info("Quartz job triggered.");
-                Run();
-            }
-        }
+        //public static void AddJob()
+        //{
+        //    string quartzCron = ConfigurationManager.AppSettings["QuartzCron"];
+        //    _logger.Info("Quartz Cron - " + quartzCron);
+        //    IDoJob job = new BlaiseNISRACaseProcessorJob();
+        //    var jobDetail = new JobDetailImpl("job", "group", job.GetType());
+        //    var triggerDetail = new CronTriggerImpl("trigger", "group", quartzCron);
+        //    _scheduler.ScheduleJob(jobDetail, triggerDetail);
+        //}
+
+        //public class BlaiseNISRACaseProcessorJob : IDoJob
+        //{
+        //    public void Execute(IJobExecutionContext context)
+        //    {
+        //        _logger.Info("Quartz job triggered.");
+        //        Run();
+        //    }
+        //}
 
         protected override void OnStop()
         {
-            _logger.Info("Blaise NISRA Case Processor service stopped.");
+            InitialiseService.Stop();
         }
 
         public static void Run()

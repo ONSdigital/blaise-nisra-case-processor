@@ -73,5 +73,18 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             //assert
             Assert.AreEqual("CloudStorageKeyTest", result);
         }
+
+        [Test]
+        public void Given_I_Call_QuartzCron_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.QuartzCron;
+
+            //assert
+            Assert.AreEqual("0 30 * * * ? *", result);
+        }
     }
 }

@@ -18,7 +18,6 @@ namespace BlaiseNisraCaseProcessor.Jobs
             _processNisraFilesService = processNisraFilesService;
         }
 
-
         public void Execute(IJobExecutionContext context)
         {
             _logger.Info($"Executing job 'DownloadAndProcessAvailableFiles' at '{DateTime.Now.TimeOfDay}' on '{DateTime.Now.Date}'");

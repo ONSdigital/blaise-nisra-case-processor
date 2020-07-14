@@ -2,6 +2,6 @@
 {
     public interface IJobSchedulerService
     {
-        
+        void ScheduleJob();
     }
 }

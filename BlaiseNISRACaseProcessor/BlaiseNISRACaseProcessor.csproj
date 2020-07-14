@@ -331,6 +331,7 @@
     <Compile Include="Helpers\ParameterValidationHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
+    <Compile Include="Interfaces\Services\IInitialiseService.cs" />
     <Compile Include="Interfaces\Services\Jobs\IJobSchedulerService.cs" />
     <Compile Include="Interfaces\Services\Publish\IPublishCaseStatusService.cs" />
     <Compile Include="Interfaces\Services\Publish\IQueueService.cs" />
@@ -367,6 +368,7 @@
     <Compile Include="Services\Files\ImportFileService.cs" />
     <Compile Include="Interfaces\Services\Files\IProcessFilesService.cs" />
     <Compile Include="Interfaces\Services\IProcessNisraFilesService.cs" />
+    <Compile Include="Services\InitialiseService.cs" />
     <Compile Include="Services\Jobs\JobSchedulerService.cs" />
     <Compile Include="Services\Files\ProcessFilesService.cs" />
     <Compile Include="Jobs\ProcessNisraFilesJob.cs" />
