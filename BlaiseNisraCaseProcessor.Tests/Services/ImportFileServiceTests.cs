@@ -12,8 +12,8 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
-        private Mock<IUpdateDataRecordByHoutService> _updateByHoutServiceMock;
-        private Mock<IUpdateRecordByWebFormStatusService> _updateByWebFormStatusMock;
+        private Mock<IUpdateCaseByHoutService> _updateByHoutServiceMock;
+        private Mock<IUpdateCaseServiceService> _updateByWebFormStatusMock;
 
         private Mock<IDataRecord> _newDataRecordMock;
         private Mock<IDataRecord> _existingDataRecordMock;
@@ -48,9 +48,9 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock = new Mock<IBlaiseApiService>();
             _blaiseApiServiceMock.Setup(b => b.GetCasesFromFile(_databaseFileName)).Returns(_dataSetMock.Object);
 
-            _updateByHoutServiceMock = new Mock<IUpdateDataRecordByHoutService>();
+            _updateByHoutServiceMock = new Mock<IUpdateCaseByHoutService>();
 
-            _updateByWebFormStatusMock = new Mock<IUpdateRecordByWebFormStatusService>();
+            _updateByWebFormStatusMock = new Mock<IUpdateCaseServiceService>();
 
             _sut = new ImportFileService(
                 _loggingMock.Object,
@@ -143,7 +143,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
             _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
 
-            _updateByWebFormStatusMock.Verify(v => v.UpdateDataRecordViaWebFormStatus(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+            _updateByWebFormStatusMock.Verify(v => v.UpdateCase(_newDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _surveyName, _serialNumber), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
@@ -184,7 +184,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
             _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
 
-            _updateByHoutServiceMock.Verify(v => v.UpdateDataRecordByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+            _updateByHoutServiceMock.Verify(v => v.UpdateCaseByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _surveyName, _serialNumber), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
@@ -224,7 +224,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
             _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
 
-            _updateByHoutServiceMock.Verify(v => v.UpdateDataRecordByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+            _updateByHoutServiceMock.Verify(v => v.UpdateCaseByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _surveyName, _serialNumber), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();

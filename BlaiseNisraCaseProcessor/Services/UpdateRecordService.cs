@@ -2,26 +2,30 @@
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
+using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class UpdateRecordByWebFormStatusService : IUpdateRecordByWebFormStatusService
+    public class UpdateRecordService : IUpdateCaseServiceService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IUpdateDataRecordByHoutService _updateByHoutService;
+        private readonly IUpdateCaseByHoutService _updateByHoutService;
+        private readonly IPublishCaseStatusService _publishCaseStatusService;
 
-        public UpdateRecordByWebFormStatusService(
+        public UpdateRecordService(
             ILog logger,
             IBlaiseApiService blaiseApiService, 
-            IUpdateDataRecordByHoutService updateByHoutService)
+            IUpdateCaseByHoutService updateByHoutService, 
+            IPublishCaseStatusService publishCaseStatusService)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
             _updateByHoutService = updateByHoutService;
+            _publishCaseStatusService = publishCaseStatusService;
         }
 
-        public void UpdateDataRecordViaWebFormStatus(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark,
+        public void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark,
             string surveyName, string serialNumber)
         {
             var newWebFormStatus = _blaiseApiService.GetWebFormStatus(newDataRecord);
@@ -39,7 +43,7 @@ namespace BlaiseNisraCaseProcessor.Services
                 if (newWebFormStatus == WebFormStatusType.Complete)
                 {
                     _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status is set as complete in both the existing record and NISRA file");
-                    _updateByHoutService.UpdateDataRecordByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                    _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                     return;
                 }
 
@@ -52,19 +56,20 @@ namespace BlaiseNisraCaseProcessor.Services
                 if (newWebFormStatus == WebFormStatusType.Partial)
                 {
                     _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status is set as partial in both the existing record and NISRA file");
-                    _updateByHoutService.UpdateDataRecordByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                    _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                     return;
                 }
 
                 _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the Web form status is set as complete for the existing but not in teh NISRA file");
-                _blaiseApiService.UpdateDataRecord(newDataRecord, existingDataRecord, serverPark, surveyName);
+                _blaiseApiService.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName);
+                _publishCaseStatusService.PublishCaseStatus(newDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);
                 return;
             }
 
             if (newWebFormStatus != WebFormStatusType.NotSpecified)
             {
                 _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status of the NISRA file is '{newWebFormStatus}'");
-                _updateByHoutService.UpdateDataRecordByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                 return;
             }
 

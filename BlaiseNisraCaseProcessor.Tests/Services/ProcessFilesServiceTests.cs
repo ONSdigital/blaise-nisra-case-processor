@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Services;
 using log4net;
@@ -11,11 +12,10 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
-        private Mock<IFileService> _fileServiceMock;
         private Mock<IImportFileService> _importFileServiceMock;
+        private MockFileSystem _mockFileSystem;
 
         private readonly List<string> _availableFiles;
-        private readonly List<string> _databaseFiles;
         private readonly List<string> _serverParks;
         private readonly string _databaseFileName;
         private readonly string _serverParkName;
@@ -27,10 +27,9 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         {
             _serverParkName = "Park1";
             _surveyName = "OPN123";
-            _databaseFileName = "OPN123.bdbx";
+            _databaseFileName = "OPN123.bdix";
 
             _availableFiles = new List<string> { "OPN123.bdbx", "OPN123.bdix" };
-            _databaseFiles = new List<string> { _databaseFileName };
             _serverParks = new List<string> { _serverParkName };
         }
 
@@ -43,34 +42,29 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.GetAvailableServerParks()).Returns(_serverParks);
             _blaiseApiServiceMock.Setup(b => b.SurveyExists(_serverParkName, _surveyName)).Returns(true);
 
-            _fileServiceMock = new Mock<IFileService>();
-            _fileServiceMock.Setup(f => f.GetDatabaseFilesAvailable(_availableFiles)).Returns(_databaseFiles);
-            _fileServiceMock.Setup(f => f.GetSurveyNameFromFile(_databaseFileName)).Returns(_surveyName);
+            _mockFileSystem = new MockFileSystem();
+            _mockFileSystem.AddFile(_databaseFileName, new MockFileData(""));
 
             _importFileServiceMock = new Mock<IImportFileService>();
 
             _sut = new ProcessFilesService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
-                _fileServiceMock.Object,
-                _importFileServiceMock.Object);
+                _importFileServiceMock.Object,
+                _mockFileSystem);
         }
 
         [Test]
         public void Given_No_Database_Files_Are_In_The_Files_List_When_I_Call_ProcessFiles_Then_Nothing_Is_Processed()
         {
             //arrange
-            _fileServiceMock.Setup(f => f.GetDatabaseFilesAvailable(It.IsAny<List<string>>()))
-                .Returns(new List<string>());
+            var fileListWithNoDatabaseFiles = new List<string> { "OPN123.bdbx", "OPN123.bix" };
 
             //act
-            _sut.ProcessFiles(_availableFiles);
+            _sut.ProcessFiles(fileListWithNoDatabaseFiles);
 
             //assert
-            _fileServiceMock.Verify(v => v.GetDatabaseFilesAvailable(_availableFiles), Times.Once);
-
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _fileServiceMock.VerifyNoOtherCalls();
             _importFileServiceMock.VerifyNoOtherCalls();
         }
 
@@ -78,17 +72,15 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public void Given_DataBaseFiles_Available_But_No_ServerParks_When_I_Call_ProcessFiles_Then_Nothing_Is_Processed()
         {
             //arrange
-            _blaiseApiServiceMock.Setup(b => b.GetAvailableServerParks()).Returns(new List<string>()); 
+            _blaiseApiServiceMock.Setup(b => b.GetAvailableServerParks()).Returns(new List<string>());
 
             //act
             _sut.ProcessFiles(_availableFiles);
 
             //assert
-            _fileServiceMock.Verify(v => v.GetDatabaseFilesAvailable(_availableFiles), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.GetAvailableServerParks(), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _fileServiceMock.VerifyNoOtherCalls();
             _importFileServiceMock.VerifyNoOtherCalls();
         }
 
@@ -97,19 +89,16 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         {
             //arrange
             var surveyName = "NotFound";
-            _fileServiceMock.Setup(f => f.GetSurveyNameFromFile(_databaseFileName)).Returns(surveyName);
+            var fileList = new List<string> { $"{surveyName}.bdbx", $"{surveyName}.bdix" };
 
             //act
-            _sut.ProcessFiles(_availableFiles);
+            _sut.ProcessFiles(fileList);
 
             //assert
-            _fileServiceMock.Verify(v => v.GetDatabaseFilesAvailable(_availableFiles), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.GetAvailableServerParks(), Times.Once);
-            _fileServiceMock.Verify(v => v.GetSurveyNameFromFile(_databaseFileName), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.SurveyExists(_serverParkName, surveyName), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _fileServiceMock.VerifyNoOtherCalls();
             _importFileServiceMock.VerifyNoOtherCalls();
         }
 

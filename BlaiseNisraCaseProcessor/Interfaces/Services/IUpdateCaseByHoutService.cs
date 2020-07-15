@@ -2,9 +2,9 @@
 
 namespace BlaiseNisraCaseProcessor.Interfaces.Services
 {
-    public interface IUpdateDataRecordByHoutService
+    public interface IUpdateCaseByHoutService
     {
-        void UpdateDataRecordByHoutValues(IDataRecord newDataRecord, IDataRecord existingDataRecord,
+        void UpdateCaseByHoutValues(IDataRecord newDataRecord, IDataRecord existingDataRecord,
             string serverPark, string surveyName, string serialNumber);
     }
 }

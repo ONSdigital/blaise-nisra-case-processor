@@ -7,14 +7,14 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IUpdateDataRecordByHoutService _updateByHoutService;
-        private readonly IUpdateRecordByWebFormStatusService _updateByWebFormStatus;
+        private readonly IUpdateCaseByHoutService _updateByHoutService;
+        private readonly IUpdateCaseServiceService _updateByWebFormStatus;
 
         public ImportFileService(
             ILog logger,
             IBlaiseApiService blaiseApiService, 
-            IUpdateDataRecordByHoutService updateByHoutService, 
-            IUpdateRecordByWebFormStatusService updateByWebFormStatus)
+            IUpdateCaseByHoutService updateByHoutService, 
+            IUpdateCaseServiceService updateByWebFormStatus)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
@@ -44,14 +44,14 @@ namespace BlaiseNisraCaseProcessor.Services
 
                 if (_blaiseApiService.WebFormStatusFieldExists(newDataRecord) && _blaiseApiService.WebFormStatusFieldExists(existingDataRecord))
                 {
-                    _updateByWebFormStatus.UpdateDataRecordViaWebFormStatus(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                    _updateByWebFormStatus.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                     _logger.Info($"Updated case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}'");
 
                     cases.MoveNext();
                     continue;
                 }
 
-                _updateByHoutService.UpdateDataRecordByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                 _logger.Info($"Updated case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}' via HOut values");
 
                 cases.MoveNext();

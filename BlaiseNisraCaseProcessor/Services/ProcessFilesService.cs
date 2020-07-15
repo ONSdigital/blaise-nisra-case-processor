@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
@@ -9,24 +10,26 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IFileService _fileService;
         private readonly IImportFileService _importFileService;
+        private readonly IFileSystem _fileSystem;
+
+        private const string DatabaseFileNameExt = ".bdix";
 
         public ProcessFilesService(
             ILog logger,
             IBlaiseApiService blaiseApiService,
-            IFileService fileService,
-            IImportFileService importFileService)
+            IImportFileService importFileService, 
+            IFileSystem fileSystem)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
-            _fileService = fileService;
             _importFileService = importFileService;
+            _fileSystem = fileSystem;
         }
 
-        public void ProcessFiles(IEnumerable<string> filesToProcess)
+        public void ProcessFiles(IList<string> filesToProcess)
         {
-            var databaseFiles = _fileService.GetDatabaseFilesAvailable(filesToProcess);
+            var databaseFiles = GetDatabaseFilesAvailable(filesToProcess);
 
             if (!databaseFiles.Any())
             {
@@ -37,7 +40,7 @@ namespace BlaiseNisraCaseProcessor.Services
             foreach (var serverPark in _blaiseApiService.GetAvailableServerParks())
                 foreach (var databaseFile in databaseFiles)
                 {
-                    var surveyName = _fileService.GetSurveyNameFromFile(databaseFile);
+                    var surveyName = GetSurveyNameFromFile(databaseFile);
 
                     if (_blaiseApiService.SurveyExists(serverPark, surveyName))
                     {
@@ -48,6 +51,27 @@ namespace BlaiseNisraCaseProcessor.Services
 
                     _logger.Info($"Survey '{surveyName}' does not exist on server park '{serverPark}'");
                 }
+
+            DeleteTemporaryFiles(filesToProcess);
+        }
+
+
+        private static List<string> GetDatabaseFilesAvailable(IEnumerable<string> files)
+        {
+            return files.Where(f => f.ToLower().Contains(DatabaseFileNameExt)).ToList();
+        }
+
+        private string GetSurveyNameFromFile(string databaseFile)
+        {
+            return _fileSystem.Path.GetFileNameWithoutExtension(databaseFile);
+        }
+
+        private void DeleteTemporaryFiles(IEnumerable<string> filesToProcess)
+        {
+            foreach (var file in filesToProcess)
+            {
+                _fileSystem.File.Delete(file);
+            }
         }
     }
 }

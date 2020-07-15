@@ -28,6 +28,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
         bool HOutFieldExists(IDataRecord dataRecord);
         decimal GetHOutValue(IDataRecord dataRecord);
 
-        void UpdateDataRecord(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName);
+        void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName);
     }
 }

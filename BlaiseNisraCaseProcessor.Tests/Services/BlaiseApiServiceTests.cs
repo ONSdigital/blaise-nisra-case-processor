@@ -424,7 +424,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_I_Call_UpdateDataRecord_Then_The_Correct_Service_Methods_Are_Called()
+        public void Given_I_Call_UpdateCase_Then_The_Correct_Service_Methods_Are_Called()
         {
             //arrange
             var newDataRecordMock = new Mock<IDataRecord2>();
@@ -444,7 +444,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Update());
 
             //act
-            _sut.UpdateDataRecord(newDataRecordMock.Object, existingDataRecordMock.Object, _serverParkName, _surveyName);
+            _sut.UpdateCase(newDataRecordMock.Object, existingDataRecordMock.Object, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiMock.Verify(v => v.DefaultConnection, Times.Once);
@@ -463,7 +463,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_I_Call_UpdateDataRecord_Then_The_OnLine_Flag_Is_Added_To_The_FieldData_Dictionary()
+        public void Given_I_Call_UpdateCase_Then_The_OnLine_Flag_Is_Added_To_The_FieldData_Dictionary()
         {
             //arrange
             var newDataRecordMock = new Mock<IDataRecord2>();
@@ -483,7 +483,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Update());
 
             //act
-            _sut.UpdateDataRecord(newDataRecordMock.Object, existingDataRecordMock.Object, _serverParkName, _surveyName);
+            _sut.UpdateCase(newDataRecordMock.Object, existingDataRecordMock.Object, _serverParkName, _surveyName);
 
             //assert
             Assert.IsTrue(fieldData.ContainsKey("QHAdmin.Online"));

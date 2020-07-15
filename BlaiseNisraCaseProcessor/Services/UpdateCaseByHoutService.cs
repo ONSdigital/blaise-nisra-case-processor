@@ -5,13 +5,13 @@ using StatNeth.Blaise.API.DataRecord;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class UpdateDataRecordByHoutService : IUpdateDataRecordByHoutService
+    public class UpdateCaseByHoutService : IUpdateCaseByHoutService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
         private readonly IPublishCaseStatusService _publishCaseStatusService;
 
-        public UpdateDataRecordByHoutService(
+        public UpdateCaseByHoutService(
             ILog logger, 
             IBlaiseApiService blaiseApiService, 
             IPublishCaseStatusService publishCaseStatusService)
@@ -21,7 +21,7 @@ namespace BlaiseNisraCaseProcessor.Services
             _publishCaseStatusService = publishCaseStatusService;
         }
 
-        public void UpdateDataRecordByHoutValues(IDataRecord newDataRecord, IDataRecord existingDataRecord,
+        public void UpdateCaseByHoutValues(IDataRecord newDataRecord, IDataRecord existingDataRecord,
             string serverPark, string surveyName, string serialNumber)
         {
             if (!_blaiseApiService.HOutFieldExists(newDataRecord))
@@ -42,7 +42,7 @@ namespace BlaiseNisraCaseProcessor.Services
 
             if (newHOut < existingHOut || existingHOut == 0)
             {
-                _blaiseApiService.UpdateDataRecord(newDataRecord, existingDataRecord, serverPark, surveyName);
+                _blaiseApiService.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName);
                 _logger.Info($"The NISRA file for serial number '{serialNumber}' has been updated as it has a better HOut ('{newHOut}') than the existing record ('{existingHOut}')");
 
                 _publishCaseStatusService.PublishCaseStatus(newDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);

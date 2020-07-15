@@ -116,7 +116,7 @@ namespace BlaiseNisraCaseProcessor.Services
                 .HOut;
         }
 
-        public void UpdateDataRecord(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)
+        public void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)
         {
             var fieldData = _mapper.MapFieldDictionaryFromRecordFields(newDataRecord as IDataRecord2);
 
