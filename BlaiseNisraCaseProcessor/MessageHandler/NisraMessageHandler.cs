@@ -11,13 +11,13 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
     public class NisraMessageHandler : IMessageHandler
     {
         private readonly ILog _logger;
-        private readonly ICloudBucketFileService _bucketFileService;
+        private readonly ICloudStorageService _bucketFileService;
         private readonly IProcessFilesService _processNisraFilesService;
         private readonly ICaseMapper _mapper;
 
         public NisraMessageHandler(
             ILog logger,
-            ICloudBucketFileService bucketFileService,
+            ICloudStorageService bucketFileService,
             IProcessFilesService processNisraFilesService, 
             ICaseMapper mapper)
         {
@@ -50,6 +50,8 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                 }
 
                 _processNisraFilesService.ProcessFiles(availableFiles);
+
+                _bucketFileService.MoveProcessedFilesToProcessedFolder(availableFiles);
 
                 _logger.Info($"Message processed '{message}'");
                 return true;

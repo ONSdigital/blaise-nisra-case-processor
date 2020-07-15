@@ -315,15 +315,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlaiseMethods.cs" />
     <Compile Include="Enums\ActionType.cs" />
     <Compile Include="Enums\CaseStatusType.cs" />
-    <Compile Include="FileMethods.cs" />
-    <Compile Include="DataRecordMethods.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
-    <Compile Include="Interfaces\Providers\IIocProvider.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
     <Compile Include="Interfaces\Services\IPublishCaseStatusService.cs" />
     <Compile Include="Interfaces\Services\IQueueService.cs" />
@@ -352,9 +348,9 @@
     <Compile Include="Interfaces\Services\IUpdateCaseByHoutService.cs" />
     <Compile Include="Interfaces\Services\IUpdateCaseServiceService.cs" />
     <Compile Include="Services\UpdateCaseByHoutService.cs" />
-    <Compile Include="Services\UpdateRecordService.cs" />
-    <Compile Include="Services\CloudBucketFileService.cs" />
-    <Compile Include="Interfaces\Services\ICloudBucketFileService.cs" />
+    <Compile Include="Services\UpdateCaseService.cs" />
+    <Compile Include="Services\CloudStorageService.cs" />
+    <Compile Include="Interfaces\Services\ICloudStorageService.cs" />
     <Compile Include="Interfaces\Services\IImportFileService.cs" />
     <Compile Include="Interfaces\Services\IBlaiseApiService.cs" />
     <Compile Include="Services\ImportFileService.cs" />

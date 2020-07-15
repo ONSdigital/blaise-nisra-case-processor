@@ -16,7 +16,7 @@ using Unity;
 
 namespace BlaiseNisraCaseProcessor.Providers
 {
-    public class UnityProvider : IIocProvider
+    public class UnityProvider
     {
         private readonly UnityContainer _unityContainer;
 
@@ -58,8 +58,8 @@ namespace BlaiseNisraCaseProcessor.Providers
             _unityContainer.RegisterType<IPublishCaseStatusService, PublishCaseStatusService>();
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
             _unityContainer.RegisterType<IUpdateCaseByHoutService, UpdateCaseByHoutService>();
-            _unityContainer.RegisterType<IUpdateCaseServiceService, UpdateRecordService>();
-            _unityContainer.RegisterType<ICloudBucketFileService, CloudBucketFileService>();
+            _unityContainer.RegisterType<IUpdateCaseServiceService, UpdateCaseService>();
+            _unityContainer.RegisterType<ICloudStorageService, CloudStorageService>();
             _unityContainer.RegisterType<IImportFileService, ImportFileService>();
             _unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();
 

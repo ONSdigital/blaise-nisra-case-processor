@@ -169,6 +169,7 @@
     <Compile Include="Providers\ConfigurationProviderTests.cs" />
     <Compile Include="Providers\UnityProviderTests.cs" />
     <Compile Include="Services\BlaiseApiServiceTests.cs" />
+    <Compile Include="Services\CloudStorageServiceTests.cs" />
     <Compile Include="Services\InitialiseServiceTests.cs" />
     <Compile Include="Services\UpdateCaseServiceTests.cs" />
     <Compile Include="Services\UpdateCaseByHoutServiceTests.cs" />

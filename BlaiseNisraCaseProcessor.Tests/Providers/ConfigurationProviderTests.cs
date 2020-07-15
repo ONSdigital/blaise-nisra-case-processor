@@ -1,4 +1,5 @@
-﻿using BlaiseNisraCaseProcessor.Providers;
+﻿using System.Collections.Generic;
+using BlaiseNisraCaseProcessor.Providers;
 using NUnit.Framework;
 
 namespace BlaiseNisraCaseProcessor.Tests.Providers
@@ -98,6 +99,23 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
 
             //assert
             Assert.AreEqual("CloudStorageKeyTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_IgnoreFilesInBucketList_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.IgnoreFilesInBucketList;
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<List<string>>(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.Contains("processed"));
+            Assert.IsTrue(result.Contains("audit"));
         }
     }
 }

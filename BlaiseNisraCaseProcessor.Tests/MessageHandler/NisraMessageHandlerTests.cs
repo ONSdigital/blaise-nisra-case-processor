@@ -14,7 +14,7 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
     public class NisraMessageHandlerTests
     {
         private Mock<ILog> _loggingMock;
-        private Mock<ICloudBucketFileService> _cloudBucketFileServiceMock;
+        private Mock<ICloudStorageService> _cloudBucketFileServiceMock;
         private Mock<IProcessFilesService> _processFilesServiceMock;
         private Mock<ICaseMapper> _mapperMock;
 
@@ -36,7 +36,7 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
         {
             _loggingMock = new Mock<ILog>();
 
-            _cloudBucketFileServiceMock = new Mock<ICloudBucketFileService>();
+            _cloudBucketFileServiceMock = new Mock<ICloudStorageService>();
 
             _processFilesServiceMock = new Mock<IProcessFilesService>();
 
@@ -108,6 +108,7 @@ namespace BlaiseNisraCaseProcessor.Tests.MessageHandler
             //assert
             _cloudBucketFileServiceMock.Verify(v => v.GetFilesFromBucket(), Times.Once);
             _processFilesServiceMock.Verify(v => v.ProcessFiles(_availableFiles), Times.Once);
+            _cloudBucketFileServiceMock.Verify(v => v.MoveProcessedFilesToProcessedFolder(_availableFiles));
 
             _cloudBucketFileServiceMock.VerifyNoOtherCalls();
             _processFilesServiceMock.VerifyNoOtherCalls();

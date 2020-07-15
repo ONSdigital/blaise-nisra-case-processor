@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 
 namespace BlaiseNisraCaseProcessor.Providers
@@ -30,7 +31,7 @@ namespace BlaiseNisraCaseProcessor.Providers
                     return new List<string>();
                 }
 
-                return filesToIgnore.Split(',');
+                return filesToIgnore.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
             }
         } 
 

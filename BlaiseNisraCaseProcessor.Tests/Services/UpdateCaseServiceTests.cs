@@ -23,7 +23,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         private readonly string _serverParkName;
         private readonly string _surveyName;
 
-        private UpdateRecordService _sut;
+        private UpdateCaseService _sut;
 
         public UpdateCaseServiceTests()
         {
@@ -46,7 +46,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             _publishCaseStatusServiceMock = new Mock<IPublishCaseStatusService>();
 
-            _sut = new UpdateRecordService(
+            _sut = new UpdateCaseService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
                 _updateCasedByHoutServiceMock.Object,
@@ -177,8 +177,31 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _publishCaseStatusServiceMock.VerifyNoOtherCalls();
         }
 
+        [TestCase(WebFormStatusType.Complete)]
+        [TestCase(WebFormStatusType.Partial)]
+        public void Given_Existing_WebFormStatus_Is_Not_Partial_Or_Complete_And_The_Nisra_WebFormStatus_Is_Set_When_I_Call_UpdateCase_The_Existing_Record_Is_Updated_By_HOut(WebFormStatusType statusType)
+        {
+            //arrange
+            _blaiseApiServiceMock.Setup(b => b.GetWebFormStatus(_existingDataRecordMock.Object)).Returns(WebFormStatusType.NotProcessed);
+            _blaiseApiServiceMock.Setup(b => b.GetWebFormStatus(_newDataRecordMock.Object)).Returns(statusType);
+
+            //act
+            _sut.UpdateCase(_newDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
+
+            //assert
+            _blaiseApiServiceMock.Verify(v => v.GetWebFormStatus(_newDataRecordMock.Object), Times.Once);
+            _blaiseApiServiceMock.Verify(v => v.GetWebFormStatus(_existingDataRecordMock.Object), Times.Once);
+
+            _updateCasedByHoutServiceMock.Verify(v => v.UpdateCaseByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+                _serverParkName, _surveyName, _serialNumber));
+
+            _blaiseApiServiceMock.VerifyNoOtherCalls();
+            _updateCasedByHoutServiceMock.VerifyNoOtherCalls();
+            _publishCaseStatusServiceMock.VerifyNoOtherCalls();
+        }
+
         [Test]
-        public void Given_Existing_WebFormStatus_Is_Not_Partial_Or_Complete_And_The_Nisra_WebFormStatus_Is_NoTSpecified_When_I_Call_UpdateCase_The_Existing_Record_Is_Not_Updated()
+        public void Given_Existing_WebFormStatus_Is_Not_Partial_Or_Complete_And_The_Nisra_WebFormStatus_Is_NotSpecified_When_I_Call_UpdateCase_The_Existing_Record_Is_Not_Updated()
         {
             //arrange
             _blaiseApiServiceMock.Setup(b => b.GetWebFormStatus(_existingDataRecordMock.Object)).Returns(WebFormStatusType.NotProcessed);

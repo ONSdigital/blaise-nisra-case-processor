@@ -2,8 +2,10 @@
 
 namespace BlaiseNisraCaseProcessor.Interfaces.Services
 {
-    public interface ICloudBucketFileService
+    public interface ICloudStorageService
     {
         IEnumerable<string> GetFilesFromBucket();
+
+        void MoveProcessedFilesToProcessedFolder(IList<string> processedFiles);
     }
 }

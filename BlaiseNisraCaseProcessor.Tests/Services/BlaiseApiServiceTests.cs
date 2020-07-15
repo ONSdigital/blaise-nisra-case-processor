@@ -16,6 +16,8 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         private Mock<IFluentBlaiseApi> _blaiseApiMock;
         private Mock<ICaseMapper> _mapperMock;
 
+        private Mock<IDataRecord> _dataRecordMock;
+
         private readonly ConnectionModel _connectionModel;
         private readonly string _serialNumber;
         private readonly string _serverParkName;
@@ -34,6 +36,8 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         [SetUp]
         public void SetUpTests()
         {
+            _dataRecordMock = new Mock<IDataRecord>();
+
             _blaiseApiMock = new Mock<IFluentBlaiseApi>();
             _blaiseApiMock.Setup(b => b.DefaultConnection).Returns(_connectionModel);
 
@@ -64,7 +68,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public void Given_I_Call_GetAvailableServerParks_Then_The_Expected_Value_Is_Returned()
         {
             //arrange
-            var serverParks = new List<string>{"Park1", "Park2"};
+            var serverParks = new List<string> { "Park1", "Park2" };
             _blaiseApiMock.Setup(b => b.WithConnection(_connectionModel).ServerParks).Returns(serverParks);
 
             //act
@@ -73,6 +77,92 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             //assert
             Assert.IsNotNull(result);
             Assert.AreSame(serverParks, result);
+        }
+
+        [Test]
+        public void Given_I_Call_SurveyExists_Then_The_Correct_Service_Methods_Are_Called()
+        {
+            //arrange
+            _blaiseApiMock.Setup(b => b
+                .WithConnection(_connectionModel)
+                .WithServerPark(_serverParkName)
+                .WithInstrument(_surveyName)
+                .Survey
+                .Exists).Returns(true);
+
+            //act
+            _sut.SurveyExists(_serverParkName, _surveyName);
+
+            //assert
+            _blaiseApiMock.Verify(v => v.DefaultConnection, Times.Once);
+            _blaiseApiMock.Verify(v => v
+                .WithConnection(_connectionModel)
+                .WithServerPark(_serverParkName)
+                .WithInstrument(_surveyName)
+                .Survey
+                .Exists, Times.Once);
+
+            _blaiseApiMock.VerifyNoOtherCalls();
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_I_Call_SurveyExists_Then_The_Expected_Value_Is_Returned(bool exists)
+        {
+            //arrange
+            _blaiseApiMock.Setup(b => b
+                .WithConnection(_connectionModel)
+                .WithServerPark(_serverParkName)
+                .WithInstrument(_surveyName)
+                .Survey
+                .Exists).Returns(exists);
+
+            //act
+            var result = _sut.SurveyExists(_serverParkName, _surveyName);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(exists, result);
+        }
+
+        [Test]
+        public void Given_I_Call_GetSerialNumber_Then_The_Correct_Service_Methods_Are_Called()
+        {
+            //arrange
+            _blaiseApiMock.Setup(b => b
+                .Case
+                .WithDataRecord(_dataRecordMock.Object)
+                .PrimaryKey).Returns(It.IsAny<string>());
+
+            //act
+            _sut.GetSerialNumber(_dataRecordMock.Object);
+
+            //assert
+            _blaiseApiMock.Verify(v => v
+                .Case
+                .WithDataRecord(_dataRecordMock.Object)
+                .PrimaryKey, Times.Once);
+
+            _blaiseApiMock.VerifyNoOtherCalls();
+        }
+
+        [Test]
+        public void Given_I_Call_CaseExists_Then_The_Expected_Value_Is_Returned()
+        {
+            //arrange
+            var serialNumber = "10001";
+
+            _blaiseApiMock.Setup(b => b
+                .Case
+                .WithDataRecord(_dataRecordMock.Object)
+                .PrimaryKey).Returns(serialNumber);
+
+            //act
+            var result = _sut.GetSerialNumber(_dataRecordMock.Object);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(serialNumber, result);
         }
 
         [Test]

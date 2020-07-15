@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
@@ -21,6 +22,26 @@ namespace BlaiseNisraCaseProcessor.Providers
             var bucket = StorageClient.Create(googleCredStream);
 
             return bucket;
+        }
+
+        public IEnumerable<string> GetAvailableFilesFromBucket()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Download(string fileName, string filePath)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void MoveFileToProcessedFolder(string fileName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Configuration.Install;
 namespace BlaiseNisraCaseProcessor
 {
     [RunInstaller(true)]
-    public partial class ProjectInstaller : System.Configuration.Install.Installer
+    public partial class ProjectInstaller : Installer
     {
         public ProjectInstaller()
         {

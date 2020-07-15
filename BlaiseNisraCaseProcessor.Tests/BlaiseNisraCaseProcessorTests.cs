@@ -8,7 +8,10 @@ namespace BlaiseNisraCaseProcessor.Tests
         public void Given_I_Create_A_New_Instance_Of_BlaiseNisraCaseProcessor_Then_No_Exceptions_Are_Thrown()
         {
             //act && assert
-            Assert.DoesNotThrow(() => new BlaiseNisraCaseProcessor());
+            Assert.DoesNotThrow(() =>
+            {
+                var blaiseNisraCaseProcessor = new BlaiseNisraCaseProcessor();
+            });
         }
 
         [Test]

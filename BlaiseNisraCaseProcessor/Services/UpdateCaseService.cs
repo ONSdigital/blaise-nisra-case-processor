@@ -6,14 +6,14 @@ using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class UpdateRecordService : IUpdateCaseServiceService
+    public class UpdateCaseService : IUpdateCaseServiceService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
         private readonly IUpdateCaseByHoutService _updateByHoutService;
         private readonly IPublishCaseStatusService _publishCaseStatusService;
 
-        public UpdateRecordService(
+        public UpdateCaseService(
             ILog logger,
             IBlaiseApiService blaiseApiService, 
             IUpdateCaseByHoutService updateByHoutService, 
