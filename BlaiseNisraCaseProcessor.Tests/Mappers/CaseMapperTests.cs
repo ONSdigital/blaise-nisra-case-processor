@@ -50,13 +50,12 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
         public void Given_I_Call_MapToSerializedJson_Then_I_Get_A_String_Returned()
         {
             //arrange
-            const string instrumentName = "instrument1";
+            const string surveyName = "instrument1";
             const string serverPark = "serverPark1";
-            const string primaryKey = "primaryKey";
             const CaseStatusType caseStatusType = CaseStatusType.NisraCaseImported;
 
             //act
-            var result = _sut.MapToSerializedJson(_recordMock.Object, instrumentName, serverPark, primaryKey, caseStatusType);
+            var result = _sut.MapToSerializedJson(_recordMock.Object, surveyName, serverPark, caseStatusType);
 
             //assert
             Assert.NotNull(result);
@@ -67,18 +66,17 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
         public void Given_I_Call_MapToSerializedJson_Then_I_Get_The_Expected_String_Returned()
         {
             //arrange
-            const string instrumentName = "instrument1";
+            const string surveyName = "instrument1";
             const string serverPark = "serverPark1";
-            const string primaryKey = "primaryKey";
             const CaseStatusType caseStatusType = CaseStatusType.NisraCaseImported;
 
 
             //act
-            var result = _sut.MapToSerializedJson(_recordMock.Object, instrumentName, serverPark, primaryKey, caseStatusType);
+            var result = _sut.MapToSerializedJson(_recordMock.Object, surveyName, serverPark, caseStatusType);
 
             //assert
             Assert.NotNull(result);
-            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}", 
+            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}", 
                 result);
         }
 
@@ -86,9 +84,8 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
         public void Given_I_Call_MapToSerializedJson_Then_Only_Qid_Fields_In_The_Data_Record_Should_Be_Mapped()
         {
             //arrange
-            const string instrumentName = "instrument1";
+            const string surveyName = "instrument1";
             const string serverPark = "serverPark1";
-            const string primaryKey = "primaryKey";
             const CaseStatusType caseStatusType = CaseStatusType.NisraCaseImported;
 
             //should never be mapped as not QID
@@ -108,11 +105,11 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
 
 
             //act
-            var result = _sut.MapToSerializedJson(_recordMock.Object, instrumentName, serverPark, primaryKey, caseStatusType);
+            var result = _sut.MapToSerializedJson(_recordMock.Object, surveyName, serverPark, caseStatusType);
 
             //assert
             Assert.NotNull(result);
-            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""primary_key"":""primaryKey"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}",
+            Assert.AreEqual(@"{""Field1Name"":""field1value"",""Field2Name"":""field2value"",""instrument_name"":""instrument1"",""server_park"":""serverPark1"",""status"":""NISRA record imported""}",
                 result);
         }
 
@@ -120,23 +117,20 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
         public void Given_I_Call_MapToSerializedJson_Then_I_Get_A_Json_String_Returned()
         {
             //arrange
-            const string instrumentName = "instrument1";
+            const string surveyName = "instrument1";
             const string serverPark = "serverPark1";
-            const string primaryKey = "primaryKey";
             const CaseStatusType caseStatusType = CaseStatusType.NisraCaseImported;
 
 
             //act
-            var jsonDataString = _sut.MapToSerializedJson(
-                null, instrumentName, serverPark, primaryKey, caseStatusType);
+            var jsonDataString = _sut.MapToSerializedJson(null, surveyName, serverPark,  caseStatusType);
 
             var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonDataString);
 
             //assert
             Assert.AreEqual(EnumHelper.GetEnumDescription(caseStatusType), result["status"]);
-            Assert.AreEqual(instrumentName, result["instrument_name"]);
+            Assert.AreEqual(surveyName, result["instrument_name"]);
             Assert.AreEqual(serverPark, result["server_park"]);
-            Assert.AreEqual(primaryKey, result["primary_key"]);
         }
 
         [Test]

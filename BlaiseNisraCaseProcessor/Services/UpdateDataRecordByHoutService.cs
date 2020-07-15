@@ -1,4 +1,5 @@
-﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using BlaiseNisraCaseProcessor.Enums;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
 
@@ -8,13 +9,16 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
+        private readonly IPublishCaseStatusService _publishCaseStatusService;
 
         public UpdateDataRecordByHoutService(
             ILog logger, 
-            IBlaiseApiService blaiseApiService)
+            IBlaiseApiService blaiseApiService, 
+            IPublishCaseStatusService publishCaseStatusService)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
+            _publishCaseStatusService = publishCaseStatusService;
         }
 
         public void UpdateDataRecordByHoutValues(IDataRecord newDataRecord, IDataRecord existingDataRecord,
@@ -40,6 +44,8 @@ namespace BlaiseNisraCaseProcessor.Services
             {
                 _blaiseApiService.UpdateDataRecord(newDataRecord, existingDataRecord, serverPark, surveyName);
                 _logger.Info($"The NISRA file for serial number '{serialNumber}' has been updated as it has a better HOut ('{newHOut}') than the existing record ('{existingHOut}')");
+
+                _publishCaseStatusService.PublishCaseStatus(newDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);
             }
         }
     }

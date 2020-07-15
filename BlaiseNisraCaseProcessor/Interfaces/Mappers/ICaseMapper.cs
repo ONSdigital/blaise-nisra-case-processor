@@ -7,7 +7,7 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Mappers
 {
     public interface ICaseMapper
     {
-        string MapToSerializedJson(IDataRecord recordData, string instrumentName, string serverPark, string primaryKey, CaseStatusType caseStatusType);
+        string MapToSerializedJson(IDataRecord recordData, string surveyName, string serverPark, CaseStatusType caseStatusType);
 
         Dictionary<string, string> MapFieldDictionaryFromRecordFields(IDataRecord2 recordData);
 

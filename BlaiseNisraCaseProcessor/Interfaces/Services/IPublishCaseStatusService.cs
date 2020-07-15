@@ -5,6 +5,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
 {
     public interface IPublishCaseStatusService
     {
-        void PublishCaseStatus(IDataRecord recordData, string instrumentName, string serverPark, string primaryKey, CaseStatusType caseStatusType);
+        void PublishCaseStatus(IDataRecord recordData, string surveyName, string serverPark, CaseStatusType caseStatusType);
     }
 }

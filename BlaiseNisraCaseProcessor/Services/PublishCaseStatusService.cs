@@ -22,9 +22,9 @@ namespace BlaiseNisraCaseProcessor.Services
             _mapper = mapper;
         }
 
-        public void PublishCaseStatus(IDataRecord recordData, string instrumentName, string serverPark, string primaryKey, CaseStatusType caseStatusType)
+        public void PublishCaseStatus(IDataRecord recordData, string surveyName, string serverPark, CaseStatusType caseStatusType)
         {
-            var message = _mapper.MapToSerializedJson(recordData, instrumentName, serverPark, primaryKey, caseStatusType);
+            var message = _mapper.MapToSerializedJson(recordData, surveyName, serverPark, caseStatusType);
 
             _queueService.PublishMessage(message);
 

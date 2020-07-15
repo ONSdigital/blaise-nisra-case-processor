@@ -16,17 +16,15 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         private Mock<IQueueService> _queueServiceMock;
         private readonly Mock<IDataRecord> _dataRecordMock;
 
-        private readonly string _instrumentName;
+        private readonly string _surveyName;
         private readonly string _serverPark;
-        private readonly string _primaryKey;
 
         private PublishCaseStatusService _sut;
 
         public PublishCaseStatusServiceTests()
         {
-            _instrumentName = "InstrumentName";
+            _surveyName = "InstrumentName";
             _serverPark = "ServerPark";
-            _primaryKey = "PrimaryKey";
 
             _dataRecordMock = new Mock<IDataRecord>();
         }
@@ -53,16 +51,16 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             //arrange
             var message = "Test Message";
             _mapperMock.Setup(m => m.MapToSerializedJson(
-                It.IsAny<IDataRecord>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<CaseStatusType>()))
+                It.IsAny<IDataRecord>(), It.IsAny<string>(), It.IsAny<string>(),It.IsAny<CaseStatusType>()))
                 .Returns(message);
 
             _queueServiceMock.Setup(q => q.PublishMessage(It.IsAny<string>()));
 
             //act
-            _sut.PublishCaseStatus(_dataRecordMock.Object, _instrumentName, _serverPark, _primaryKey, caseStatusType);
+            _sut.PublishCaseStatus(_dataRecordMock.Object, _surveyName, _serverPark, caseStatusType);
 
             //assert
-            _mapperMock.Verify(v => v.MapToSerializedJson(_dataRecordMock.Object, _instrumentName, _serverPark, _primaryKey, caseStatusType), Times.Once);
+            _mapperMock.Verify(v => v.MapToSerializedJson(_dataRecordMock.Object, _surveyName, _serverPark, caseStatusType), Times.Once);
             _queueServiceMock.Verify(v => v.PublishMessage(message), Times.Once);
         }
     }
