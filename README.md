@@ -19,6 +19,12 @@ i.e. 'process-nisra-case-subscription-TEL-C0C0C0'.
 
 This service also publishes case status updates to the topic 'case-status-update-topic'.
 
+    
+# Example message
+```
+
+```
+
 #debugging
 Due to the nature of the GCP pubsub implementation, it will be listening on a worker thread. If you wish to debug the service locally you will
 need to add a Thread.Sleep(n seconds) just after the subscription is setup to push the service to use the worker thread in the 'InitialiseSservice' and set a breakpoint. If a breakpoint is not set,
