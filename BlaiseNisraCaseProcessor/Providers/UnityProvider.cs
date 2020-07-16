@@ -42,7 +42,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
 #else
             // When running in Release, the service will be running as compute account which will have access to all buckets.
-            unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
+            _unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
 #endif
 
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();

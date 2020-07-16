@@ -48,8 +48,10 @@ namespace BlaiseNisraCaseProcessor.Mappers
             {
                 return JsonConvert.DeserializeObject<NisraCaseActionModel>(message);
             }
-            catch //horrible I know but we currently don't really care about the message as it is only a trigger
+            catch 
             {
+                // This is horrible I know but we currently don't really care about the message as it is only a trigger
+                // and we need to ensure a message incorrectly put on this topic does not trigger it
             }
 
             return new NisraCaseActionModel { Action = ActionType.NotSupported };
