@@ -58,15 +58,17 @@ namespace BlaiseNisraCaseProcessor.Providers
             {
                 var storageObjectName = FileSystem.Path.GetFileName(storageObject.Name);
 
-                if (string.Equals(storageObjectName, fileName, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.Equals(storageObjectName, fileName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var storageObjectPath = FileSystem.Path.GetDirectoryName(storageObject.Name).Replace("\\", "/");
-                    var processedPath = $"{storageObjectPath}/{ProcessedFolder}/{storageObjectName}";
-                    storageClient.CopyObject(BucketName, storageObject.Name, BucketName, processedPath);
-                    storageClient.DeleteObject(BucketName, storageObject.Name);
-
-                    return;
+                    continue;
                 }
+
+                var storageObjectPath = FileSystem.Path.GetDirectoryName(storageObject.Name).Replace("\\", "/");
+                var processedPath = $"{storageObjectPath}/{ProcessedFolder}/{storageObjectName}";
+                storageClient.CopyObject(BucketName, storageObject.Name, BucketName, processedPath);
+                storageClient.DeleteObject(BucketName, storageObject.Name);
+
+                return;
             }
         }
 
