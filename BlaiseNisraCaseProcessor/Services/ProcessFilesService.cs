@@ -10,7 +10,7 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IImportFileService _importFileService;
+        private readonly IImportCasesService _importFileService;
         private readonly IFileSystem _fileSystem;
 
         private const string DatabaseFileNameExt = ".bdix";
@@ -18,7 +18,7 @@ namespace BlaiseNisraCaseProcessor.Services
         public ProcessFilesService(
             ILog logger,
             IBlaiseApiService blaiseApiService,
-            IImportFileService importFileService, 
+            IImportCasesService importFileService, 
             IFileSystem fileSystem)
         {
             _logger = logger;
@@ -45,7 +45,7 @@ namespace BlaiseNisraCaseProcessor.Services
                     if (_blaiseApiService.SurveyExists(serverPark, surveyName))
                     {
                         _logger.Info($"Survey '{surveyName}' exists on server park '{serverPark}'");
-                        _importFileService.ImportSurveyRecordsFromFile(databaseFile, serverPark, surveyName);
+                        _importFileService.ImportCasesFromFile(databaseFile, serverPark, surveyName);
                         continue;
                     }
 

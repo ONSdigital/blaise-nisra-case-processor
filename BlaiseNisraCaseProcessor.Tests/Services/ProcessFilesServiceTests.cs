@@ -12,7 +12,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
-        private Mock<IImportFileService> _importFileServiceMock;
+        private Mock<IImportCasesService> _importFileServiceMock;
         private MockFileSystem _mockFileSystem;
 
         private readonly List<string> _availableFiles;
@@ -45,7 +45,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _mockFileSystem = new MockFileSystem();
             _mockFileSystem.AddFile(_databaseFileName, new MockFileData(""));
 
-            _importFileServiceMock = new Mock<IImportFileService>();
+            _importFileServiceMock = new Mock<IImportCasesService>();
 
             _sut = new ProcessFilesService(
                 _loggingMock.Object,
@@ -109,7 +109,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _sut.ProcessFiles(_availableFiles);
 
             //assert
-            _importFileServiceMock.Verify(v => v.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName), Times.Once);
+            _importFileServiceMock.Verify(v => v.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName), Times.Once);
         }
     }
 }

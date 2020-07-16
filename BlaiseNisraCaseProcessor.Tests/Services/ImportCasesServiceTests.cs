@@ -8,7 +8,7 @@ using StatNeth.Blaise.API.DataRecord;
 
 namespace BlaiseNisraCaseProcessor.Tests.Services
 {
-    public class ImportFileServiceTests
+    public class ImportCasesServiceTests
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
@@ -24,9 +24,9 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         private readonly string _serverParkName;
         private readonly string _surveyName;
 
-        private ImportFileService _sut;
+        private ImportCasesService _sut;
 
-        public ImportFileServiceTests()
+        public ImportCasesServiceTests()
         {
             _serialNumber = "SN123";
             _serverParkName = "Park1";
@@ -52,7 +52,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             _updateByWebFormStatusMock = new Mock<IUpdateCaseServiceService>();
 
-            _sut = new ImportFileService(
+            _sut = new ImportCasesService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
                 _updateByHoutServiceMock.Object,
@@ -60,7 +60,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_There_Are_No_Records_Available_In_The_Nisra_File_When_I_Call_ImportSurveyRecordsFromFile_Then_Nothing_Is_Processed()
+        public void Given_There_Are_No_Records_Available_In_The_Nisra_File_When_I_Call_ImportCasesFromFile_Then_Nothing_Is_Processed()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -68,7 +68,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(true);
 
             //act
-            _sut.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
@@ -80,7 +80,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_There_A_Record_In_The_Nisra_File_Does_Not_Exist_When_I_Call_ImportSurveyRecordsFromFile_Then_The_Record_Is_Added()
+        public void Given_There_A_Record_In_The_Nisra_File_Does_Not_Exist_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Added()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -92,13 +92,13 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.CaseExists(_serialNumber, _serverParkName, _surveyName)).Returns(false);
 
             //act
-            _sut.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.GetSerialNumber(_newDataRecordMock.Object), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.CaseExists(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.AddDataRecord(_newDataRecordMock.Object, _serverParkName, _surveyName), Times.Once);
+            _blaiseApiServiceMock.Verify(v => v.AddDataRecord(_newDataRecordMock.Object, _serialNumber, _serverParkName, _surveyName), Times.Once);
 
             _dataSetMock.Verify(v => v.EndOfSet, Times.Exactly(2));
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
@@ -111,7 +111,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_There_A_Record_In_The_Nisra_File_That_Exists_And_The_WebStatusField_Exists_On_Both_Records_When_I_Call_ImportSurveyRecordsFromFile_Then_The_Record_Is_Updated_By_WebStatus()
+        public void Given_A_Record_Already_Exists_And_The_WebStatusField_Exists_On_Both_Records_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_WebStatus()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -129,7 +129,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(true);
 
             //act
-            _sut.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
@@ -152,7 +152,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_There_A_Record_In_The_Nisra_File_That_Exists_And_The_WebStatusFieldExists_Only_On_Nisra_File_When_I_Call_ImportSurveyRecordsFromFile_Then_The_Record_Is_Updated_By_HOut()
+        public void Given_A_Record_Already_Exists_And_The_WebStatusFieldExists_Only_On_Nisra_File_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_HOut()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -170,7 +170,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(false);
 
             //act
-            _sut.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
@@ -193,7 +193,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_There_A_Record_In_The_Nisra_File_That_Exists_And_The_WebStatusFieldExists_Only_On_Existing_File_When_I_Call_ImportSurveyRecordsFromFile_Then_The_Record_Is_Updated_By_HOut()
+        public void Given_A_Record_Already_Exists_And_The_WebStatusFieldExists_Only_On_Existing_File_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_HOut()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -211,7 +211,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(true);
 
             //act
-            _sut.ImportSurveyRecordsFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);

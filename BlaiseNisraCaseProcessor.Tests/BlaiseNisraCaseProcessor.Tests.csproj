@@ -173,7 +173,7 @@
     <Compile Include="Services\InitialiseServiceTests.cs" />
     <Compile Include="Services\UpdateCaseServiceTests.cs" />
     <Compile Include="Services\UpdateCaseByHoutServiceTests.cs" />
-    <Compile Include="Services\ImportFileServiceTests.cs" />
+    <Compile Include="Services\ImportCasesServiceTests.cs" />
     <Compile Include="Services\ProcessFilesServiceTests.cs" />
     <Compile Include="MessageHandler\NisraMessageHandlerTests.cs" />
     <Compile Include="Services\PublishCaseStatusServiceTests.cs" />

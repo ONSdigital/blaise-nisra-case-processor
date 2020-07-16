@@ -76,6 +76,19 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
         }
 
         [Test]
+        public void Given_I_Call_CloudProcessedFolder_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.CloudProcessedFolder;
+
+            //assert
+            Assert.AreEqual("CloudProcessedFolderTest", result);
+        }
+
+        [Test]
         public void Given_I_Call_LocalProcessFolder_I_Get_The_Correct_Value_Back()
         {
             //arrange

@@ -17,7 +17,7 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
 
         IDataSet GetCasesFromFile(string databaseFile);
 
-        void AddDataRecord(IDataRecord dataRecord, string serverPark, string surveyName);
+        void AddDataRecord(IDataRecord dataRecord, string serialNumber, string serverPark, string surveyName);
 
         IDataRecord GetDataRecord(string serialNumber, string serverPark, string surveyName);
 

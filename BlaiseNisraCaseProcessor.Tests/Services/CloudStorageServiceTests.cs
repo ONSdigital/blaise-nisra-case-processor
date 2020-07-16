@@ -118,10 +118,10 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             //assert
             _storageClientProviderMock.Verify(v => v.Download(
-                _file1, $"{_localPath}/{_file1}"), Times.Once);
+                _file1, $"{_localPath}\\{_file1}"), Times.Once);
 
             _storageClientProviderMock.Verify(v => v.Download(
-                _file2, $"{_localPath}/{_file2}"), Times.Once);
+                _file2, $"{_localPath}\\{_file2}"), Times.Once);
         }
 
         [Test]
@@ -144,8 +144,8 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             Assert.IsNotNull(result);
             Assert.IsInstanceOf<List<string>>(result);
             Assert.AreEqual(2, result.Count);
-            Assert.IsTrue(result.Contains($"{_localPath}/{_file1}"));
-            Assert.IsTrue(result.Contains($"{_localPath}/{_file2}"));
+            Assert.IsTrue(result.Contains($"{_localPath}\\{_file1}"));
+            Assert.IsTrue(result.Contains($"{_localPath}\\{_file2}"));
         }
 
         [Test]

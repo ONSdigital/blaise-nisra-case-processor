@@ -3,14 +3,14 @@ using log4net;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class ImportFileService : IImportFileService
+    public class ImportCasesService : IImportCasesService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
         private readonly IUpdateCaseByHoutService _updateByHoutService;
         private readonly IUpdateCaseServiceService _updateByWebFormStatus;
 
-        public ImportFileService(
+        public ImportCasesService(
             ILog logger,
             IBlaiseApiService blaiseApiService, 
             IUpdateCaseByHoutService updateByHoutService, 
@@ -22,7 +22,7 @@ namespace BlaiseNisraCaseProcessor.Services
             _updateByWebFormStatus = updateByWebFormStatus;
         }
 
-        public void ImportSurveyRecordsFromFile(string databaseFile, string serverPark, string surveyName)
+        public void ImportCasesFromFile(string databaseFile, string serverPark, string surveyName)
         {
             var cases = _blaiseApiService.GetCasesFromFile(databaseFile);
 
@@ -33,7 +33,7 @@ namespace BlaiseNisraCaseProcessor.Services
 
                 if (!_blaiseApiService.CaseExists(serialNumber, serverPark, surveyName))
                 {
-                    _blaiseApiService.AddDataRecord(newDataRecord, serverPark, surveyName);
+                    _blaiseApiService.AddDataRecord(newDataRecord, serialNumber, serverPark, surveyName);
                     _logger.Info($"Added new case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}'");
 
                     cases.MoveNext();

@@ -62,14 +62,17 @@ namespace BlaiseNisraCaseProcessor.Services
                 .Cases;
         }
 
-        public void AddDataRecord(IDataRecord dataRecord, string serverPark, string surveyName)
+        public void AddDataRecord(IDataRecord dataRecord, string serialNumber, string serverPark, string surveyName)
         {
+            var fieldData = _mapper.MapFieldDictionaryFromRecordFields(dataRecord as IDataRecord2);
+
             _blaiseApi
                 .WithConnection(_blaiseApi.DefaultConnection)
                 .WithServerPark(serverPark)
                 .WithInstrument(surveyName)
                 .Case
-                .WithDataRecord(dataRecord)
+                .WithPrimaryKey(serialNumber)
+                .WithData(fieldData)
                 .Add();
         }
 

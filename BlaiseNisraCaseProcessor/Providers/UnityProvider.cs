@@ -60,7 +60,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             _unityContainer.RegisterType<IUpdateCaseByHoutService, UpdateCaseByHoutService>();
             _unityContainer.RegisterType<IUpdateCaseServiceService, UpdateCaseService>();
             _unityContainer.RegisterType<ICloudStorageService, CloudStorageService>();
-            _unityContainer.RegisterType<IImportFileService, ImportFileService>();
+            _unityContainer.RegisterType<IImportCasesService, ImportCasesService>();
             _unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();
 
             //queue service

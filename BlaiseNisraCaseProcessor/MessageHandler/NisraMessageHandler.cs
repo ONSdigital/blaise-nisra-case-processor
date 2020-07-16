@@ -58,7 +58,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
             }
             catch (Exception ex)
             {
-                _logger.Info($"Error processing message '{message}', with inner exception {ex.InnerException}");
+                _logger.Info($"Error processing message '{message}', with exception {ex}");
 
                 return false;
             }

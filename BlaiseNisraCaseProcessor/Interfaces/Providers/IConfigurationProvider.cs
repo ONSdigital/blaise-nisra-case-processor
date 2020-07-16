@@ -14,6 +14,8 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
 
         string LocalProcessFolder { get; }
 
+        string CloudProcessedFolder { get; }
+
         string BucketName { get; }
 
         IList<string> IgnoreFilesInBucketList { get; }

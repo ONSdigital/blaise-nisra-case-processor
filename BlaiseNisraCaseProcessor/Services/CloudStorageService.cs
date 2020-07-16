@@ -44,7 +44,8 @@ namespace BlaiseNisraCaseProcessor.Services
             foreach (var file in filesInBucket)
             {
                 _logger.Info($"Processing file '{file}'");
-                var filePath = $"{localProcessFolder}/{file}";
+                var fileName = _fileSystem.Path.GetFileName(file);
+                var filePath = $"{localProcessFolder}\\{fileName}";
                 
                 _storageClientProvider.Download(file, filePath);
 

@@ -1,37 +1,35 @@
 ﻿using System.IO;
 using System.IO.Abstractions;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
-using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 
 namespace BlaiseNisraCaseProcessor.Providers
 {
-    public class LocalStorageClientProvider : StorageClientProvider
+    public class CloudStorageClientProvider : StorageClientProvider
     {
-        private readonly IConfigurationProvider _configurationProvider;
         private StorageClient _storageClient;
 
-        public LocalStorageClientProvider(
+        public CloudStorageClientProvider(
             IConfigurationProvider configurationProvider,
             IFileSystem fileSystem) : base(
             configurationProvider, 
             fileSystem)
         {
-            _configurationProvider = configurationProvider;
         }
 
 
         protected override StorageClient GetStorageClient()
         {
-            if (_storageClient == null)
+            var client = _storageClient;
+
+            if (client != null)
             {
-                var credentialsKey = _configurationProvider.CloudStorageKey;
-                var googleCredStream = GoogleCredential.FromStream(File.OpenRead(credentialsKey));
-                _storageClient = StorageClient.Create(googleCredStream);
+                return client;
             }
 
-            return _storageClient;
+            return (_storageClient = StorageClient.Create());
         }
+
         protected override void DisposeStorageClient()
         {
             _storageClient?.Dispose();

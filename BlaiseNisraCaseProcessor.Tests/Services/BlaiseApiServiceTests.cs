@@ -263,18 +263,23 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public void Given_I_Call_AddDataRecord_Then_The_Correct_Service_Methods_Are_Called()
         {
             //arrange
-            var dataRecordMock = new Mock<IDataRecord>();
+            var dataRecordMock = new Mock<IDataRecord2>();
+
+            var fieldData = new Dictionary<string, string>();
+
+            _mapperMock.Setup(m => m.MapFieldDictionaryFromRecordFields(dataRecordMock.Object)).Returns(fieldData);
 
             _blaiseApiMock.Setup(b => b
                 .WithConnection(_connectionModel)
                 .WithServerPark(_serverParkName)
                 .WithInstrument(_surveyName)
                 .Case
-                .WithDataRecord(dataRecordMock.Object)
-                .Add());
+                .WithPrimaryKey(_serialNumber)
+                .WithData(fieldData)
+                .Update());
 
             //act
-            _sut.AddDataRecord(dataRecordMock.Object, _serverParkName, _surveyName);
+            _sut.AddDataRecord(dataRecordMock.Object, _serialNumber, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiMock.Verify(v => v.DefaultConnection, Times.Once);
@@ -283,8 +288,11 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .WithServerPark(_serverParkName)
                 .WithInstrument(_surveyName)
                 .Case
-                .WithDataRecord(dataRecordMock.Object)
+                .WithPrimaryKey(_serialNumber)
+                .WithData(fieldData)
                 .Add(), Times.Once);
+
+            _mapperMock.Verify(v => v.MapFieldDictionaryFromRecordFields(dataRecordMock.Object), Times.Once);
 
             _blaiseApiMock.VerifyNoOtherCalls();
         }
