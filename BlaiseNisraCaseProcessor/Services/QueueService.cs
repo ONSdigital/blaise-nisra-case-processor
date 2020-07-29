@@ -31,6 +31,8 @@ namespace BlaiseNisraCaseProcessor.Services
                 .WithProject(_configurationProvider.ProjectId)
                 .WithTopic(_configurationProvider.SubscriptionTopicId)
                 .CreateSubscription(_subscriptionId)
+                .WithExponentialBackOff()
+                .WithDeadLetter(_configurationProvider.DeadletterTopicId)
                 .StartConsuming(messageHandler, true);
 
             _logger.Info($"Subscription setup to '{_subscriptionId}' for project '{_configurationProvider.ProjectId}'");

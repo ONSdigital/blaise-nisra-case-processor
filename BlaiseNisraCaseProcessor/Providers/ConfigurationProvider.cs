@@ -39,5 +39,7 @@ namespace BlaiseNisraCaseProcessor.Providers
         public string CloudStorageKey => ConfigurationManager.AppSettings["CloudStorageKey"];
 
         public string VmName => Environment.MachineName;
+
+        public string DeadletterTopicId => ConfigurationManager.AppSettings["DeadletterTopicId"];
     }
 }

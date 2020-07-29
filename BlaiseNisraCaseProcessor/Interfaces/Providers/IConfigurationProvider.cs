@@ -23,5 +23,7 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
         string CloudStorageKey { get; }
 
         string VmName { get; }
+
+        string DeadletterTopicId { get; }
     }
 }

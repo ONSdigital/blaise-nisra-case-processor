@@ -130,5 +130,18 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             Assert.IsTrue(result.Contains("processed"));
             Assert.IsTrue(result.Contains("audit"));
         }
+
+        [Test]
+        public void Given_I_Call_DeadletterTopicId_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.DeadletterTopicId;
+
+            //assert
+            Assert.AreEqual("DeadletterTopicIdTest", result);
+        }
     }
 }
