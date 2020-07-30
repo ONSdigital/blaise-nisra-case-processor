@@ -315,6 +315,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlaiseNisraCaseProcessor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="BlaiseNisraCaseProcessor.Designer.cs">
+      <DependentUpon>BlaiseNisraCaseProcessor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Enums\ActionType.cs" />
     <Compile Include="Enums\CaseStatusType.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
@@ -331,12 +337,6 @@
     </Compile>
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </Compile>
-    <Compile Include="BlaiseNisraCaseProcessor.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="BlaiseNisraCaseProcessor.Designer.cs">
-      <DependentUpon>BlaiseNisraCaseProcessor.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
