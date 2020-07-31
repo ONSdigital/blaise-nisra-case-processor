@@ -8,7 +8,7 @@ namespace BlaiseNisraCaseProcessor.Providers
 {
     public class ConfigurationProvider : IConfigurationProvider
     {
-        public string ProjectId => ConfigurationManager.AppSettings["ProjectId"];
+        public string ProjectId => Environment.GetEnvironmentVariable("ENV_PROJECT_ID", EnvironmentVariableTarget.Machine) ?? ConfigurationManager.AppSettings["ProjectId"];
 
         public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
 
