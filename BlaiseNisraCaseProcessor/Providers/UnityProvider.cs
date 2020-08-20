@@ -18,12 +18,11 @@ namespace BlaiseNisraCaseProcessor.Providers
 {
     public class UnityProvider
     {
-        private readonly UnityContainer _unityContainer;
+        private readonly IUnityContainer _unityContainer;
 
         public UnityProvider()
         {
             _unityContainer = new UnityContainer();
-
             //blaise services
             _unityContainer.RegisterType<IFluentBlaiseApi, FluentBlaiseApi>();
 
@@ -42,7 +41,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
 #else
             // When running in Release, the service will be running as compute account which will have access to all buckets.
-            _unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
+            _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
 #endif
 
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
