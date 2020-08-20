@@ -75,7 +75,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _queueProviderMock.Verify(v => v.WithProject(_projectId), Times.Once);
             _queueProviderMock.Verify(v => v.WithTopic(_subscriptionTopicId), Times.Once);
             _queueProviderMock.Verify(v => v.CreateSubscription($"{_subscriptionId}-{_vmName}", It.IsAny<int>()), Times.Once);
-            _queueProviderMock.Verify(v => v.WithExponentialBackOff(10, 600), Times.Once);
+            _queueProviderMock.Verify(v => v.WithExponentialBackOff(60, 600), Times.Once);
             _queueProviderMock.Verify(v => v.WithDeadLetter(_deadLetterTopicId, 5), Times.Once);
             _queueProviderMock.Verify(v => v.StartConsuming(_messageHandlerMock.Object, It.IsAny<bool>()), Times.Once);
         }
