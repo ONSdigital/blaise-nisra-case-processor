@@ -23,6 +23,8 @@ This service also publishes case status updates to the topic 'case-status-update
 # Example message
 ```
 
+{"action": "process"}
+
 ```
 
 #debugging
