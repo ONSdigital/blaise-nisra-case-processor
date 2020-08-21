@@ -38,6 +38,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
 
                 if (messageModel.Action != ActionType.Process)
                 {
+                    _logger.Info("The Message '{message}' did not appear to be a valid message to trigger this process");
                     return true;
                 }
 
