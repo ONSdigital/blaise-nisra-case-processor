@@ -63,8 +63,7 @@ namespace BlaiseNisraCaseProcessor.Providers
                     continue;
                 }
 
-                var storageObjectPath = FileSystem.Path.GetDirectoryName(storageObject.Name).Replace("\\", "/");
-                var processedPath = $"{storageObjectPath}/{ProcessedFolder}/{storageObjectName}";
+                var processedPath = $"{ProcessedFolder}/{storageObjectName}";
                 storageClient.CopyObject(BucketName, storageObject.Name, BucketName, processedPath);
                 storageClient.DeleteObject(BucketName, storageObject.Name);
 
