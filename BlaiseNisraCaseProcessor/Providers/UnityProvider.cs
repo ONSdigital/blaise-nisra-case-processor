@@ -56,8 +56,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             //services   
             _unityContainer.RegisterType<IPublishCaseStatusService, PublishCaseStatusService>();
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
-            _unityContainer.RegisterType<IUpdateCaseByHoutService, UpdateCaseByHoutService>();
-            _unityContainer.RegisterType<IUpdateCaseServiceService, UpdateCaseService>();
+            _unityContainer.RegisterType<IUpdateCaseService, UpdateCaseService>();
             _unityContainer.RegisterType<ICloudStorageService, CloudStorageService>();
             _unityContainer.RegisterType<IImportCasesService, ImportCasesService>();
             _unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();

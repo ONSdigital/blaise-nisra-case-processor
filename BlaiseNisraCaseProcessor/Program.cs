@@ -1,6 +1,4 @@
-﻿using System.ServiceProcess;
-
-namespace BlaiseNisraCaseProcessor
+﻿namespace BlaiseNisraCaseProcessor
 {
     static class Program
     {

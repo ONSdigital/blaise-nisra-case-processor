@@ -1,79 +1,53 @@
-﻿using Blaise.Nuget.Api.Contracts.Enums;
-using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
 using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class UpdateCaseService : IUpdateCaseServiceService
+    public class UpdateCaseService : IUpdateCaseService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IUpdateCaseByHoutService _updateByHoutService;
         private readonly IPublishCaseStatusService _publishCaseStatusService;
 
         public UpdateCaseService(
             ILog logger,
-            IBlaiseApiService blaiseApiService, 
-            IUpdateCaseByHoutService updateByHoutService, 
+            IBlaiseApiService blaiseApiService,
             IPublishCaseStatusService publishCaseStatusService)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
-            _updateByHoutService = updateByHoutService;
             _publishCaseStatusService = publishCaseStatusService;
         }
 
-        public void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark,
-            string surveyName, string serialNumber)
+        public void UpdateCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName, string serialNumber)
         {
-            var newWebFormStatus = _blaiseApiService.GetWebFormStatus(newDataRecord);
+            var nisraOutcome = _blaiseApiService.GetHOutValue(nisraDataRecord);
 
-            if (newWebFormStatus == WebFormStatusType.NotProcessed)
+            if (nisraOutcome == 0)
             {
-                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the Web form status is set as not processed");
+                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the and the HOut value is '{nisraOutcome}' which indicates it has not been processed");
                 return;
             }
 
-            var existingWebFormStatus = _blaiseApiService.GetWebFormStatus(existingDataRecord);
+            var existingOutcome = _blaiseApiService.GetHOutValue(existingDataRecord);
 
-            if (existingWebFormStatus == WebFormStatusType.Complete)
+            if (existingOutcome > 0 && existingOutcome < nisraOutcome)
             {
-                if (newWebFormStatus == WebFormStatusType.Complete)
-                {
-                    _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status is set as complete in both the existing record and NISRA file");
-                    _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
-                    return;
-                }
+                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the existing HOut '{existingOutcome}' is better than the NISRA HOut '{nisraOutcome}'");
 
-                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the Web form status is set as complete for the existing but not in the NISRA file");
                 return;
             }
 
-            if (existingWebFormStatus == WebFormStatusType.Partial)
-            {
-                if (newWebFormStatus == WebFormStatusType.Partial)
-                {
-                    _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status is set as partial in both the existing record and NISRA file");
-                    _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
-                    return;
-                }
+            ImportNisraCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
+            _logger.Info($"The NISRA file has been imported for serial number '{serialNumber}' as the HOut value '{nisraOutcome}' is the same in both the NISRA file and the database");
+        }
 
-                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the Web form status is set as complete for the existing but not in teh NISRA file");
-                _blaiseApiService.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName);
-                _publishCaseStatusService.PublishCaseStatus(newDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);
-                return;
-            }
-
-            if (newWebFormStatus != WebFormStatusType.NotSpecified)
-            {
-                _logger.Info($"The NISRA file for serial number '{serialNumber}' will be updated by HOut value as the Web form status of the NISRA file is '{newWebFormStatus}'");
-                _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
-                return;
-            }
-
-            _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the Web form status of the NISRA file is '{newWebFormStatus}'");
+        private void ImportNisraCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)
+        {
+            _blaiseApiService.UpdateCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
+            _publishCaseStatusService.PublishCaseStatus(nisraDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);
         }
     }
 }
