@@ -12,8 +12,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
-        private Mock<IUpdateCaseByHoutService> _updateByHoutServiceMock;
-        private Mock<IUpdateCaseServiceService> _updateByWebFormStatusMock;
+        private Mock<IUpdateCaseService> _updateCaseServiceMock;
 
         private Mock<IDataRecord> _newDataRecordMock;
         private Mock<IDataRecord> _existingDataRecordMock;
@@ -48,15 +47,12 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock = new Mock<IBlaiseApiService>();
             _blaiseApiServiceMock.Setup(b => b.GetCasesFromFile(_databaseFileName)).Returns(_dataSetMock.Object);
 
-            _updateByHoutServiceMock = new Mock<IUpdateCaseByHoutService>();
-
-            _updateByWebFormStatusMock = new Mock<IUpdateCaseServiceService>();
+            _updateCaseServiceMock = new Mock<IUpdateCaseService>();
 
             _sut = new ImportCasesService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
-                _updateByHoutServiceMock.Object,
-                _updateByWebFormStatusMock.Object);
+                _updateCaseServiceMock.Object);
         }
 
         [Test]
@@ -75,8 +71,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _dataSetMock.Verify(v => v.EndOfSet, Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _updateByHoutServiceMock.VerifyNoOtherCalls();
-            _updateByWebFormStatusMock.VerifyNoOtherCalls();
+            _updateCaseServiceMock.VerifyNoOtherCalls();
         }
 
         [Test]
@@ -106,12 +101,11 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _updateByHoutServiceMock.VerifyNoOtherCalls();
-            _updateByWebFormStatusMock.VerifyNoOtherCalls();
+            _updateCaseServiceMock.VerifyNoOtherCalls();
         }
 
         [Test]
-        public void Given_A_Record_Already_Exists_And_The_WebStatusField_Exists_On_Both_Records_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_WebStatus()
+        public void Given_A_Record_Already_Exists_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated()
         {
             //arrange
             _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
@@ -125,9 +119,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Setup(b => b.GetDataRecord(_serialNumber, _serverParkName, _surveyName))
                 .Returns(_existingDataRecordMock.Object);
 
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_newDataRecordMock.Object)).Returns(true);
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(true);
-
             //act
             _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
 
@@ -136,100 +127,16 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _blaiseApiServiceMock.Verify(v => v.GetSerialNumber(_newDataRecordMock.Object), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.CaseExists(_serialNumber, _serverParkName, _surveyName), Times.Once);
             _blaiseApiServiceMock.Verify(v => v.GetDataRecord(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.WebFormStatusFieldExists(_newDataRecordMock.Object), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.WebFormStatusFieldExists(_existingDataRecordMock.Object), Times.Once);
 
             _dataSetMock.Verify(v => v.EndOfSet, Times.Exactly(2));
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
             _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
 
-            _updateByWebFormStatusMock.Verify(v => v.UpdateCase(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+            _updateCaseServiceMock.Verify(v => v.UpdateCase(_newDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _surveyName, _serialNumber), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _updateByHoutServiceMock.VerifyNoOtherCalls();
-            _updateByWebFormStatusMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_A_Record_Already_Exists_And_The_WebStatusFieldExists_Only_On_Nisra_File_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_HOut()
-        {
-            //arrange
-            _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
-            _dataSetMock.SetupSequence(d => d.EndOfSet)
-                .Returns(false)
-                .Returns(true);
-
-            _blaiseApiServiceMock.Setup(b => b.GetSerialNumber(_newDataRecordMock.Object)).Returns(_serialNumber);
-            _blaiseApiServiceMock.Setup(b => b.CaseExists(_serialNumber, _serverParkName, _surveyName)).Returns(true);
-
-            _blaiseApiServiceMock.Setup(b => b.GetDataRecord(_serialNumber, _serverParkName, _surveyName))
-                .Returns(_existingDataRecordMock.Object);
-
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_newDataRecordMock.Object)).Returns(true);
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(false);
-
-            //act
-            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
-
-            //assert
-            _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.GetSerialNumber(_newDataRecordMock.Object), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.CaseExists(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.GetDataRecord(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.WebFormStatusFieldExists(_newDataRecordMock.Object), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.WebFormStatusFieldExists(_existingDataRecordMock.Object), Times.Once);
-
-            _dataSetMock.Verify(v => v.EndOfSet, Times.Exactly(2));
-            _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
-            _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
-
-            _updateByHoutServiceMock.Verify(v => v.UpdateCaseByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
-                _serverParkName, _surveyName, _serialNumber), Times.Once);
-
-            _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _updateByHoutServiceMock.VerifyNoOtherCalls();
-            _updateByWebFormStatusMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_A_Record_Already_Exists_And_The_WebStatusFieldExists_Only_On_Existing_File_When_I_Call_ImportCasesFromFile_Then_The_Record_Is_Updated_By_HOut()
-        {
-            //arrange
-            _dataSetMock.Setup(d => d.ActiveRecord).Returns(_newDataRecordMock.Object);
-            _dataSetMock.SetupSequence(d => d.EndOfSet)
-                .Returns(false)
-                .Returns(true);
-
-            _blaiseApiServiceMock.Setup(b => b.GetSerialNumber(_newDataRecordMock.Object)).Returns(_serialNumber);
-            _blaiseApiServiceMock.Setup(b => b.CaseExists(_serialNumber, _serverParkName, _surveyName)).Returns(true);
-
-            _blaiseApiServiceMock.Setup(b => b.GetDataRecord(_serialNumber, _serverParkName, _surveyName))
-                .Returns(_existingDataRecordMock.Object);
-
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_newDataRecordMock.Object)).Returns(false);
-            _blaiseApiServiceMock.Setup(b => b.WebFormStatusFieldExists(_existingDataRecordMock.Object)).Returns(true);
-
-            //act
-            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
-
-            //assert
-            _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.GetSerialNumber(_newDataRecordMock.Object), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.CaseExists(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.GetDataRecord(_serialNumber, _serverParkName, _surveyName), Times.Once);
-            _blaiseApiServiceMock.Verify(v => v.WebFormStatusFieldExists(_newDataRecordMock.Object), Times.Once);
-
-            _dataSetMock.Verify(v => v.EndOfSet, Times.Exactly(2));
-            _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
-            _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
-
-            _updateByHoutServiceMock.Verify(v => v.UpdateCaseByHoutValues(_newDataRecordMock.Object, _existingDataRecordMock.Object,
-                _serverParkName, _surveyName, _serialNumber), Times.Once);
-
-            _blaiseApiServiceMock.VerifyNoOtherCalls();
-            _updateByHoutServiceMock.VerifyNoOtherCalls();
-            _updateByWebFormStatusMock.VerifyNoOtherCalls();
+            _updateCaseServiceMock.VerifyNoOtherCalls();
         }
     }
 }

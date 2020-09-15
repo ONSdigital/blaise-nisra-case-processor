@@ -7,19 +7,16 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IUpdateCaseByHoutService _updateByHoutService;
-        private readonly IUpdateCaseServiceService _updateByWebFormStatus;
+        private readonly IUpdateCaseService _updateCaseService;
 
         public ImportCasesService(
             ILog logger,
-            IBlaiseApiService blaiseApiService, 
-            IUpdateCaseByHoutService updateByHoutService, 
-            IUpdateCaseServiceService updateByWebFormStatus)
+            IBlaiseApiService blaiseApiService,
+            IUpdateCaseService updateCaseService)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
-            _updateByHoutService = updateByHoutService;
-            _updateByWebFormStatus = updateByWebFormStatus;
+            _updateCaseService = updateCaseService;
         }
 
         public void ImportCasesFromFile(string databaseFile, string serverPark, string surveyName)
@@ -31,28 +28,18 @@ namespace BlaiseNisraCaseProcessor.Services
                 var newDataRecord = cases.ActiveRecord;
                 var serialNumber = _blaiseApiService.GetSerialNumber(newDataRecord);
 
-                if (!_blaiseApiService.CaseExists(serialNumber, serverPark, surveyName))
+                if (_blaiseApiService.CaseExists(serialNumber, serverPark, surveyName))
                 {
-                    _blaiseApiService.AddDataRecord(newDataRecord, serialNumber, serverPark, surveyName);
-                    _logger.Info($"Added new case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}'");
-
-                    cases.MoveNext();
-                    continue;
-                }
-
-                var existingDataRecord = _blaiseApiService.GetDataRecord(serialNumber, serverPark, surveyName);
-
-                if (_blaiseApiService.WebFormStatusFieldExists(newDataRecord) && _blaiseApiService.WebFormStatusFieldExists(existingDataRecord))
-                {
-                    _updateByWebFormStatus.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
+                    var existingDataRecord = _blaiseApiService.GetDataRecord(serialNumber, serverPark, surveyName);
+                    _updateCaseService.UpdateCase(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
                     _logger.Info($"Updated case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}'");
 
                     cases.MoveNext();
                     continue;
                 }
 
-                _updateByHoutService.UpdateCaseByHoutValues(newDataRecord, existingDataRecord, serverPark, surveyName, serialNumber);
-                _logger.Info($"Updated case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}' via HOut values");
+                _blaiseApiService.AddDataRecord(newDataRecord, serialNumber, serverPark, surveyName);
+                _logger.Info($"Added new case with serial number {serialNumber} to survey '{surveyName}' on server park '{serverPark}'");
 
                 cases.MoveNext();
             }

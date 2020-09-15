@@ -32,13 +32,14 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
         {
             try
             {
-                _logger.Info($"Message received '{message}'");
+                var messagedReceivedDateTime = DateTime.Now;
+                _logger.Info($"Message received '{message}' at '{messagedReceivedDateTime}'");
 
                 var messageModel = _mapper.MapToNisraCaseActionModel(message);
 
                 if (messageModel.Action != ActionType.Process)
                 {
-                    _logger.Info("The Message '{message}' did not appear to be a valid message to trigger this process");
+                    _logger.Info("The Message '{message}' is not valid");
                     return true;
                 }
 
@@ -54,7 +55,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
 
                 _bucketFileService.MoveProcessedFilesToProcessedFolder(availableFiles);
 
-                _logger.Info($"Message processed '{message}'");
+                _logger.Info($"Finished processing '{message}' received at '{messagedReceivedDateTime}'");
                 return true;
             }
             catch (Exception ex)

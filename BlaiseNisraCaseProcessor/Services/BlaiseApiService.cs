@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Blaise.Nuget.Api.Contracts.Enums;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
@@ -14,7 +13,7 @@ namespace BlaiseNisraCaseProcessor.Services
         private readonly ICaseMapper _mapper;
 
         public BlaiseApiService(
-            IFluentBlaiseApi blaiseApi, 
+            IFluentBlaiseApi blaiseApi,
             ICaseMapper mapper)
         {
             _blaiseApi = blaiseApi;
@@ -85,30 +84,6 @@ namespace BlaiseNisraCaseProcessor.Services
                 .Case
                 .WithPrimaryKey(serialNumber)
                 .Get();
-        }
-
-        public bool WebFormStatusFieldExists(IDataRecord dataRecord)
-        {
-            return _blaiseApi
-                .Case
-                .WithDataRecord(dataRecord)
-                .HasField(FieldNameType.WebFormStatus);
-        }
-
-        public WebFormStatusType GetWebFormStatus(IDataRecord dataRecord)
-        {
-            return _blaiseApi
-                .Case
-                .WithDataRecord(dataRecord)
-                .WebFormStatus;
-        }
-
-        public bool HOutFieldExists(IDataRecord dataRecord)
-        {
-            return _blaiseApi
-                .Case
-                .WithDataRecord(dataRecord)
-                .HasField(FieldNameType.HOut);
         }
 
         public decimal GetHOutValue(IDataRecord dataRecord)

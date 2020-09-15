@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Blaise.Nuget.Api.Contracts.Enums;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.DataRecord;
 
@@ -21,11 +20,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
 
         IDataRecord GetDataRecord(string serialNumber, string serverPark, string surveyName);
 
-        bool WebFormStatusFieldExists(IDataRecord dataRecord);
-
-        WebFormStatusType GetWebFormStatus(IDataRecord dataRecord);
-
-        bool HOutFieldExists(IDataRecord dataRecord);
         decimal GetHOutValue(IDataRecord dataRecord);
 
         void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName);
