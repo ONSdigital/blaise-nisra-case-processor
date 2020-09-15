@@ -35,11 +35,14 @@ namespace BlaiseNisraCaseProcessor.Providers
         public IEnumerable<string> GetAvailableFilesFromBucket()
         {
             var storageClient = GetStorageClient();
-            var availableFilesInBucket = storageClient.ListObjects(BucketName, "");
+            var availableObjectsInBucket = storageClient.ListObjects(BucketName, "");
 
-            return !availableFilesInBucket.Any()
-                ? new List<string>()
-                : GetListOfFilesToProcess(availableFilesInBucket).ToList();
+            //get all objects that are not folders
+            var availableFiles = availableObjectsInBucket.Where(f => f.Size > 0).Select(f => f.Name).ToList();
+
+            return availableFiles.Any()
+                ? RemovedFilesFromIgnoreList(availableFiles).ToList()
+                : new List<string>();
         }
 
         public void Download(string fileName, string filePath)
@@ -76,17 +79,16 @@ namespace BlaiseNisraCaseProcessor.Providers
             DisposeStorageClient();
         }
 
-        private IEnumerable<string> GetListOfFilesToProcess(IEnumerable<Google.Apis.Storage.v1.Data.Object> availableFiles)
+        private IEnumerable<string> RemovedFilesFromIgnoreList(List<string> availableFiles)
         {
             var fileNamesToIgnore = ConfigurationProvider.IgnoreFilesInBucketList;
-            var filesToProcess = availableFiles.Select(f => f.Name).ToList();
 
             foreach (var fileNameToIgnore in fileNamesToIgnore)
             {
-                filesToProcess.RemoveAll(f => f.Contains(fileNameToIgnore));
+                availableFiles.RemoveAll(f => f.Contains(fileNameToIgnore));
             }
 
-            return filesToProcess;
+            return availableFiles;
         }
     }
 }
