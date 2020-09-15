@@ -27,7 +27,7 @@ namespace BlaiseNisraCaseProcessor.Services
 
             if (nisraOutcome == 0)
             {
-                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the and the HOut value is '{nisraOutcome}' which indicates it has not been processed");
+                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = 0)");
                 return;
             }
 
@@ -35,13 +35,13 @@ namespace BlaiseNisraCaseProcessor.Services
 
             if (existingOutcome > 0 && existingOutcome < nisraOutcome)
             {
-                _logger.Info($"The NISRA file has not been processed for serial number '{serialNumber}' as the existing HOut '{existingOutcome}' is better than the NISRA HOut '{nisraOutcome}'");
+                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' < '{nisraOutcome}')'");
 
                 return;
             }
 
             ImportNisraCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
-            _logger.Info($"The NISRA file has been imported for serial number '{serialNumber}' as the HOut value '{nisraOutcome}' is the same in both the NISRA file and the database");
+            _logger.Info($"processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' > '{nisraOutcome}') or (HOut = 0)'");
         }
 
         private void ImportNisraCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)
