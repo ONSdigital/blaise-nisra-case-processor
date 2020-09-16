@@ -59,7 +59,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            var result = _sut.GetFilesFromBucket();
+            var result = _sut.GetAvailableFilesFromBucket();
 
             //assert
             Assert.IsNotNull(result);
@@ -77,7 +77,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            _sut.GetFilesFromBucket();
+            _sut.GetAvailableFilesFromBucket();
 
             //assert
             _storageClientProviderMock.Verify(v => v.Download(
@@ -94,14 +94,14 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            _sut.GetFilesFromBucket();
+            _sut.GetAvailableFilesFromBucket();
 
             //assert
             _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_GetFilesFromBucket_Then_The_Files_Are_Downloaded()
+        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_The_Files_Are_Downloaded()
         {
             //arrange
             var filesInBucket = new List<string>
@@ -114,7 +114,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            _sut.GetFilesFromBucket();
+            _sut.DownloadFilesFromBucket(filesInBucket);
 
             //assert
             _storageClientProviderMock.Verify(v => v.Download(
@@ -138,14 +138,14 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            var result = _sut.GetFilesFromBucket().ToList();
+            var result = _sut.GetAvailableFilesFromBucket().ToList();
 
             //assert
             Assert.IsNotNull(result);
             Assert.IsInstanceOf<List<string>>(result);
             Assert.AreEqual(2, result.Count);
-            Assert.IsTrue(result.Contains($"{_localPath}\\{_file1}"));
-            Assert.IsTrue(result.Contains($"{_localPath}\\{_file2}"));
+            Assert.IsTrue(result.Contains($"{_file1}"));
+            Assert.IsTrue(result.Contains($"{_file2}"));
         }
 
         [Test]
@@ -162,7 +162,51 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
                 .Returns(filesInBucket);
 
             //act
-            _sut.GetFilesFromBucket();
+            _sut.GetAvailableFilesFromBucket();
+
+            //assert
+            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
+        }
+
+        [Test]
+        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_A_List_Of_Files_Gets_Returned()
+        {
+            //arrange
+            var filesInBucket = new List<string>
+            {
+                _file1,
+                _file2
+            };
+
+            _storageClientProviderMock.Setup(s => s.GetAvailableFilesFromBucket())
+                .Returns(filesInBucket);
+
+            //act
+            var result = _sut.DownloadFilesFromBucket(filesInBucket).ToList();
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<List<string>>(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.Contains($"{_localPath}\\{_file1}"));
+            Assert.IsTrue(result.Contains($"{_localPath}\\{_file2}"));
+        }
+
+        [Test]
+        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_The_Storage_Client_Is_Disposed()
+        {
+            //arrange
+            var filesInBucket = new List<string>
+            {
+                _file1,
+                _file2
+            };
+
+            _storageClientProviderMock.Setup(s => s.GetAvailableFilesFromBucket())
+                .Returns(filesInBucket);
+
+            //act
+            _sut.DownloadFilesFromBucket(filesInBucket);
 
             //assert
             _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);

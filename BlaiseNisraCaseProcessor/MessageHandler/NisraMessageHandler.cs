@@ -43,17 +43,25 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                     return true;
                 }
 
-                var availableFiles = _bucketFileService.GetFilesFromBucket().ToList();
+                var availableFilesInBucket = _bucketFileService.GetAvailableFilesFromBucket();
 
-                if (!availableFiles.Any())
+                if (!availableFilesInBucket.Any())
                 {
                     _logger.Info("No available files found in the bucket");
                     return true;
                 }
 
-                _processNisraFilesService.ProcessFiles(availableFiles);
+                var downloadedFilesFromBucket = _bucketFileService.DownloadFilesFromBucket(availableFilesInBucket);
 
-                _bucketFileService.MoveProcessedFilesToProcessedFolder(availableFiles);
+                if (!downloadedFilesFromBucket.Any())
+                {
+                    _logger.Info("No files were downloaded from the bucket");
+                    return true;
+                }
+
+                _processNisraFilesService.ProcessFiles(downloadedFilesFromBucket);
+
+                _bucketFileService.MoveProcessedFilesToProcessedFolder(availableFilesInBucket);
 
                 _logger.Info($"Finished processing '{message}' received at '{messagedReceivedDateTime}'");
                 return true;

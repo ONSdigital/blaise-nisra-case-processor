@@ -26,27 +26,30 @@ namespace BlaiseNisraCaseProcessor.Services
             _fileSystem = fileSystem;
         }
 
-        public IEnumerable<string> GetFilesFromBucket()
+        public IList<string> GetAvailableFilesFromBucket()
         {
-            var filesInBucket = _storageClientProvider.GetAvailableFilesFromBucket().ToList();
+            var filesAvailable = _storageClientProvider.GetAvailableFilesFromBucket().ToList();
+            _storageClientProvider.Dispose();
 
-            if (!filesInBucket.Any())
+            return filesAvailable;
+        }
+
+        public IList<string> DownloadFilesFromBucket(IList<string> files)
+        {
+            if (!files.Any())
             {
-                _logger.Info($"No files available on bucket '{_configurationProvider.BucketName}'");
-                _storageClientProvider.Dispose();
-
                 return new List<string>();
             }
 
             var localProcessFolder = GetLocalProcessFolder();
             var filesDownloadedFromBucket = new List<string>();
 
-            foreach (var file in filesInBucket)
+            foreach (var file in files)
             {
                 _logger.Info($"Processing file '{file}'");
                 var fileName = _fileSystem.Path.GetFileName(file);
                 var filePath = _fileSystem.Path.Combine(localProcessFolder, fileName);
-                
+
                 _storageClientProvider.Download(file, filePath);
 
                 filesDownloadedFromBucket.Add(filePath);
