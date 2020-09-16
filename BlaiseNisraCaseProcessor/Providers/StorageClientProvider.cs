@@ -54,19 +54,20 @@ namespace BlaiseNisraCaseProcessor.Providers
             }
         }
 
-        public void MoveFileToProcessedFolder(string fileName)
+        public void MoveFileToProcessedFolder(string file)
         {
             var storageClient = GetStorageClient();
             foreach (var storageObject in storageClient.ListObjects(BucketName, ""))
             {
-                var storageObjectName = FileSystem.Path.GetFileName(storageObject.Name);
-
-                if (!string.Equals(storageObjectName, fileName, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.Equals(storageObject.Name, file, StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
 
-                var processedPath = $"{ProcessedFolder}/{storageObjectName}";
+                var fileName = FileSystem.Path.GetFileName(file);
+                var filePath = FileSystem.Path.GetDirectoryName(file).Replace("\\", "/");
+                var processedPath = $"{filePath}/{ProcessedFolder}/{fileName}";
+                
                 storageClient.CopyObject(BucketName, storageObject.Name, BucketName, processedPath);
                 storageClient.DeleteObject(BucketName, storageObject.Name);
 

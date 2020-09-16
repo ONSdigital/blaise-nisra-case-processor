@@ -22,5 +22,24 @@ namespace BlaiseNisraCaseProcessor.Tests.Integration.Cloud
             Assert.IsNotNull(result);
             Assert.AreEqual(6, result.Count());
         }
+
+        [Ignore("")]
+        [Test]
+        public void Given_Files_Are_Available_In_The_Bucket_When_I_Call_MoveFileToProcessedFolder_Then_The_Files_Are_Moved_To_The_Correct_Folder()
+        {
+            //arrange
+            var unityProvider = new UnityProvider();
+            var sut = unityProvider.Resolve<IStorageClientProvider>();
+
+            var files = sut.GetAvailableFilesFromBucket();
+
+            //act
+            foreach (var file in files)
+            {
+                sut.MoveFileToProcessedFolder(file);
+            }
+            
+            //assert
+        }
     }
 }
