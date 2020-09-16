@@ -213,10 +213,10 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             //assert
             _storageClientProviderMock.Verify(v => v.MoveFileToProcessedFolder(
-                _file1), Times.Once);
+                $"{_localPath}/{_file1}"), Times.Once);
 
             _storageClientProviderMock.Verify(v => v.MoveFileToProcessedFolder(
-                _file2), Times.Once);
+                $"{_localPath}/{_file2}"), Times.Once);
         }
 
         [Test]

@@ -67,9 +67,9 @@ namespace BlaiseNisraCaseProcessor.Services
 
             foreach (var processedFile in processedFiles)
             {
-                var fileName = _fileSystem.Path.GetFileName(processedFile);
-                _storageClientProvider.MoveFileToProcessedFolder(fileName);
-                _logger.Info($"Moved file '{fileName}' into the processed bucket folder");
+                _storageClientProvider.MoveFileToProcessedFolder(processedFile);
+                
+                _logger.Info($"Moved file '{processedFile}' into the processed bucket folder");
             }
 
             _storageClientProvider.Dispose();
