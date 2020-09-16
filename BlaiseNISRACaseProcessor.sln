@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlaiseNisraCaseProcessor", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlaiseNisraCaseProcessor.Tests", "BlaiseNisraCaseProcessor.Tests\BlaiseNisraCaseProcessor.Tests.csproj", "{2D539782-C662-4F48-8DA8-05F5E48FFC79}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlaiseNisraCaseProcessor.Tests.Integration", "BlaiseNisraCaseProcessor.Tests.Integration\BlaiseNisraCaseProcessor.Tests.Integration.csproj", "{3C88C815-4C41-4E50-B947-B9354840E46A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{2D539782-C662-4F48-8DA8-05F5E48FFC79}.Release|x64.Build.0 = Release|x64
 		{2D539782-C662-4F48-8DA8-05F5E48FFC79}.Release|x86.ActiveCfg = Debug|x64
 		{2D539782-C662-4F48-8DA8-05F5E48FFC79}.Release|x86.Build.0 = Debug|x64
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|x64.Build.0 = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Debug|x86.Build.0 = Debug|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|x64.ActiveCfg = Release|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|x64.Build.0 = Release|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|x86.ActiveCfg = Release|Any CPU
+		{3C88C815-4C41-4E50-B947-B9354840E46A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

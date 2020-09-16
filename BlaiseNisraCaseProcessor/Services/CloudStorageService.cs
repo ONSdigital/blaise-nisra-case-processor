@@ -45,7 +45,7 @@ namespace BlaiseNisraCaseProcessor.Services
             {
                 _logger.Info($"Processing file '{file}'");
                 var fileName = _fileSystem.Path.GetFileName(file);
-                var filePath = $"{localProcessFolder}\\{fileName}";
+                var filePath = _fileSystem.Path.Combine(localProcessFolder, fileName);
                 
                 _storageClientProvider.Download(file, filePath);
 
