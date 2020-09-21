@@ -12,6 +12,8 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
 
         string GetSerialNumber(IDataRecord dataRecord);
 
+        string GetCaseId(IDataRecord dataRecord);
+
         bool CaseExists(string serialNumber, string serverPark, string surveyName);
 
         IDataSet GetCasesFromFile(string databaseFile);

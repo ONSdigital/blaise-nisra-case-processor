@@ -42,6 +42,11 @@ namespace BlaiseNisraCaseProcessor.Services
             return _blaiseApi.Case.WithDataRecord(dataRecord).PrimaryKey;
         }
 
+        public string GetCaseId(IDataRecord dataRecord)
+        {
+            return _blaiseApi.Case.WithDataRecord(dataRecord).CaseId;
+        }
+
         public bool CaseExists(string serialNumber, string serverPark, string surveyName)
         {
             return _blaiseApi
