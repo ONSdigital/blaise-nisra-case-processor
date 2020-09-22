@@ -35,7 +35,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
-            _unityContainer.RegisterType<IStorageClientProvider, LocalStorageClientProvider>();
+            _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);

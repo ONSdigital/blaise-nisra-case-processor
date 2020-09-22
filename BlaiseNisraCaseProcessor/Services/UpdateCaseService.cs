@@ -1,7 +1,7 @@
-﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using Blaise.Nuget.Api.Contracts.Enums;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
-using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {

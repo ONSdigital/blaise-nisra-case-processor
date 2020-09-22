@@ -1,10 +1,10 @@
-﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using Blaise.Nuget.Api.Contracts.Enums;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Services;
 using log4net;
 using Moq;
 using NUnit.Framework;
 using StatNeth.Blaise.API.DataRecord;
-using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Tests.Services
 {

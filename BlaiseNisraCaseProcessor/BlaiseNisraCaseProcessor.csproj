@@ -84,13 +84,13 @@
       <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.9.15.3\lib\net472\Blaise.Nuget.Api.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.9.22.2\lib\net472\Blaise.Nuget.Api.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.9.15.3\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.9.22.2\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.9.15.3\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.9.22.2\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.9.16.1\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
@@ -325,8 +325,6 @@
       <DependentUpon>BlaiseNisraCaseProcessor.cs</DependentUpon>
     </Compile>
     <Compile Include="Enums\ActionType.cs" />
-    <Compile Include="Enums\CaseStatusType.cs" />
-    <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
@@ -345,7 +343,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ConfigurationProvider.cs" />
     <Compile Include="Providers\CloudStorageClientProvider.cs" />
-    <Compile Include="Providers\LocalStorageClientProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
     <Compile Include="Providers\UnityProvider.cs" />
     <Compile Include="Services\BlaiseApiService.cs" />

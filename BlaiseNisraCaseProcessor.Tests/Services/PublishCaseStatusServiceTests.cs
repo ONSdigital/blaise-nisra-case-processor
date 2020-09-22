@@ -1,4 +1,4 @@
-﻿using BlaiseNisraCaseProcessor.Enums;
+﻿using Blaise.Nuget.Api.Contracts.Enums;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Services;

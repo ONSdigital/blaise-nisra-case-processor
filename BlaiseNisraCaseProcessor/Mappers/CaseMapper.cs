@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Blaise.Nuget.Api.Contracts.Enums;
+using Blaise.Nuget.Api.Contracts.Extensions;
 using BlaiseNisraCaseProcessor.Enums;
-using BlaiseNisraCaseProcessor.Helpers;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Models;
 using Newtonsoft.Json;
@@ -24,7 +25,7 @@ namespace BlaiseNisraCaseProcessor.Mappers
 
             jsonData["instrument_name"] = surveyName;
             jsonData["server_park"] = serverPark;
-            jsonData["status"] = EnumHelper.GetEnumDescription(caseStatusType);
+            jsonData["status"] = caseStatusType.FullName();
 
             return JsonConvert.SerializeObject(jsonData);
         }

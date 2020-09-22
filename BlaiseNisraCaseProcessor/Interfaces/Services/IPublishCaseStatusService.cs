@@ -1,4 +1,4 @@
-﻿using BlaiseNisraCaseProcessor.Enums;
+﻿using Blaise.Nuget.Api.Contracts.Enums;
 using StatNeth.Blaise.API.DataRecord;
 
 namespace BlaiseNisraCaseProcessor.Interfaces.Services
