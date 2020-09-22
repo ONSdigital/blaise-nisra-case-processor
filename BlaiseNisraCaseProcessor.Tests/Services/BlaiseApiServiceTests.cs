@@ -393,10 +393,16 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public void Given_I_Call_UpdateCase_Then_The_Correct_Service_Methods_Are_Called()
         {
             //arrange
+            var existingCaseId = "3001";
             var newDataRecordMock = new Mock<IDataRecord2>();
             var existingDataRecordMock = new Mock<IDataRecord>();
 
             var fieldData = new Dictionary<string, string>();
+
+            _blaiseApiMock.Setup(b => b
+                .Case
+                .WithDataRecord(existingDataRecordMock.Object)
+                .CaseId).Returns(existingCaseId);
 
             _mapperMock.Setup(m => m.MapFieldDictionaryFromRecordFields(newDataRecordMock.Object)).Returns(fieldData);
 
@@ -414,6 +420,9 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             //assert
             _blaiseApiMock.Verify(v => v.DefaultConnection, Times.Once);
+            _blaiseApiMock.Verify(v => v.Case
+                .WithDataRecord(existingDataRecordMock.Object).CaseId);
+
             _blaiseApiMock.Verify(v => v
                 .WithConnection(_connectionModel)
                 .WithServerPark(_serverParkName)
@@ -432,10 +441,16 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public void Given_I_Call_UpdateCase_Then_The_OnLine_Flag_Is_Added_To_The_FieldData_Dictionary()
         {
             //arrange
+            var existingCaseId = "3001";
             var newDataRecordMock = new Mock<IDataRecord2>();
             var existingDataRecordMock = new Mock<IDataRecord>();
 
             var fieldData = new Dictionary<string, string>();
+
+            _blaiseApiMock.Setup(b => b
+                .Case
+                .WithDataRecord(existingDataRecordMock.Object)
+                .CaseId).Returns(existingCaseId);
 
             _mapperMock.Setup(m => m.MapFieldDictionaryFromRecordFields(newDataRecordMock.Object)).Returns(fieldData);
 
