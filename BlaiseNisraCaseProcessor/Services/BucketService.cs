@@ -36,7 +36,7 @@ namespace BlaiseNisraCaseProcessor.Services
             return filteredFileList;
         }
 
-        public IEnumerable<string> DownloadFilesFromBucket(IEnumerable<string> files)
+        public IEnumerable<string> DownloadFilesFromBucket(IList<string> files)
         {
             if (!files.Any())
             {
@@ -62,7 +62,7 @@ namespace BlaiseNisraCaseProcessor.Services
             return filesDownloadedFromBucket;
         }
 
-        public void MoveProcessedFilesToProcessedFolder(IEnumerable<string> processedFiles)
+        public void MoveProcessedFilesToProcessedFolder(IList<string> processedFiles)
         {
             if (!processedFiles.Any())
             {

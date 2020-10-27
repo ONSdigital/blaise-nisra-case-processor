@@ -8,20 +8,20 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
     {
         IEnumerable<string> GetAvailableServerParks();
 
-        bool SurveyExists(string serverPark, string surveyName);
+        bool SurveyExists(string serverParkName, string instrumentName);
 
         string GetSerialNumber(IDataRecord dataRecord);
 
-        bool CaseExists(string serialNumber, string serverPark, string surveyName);
+        bool CaseExists(string serialNumber, string serverParkName, string instrumentName);
 
         IDataSet GetCasesFromFile(string databaseFile);
 
-        void AddDataRecord(IDataRecord dataRecord, string serialNumber, string serverPark, string surveyName);
+        void AddDataRecord(IDataRecord dataRecord, string serialNumber, string serverParkName, string instrumentName);
 
-        IDataRecord GetDataRecord(string serialNumber, string serverPark, string surveyName);
+        IDataRecord GetDataRecord(string serialNumber, string serverParkName, string instrumentName);
 
         decimal GetHOutValue(IDataRecord dataRecord);
 
-        void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName);
+        void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string serverParkName, string instrumentName);
     }
 }

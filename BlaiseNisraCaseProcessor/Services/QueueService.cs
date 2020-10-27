@@ -1,5 +1,4 @@
-﻿using System;
-using Blaise.Nuget.PubSub.Contracts.Interfaces;
+﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;

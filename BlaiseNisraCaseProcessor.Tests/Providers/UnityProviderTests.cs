@@ -1,5 +1,4 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Providers;
 using NUnit.Framework;
 

@@ -6,8 +6,8 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
     {
         IEnumerable<string> GetListOfAvailableFilesInBucket();
 
-        IEnumerable<string> DownloadFilesFromBucket(IEnumerable<string> files);
+        IEnumerable<string> DownloadFilesFromBucket(IList<string> files);
 
-        void MoveProcessedFilesToProcessedFolder(IEnumerable<string> processedFiles);
+        void MoveProcessedFilesToProcessedFolder(IList<string> processedFiles);
     }
 }

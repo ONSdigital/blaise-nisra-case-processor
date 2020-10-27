@@ -9,10 +9,8 @@ using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Mappers;
-using BlaiseNisraCaseProcessor.MessageHandler;
 using BlaiseNisraCaseProcessor.Services;
 using log4net;
-using StatNeth.Blaise.Meta.Runtime.Statements;
 using Unity;
 
 namespace BlaiseNisraCaseProcessor.Providers
@@ -25,7 +23,7 @@ namespace BlaiseNisraCaseProcessor.Providers
         {
             _unityContainer = new UnityContainer();
             //blaise services
-            _unityContainer.RegisterType<IFluentBlaiseApi, FluentBlaiseApi>();
+            _unityContainer.RegisterType<IBlaiseApi, BlaiseApi>();
 
             //system abstractions
             _unityContainer.RegisterType<IFileSystem, FileSystem>();

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Configuration;
 using BlaiseNisraCaseProcessor.Providers;
 using NUnit.Framework;
 
@@ -22,7 +21,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.ProjectId;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_PROJECT_ID'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_PROJECT_ID'", exception.Message);
         }
 
         [Test]
@@ -36,7 +35,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.SubscriptionId;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_SUB_SUBS'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_NCP_SUB_SUBS'", exception.Message);
         }
 
         [Test]
@@ -50,7 +49,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.BucketName;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_BUCKET_NAME'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_NCP_BUCKET_NAME'", exception.Message);
         }
 
         [Test]
@@ -64,7 +63,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.CloudProcessedFolder;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_CLOUD_PROCESS_DIR'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_NCP_CLOUD_PROCESS_DIR'", exception.Message);
         }
 
         [Test]
@@ -78,7 +77,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.LocalProcessFolder;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_LOCAL_PROCESS_DIR'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_NCP_LOCAL_PROCESS_DIR'", exception.Message);
         }
 
         [Test]
@@ -92,7 +91,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.IgnoreFilesInBucketList;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_IGNORE_FILES_IN_BUCKET_LIST'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_NCP_IGNORE_FILES_IN_BUCKET_LIST'", exception.Message);
         }
 
         [Test]
@@ -106,7 +105,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.DeadletterTopicId;
             });
-            Assert.AreEqual($"No value found for environment variable 'ENV_DEADLETTER_TOPIC'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'ENV_DEADLETTER_TOPIC'", exception.Message);
         }
 
         [Test]
@@ -120,7 +119,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             {
                 var result = configurationProvider.VmName;
             });
-            Assert.AreEqual($"No value found for environment variable 'VmName'", exception.Message);
+            Assert.AreEqual("No value found for environment variable 'VmName'", exception.Message);
         }
     }
 }

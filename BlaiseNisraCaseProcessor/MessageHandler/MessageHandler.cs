@@ -43,7 +43,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                     return true;
                 }
 
-                var availableFilesInBucket = _bucketFileService.GetListOfAvailableFilesInBucket();
+                var availableFilesInBucket = _bucketFileService.GetListOfAvailableFilesInBucket().ToList();
 
                 if (!availableFilesInBucket.Any())
                 {
