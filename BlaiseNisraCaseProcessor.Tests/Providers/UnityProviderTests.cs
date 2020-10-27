@@ -1,4 +1,5 @@
-﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using BlaiseNisraCaseProcessor.Providers;
 using NUnit.Framework;
 
@@ -25,11 +26,11 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
             var sut = new UnityProvider();
 
             //act
-            var result = sut.Resolve<IInitialiseService>();
+            var result = sut.Resolve<IMessageHandler>();
 
             //assert
             Assert.NotNull(result);
-            Assert.IsInstanceOf<IInitialiseService>(result);
+            Assert.IsInstanceOf<IMessageHandler>(result);
         }
     }
 }

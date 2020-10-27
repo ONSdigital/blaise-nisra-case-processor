@@ -12,6 +12,7 @@ using BlaiseNisraCaseProcessor.Mappers;
 using BlaiseNisraCaseProcessor.MessageHandler;
 using BlaiseNisraCaseProcessor.Services;
 using log4net;
+using StatNeth.Blaise.Meta.Runtime.Statements;
 using Unity;
 
 namespace BlaiseNisraCaseProcessor.Providers
@@ -29,15 +30,16 @@ namespace BlaiseNisraCaseProcessor.Providers
             //system abstractions
             _unityContainer.RegisterType<IFileSystem, FileSystem>();
 
-            //providers
-            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
-
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
             // When running in Release, the service will be running as compute account which will have access to all buckets. In test we need to get credentials
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
+
+            _unityContainer.RegisterType<IConfigurationProvider, LocalConfigurationProvider>();
+#else
+            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
 #endif
             _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();

@@ -325,6 +325,7 @@
       <DependentUpon>BlaiseNisraCaseProcessor.cs</DependentUpon>
     </Compile>
     <Compile Include="Enums\ActionType.cs" />
+    <Compile Include="Extensions\ConfigurationExtensionMethods.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
@@ -341,6 +342,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ConfigurationProvider.cs" />
+    <Compile Include="Providers\LocalConfigurationProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
     <Compile Include="Providers\UnityProvider.cs" />
     <Compile Include="Services\BlaiseApiService.cs" />
@@ -369,6 +371,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\StatNeth.Blaise.API.x86.5.7.5\build\StatNeth.Blaise.API.x86.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x86.5.7.5\build\StatNeth.Blaise.API.x86.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
