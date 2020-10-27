@@ -89,19 +89,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
         }
 
         [Test]
-        public void Given_I_Call_CloudStorageKey_I_Get_The_Correct_Value_Back()
-        {
-            //arrange
-            var configurationProvider = new ConfigurationProvider();
-
-            //act
-            var result = configurationProvider.CloudStorageKey;
-
-            //assert
-            Assert.AreEqual("CloudStorageKeyTest", result);
-        }
-
-        [Test]
         public void Given_I_Call_IgnoreFilesInBucketList_I_Get_The_Correct_Value_Back()
         {
             //arrange
