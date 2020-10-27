@@ -16,7 +16,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Integration.Cloud
             var sut = unityProvider.Resolve<IStorageClientProvider>();
 
             //act
-            var result = sut.GetAvailableFilesFromBucket();
+            var result = sut.GetListOfFilesInBucket("");
 
             //assert
             Assert.IsNotNull(result);
@@ -31,12 +31,12 @@ namespace BlaiseNisraCaseProcessor.Tests.Integration.Cloud
             var unityProvider = new UnityProvider();
             var sut = unityProvider.Resolve<IStorageClientProvider>();
 
-            var files = sut.GetAvailableFilesFromBucket();
+            var files = sut.GetListOfFilesInBucket("");
 
             //act
             foreach (var file in files)
             {
-                sut.MoveFileToProcessedFolder(file);
+                sut.MoveFileToProcessedFolder("", file);
             }
             
             //assert

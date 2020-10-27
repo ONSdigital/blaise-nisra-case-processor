@@ -7,14 +7,14 @@ using log4net;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
-    public class CloudStorageService : ICloudStorageService
+    public class BucketService : IBucketService
     {
         private readonly ILog _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IStorageClientProvider _storageClientProvider;
         private readonly IFileSystem _fileSystem;
 
-        public CloudStorageService(
+        public BucketService(
             ILog logger,
             IConfigurationProvider configurationProvider,
             IStorageClientProvider storageClientProvider, 
@@ -26,15 +26,17 @@ namespace BlaiseNisraCaseProcessor.Services
             _fileSystem = fileSystem;
         }
 
-        public IList<string> GetAvailableFilesFromBucket()
+        public IEnumerable<string> GetListOfAvailableFilesInBucket()
         {
-            var filesAvailable = _storageClientProvider.GetAvailableFilesFromBucket().ToList();
+            var filesAvailable = _storageClientProvider.GetListOfFilesInBucket(_configurationProvider.BucketName).ToList();
+            var filteredFileList = RemovedFilesFromIgnoreList(filesAvailable);
+
             _storageClientProvider.Dispose();
 
-            return filesAvailable;
+            return filteredFileList;
         }
 
-        public IList<string> DownloadFilesFromBucket(IList<string> files)
+        public IEnumerable<string> DownloadFilesFromBucket(IEnumerable<string> files)
         {
             if (!files.Any())
             {
@@ -50,7 +52,7 @@ namespace BlaiseNisraCaseProcessor.Services
                 var fileName = _fileSystem.Path.GetFileName(file);
                 var filePath = _fileSystem.Path.Combine(localProcessFolder, fileName);
 
-                _storageClientProvider.Download(file, filePath);
+                _storageClientProvider.Download(_configurationProvider.BucketName, file, filePath);
 
                 filesDownloadedFromBucket.Add(filePath);
             }
@@ -60,7 +62,7 @@ namespace BlaiseNisraCaseProcessor.Services
             return filesDownloadedFromBucket;
         }
 
-        public void MoveProcessedFilesToProcessedFolder(IList<string> processedFiles)
+        public void MoveProcessedFilesToProcessedFolder(IEnumerable<string> processedFiles)
         {
             if (!processedFiles.Any())
             {
@@ -70,12 +72,24 @@ namespace BlaiseNisraCaseProcessor.Services
 
             foreach (var processedFile in processedFiles)
             {
-                _storageClientProvider.MoveFileToProcessedFolder(processedFile);
+                _storageClientProvider.MoveFileToProcessedFolder(_configurationProvider.BucketName, processedFile);
                 
                 _logger.Info($"Moved file '{processedFile}' into the processed bucket folder");
             }
 
             _storageClientProvider.Dispose();
+        }
+
+        private IEnumerable<string> RemovedFilesFromIgnoreList(List<string> availableFiles)
+        {
+            var fileNamesToIgnore = _configurationProvider.IgnoreFilesInBucketList;
+
+            foreach (var fileNameToIgnore in fileNamesToIgnore)
+            {
+                availableFiles.RemoveAll(f => f.Contains(fileNameToIgnore));
+            }
+
+            return availableFiles;
         }
 
         private string GetLocalProcessFolder()

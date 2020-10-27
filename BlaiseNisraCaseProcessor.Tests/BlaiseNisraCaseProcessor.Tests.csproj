@@ -167,15 +167,15 @@
     <Compile Include="Mappers\CaseMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ConfigurationProviderTests.cs" />
+    <Compile Include="Providers\LocalConfigurationProviderTests.cs" />
     <Compile Include="Providers\UnityProviderTests.cs" />
     <Compile Include="Services\BlaiseApiServiceTests.cs" />
-    <Compile Include="Services\CloudStorageServiceTests.cs" />
+    <Compile Include="Services\BucketServiceTests.cs" />
     <Compile Include="Services\InitialiseServiceTests.cs" />
     <Compile Include="Services\UpdateCaseServiceTests.cs" />
     <Compile Include="Services\ImportCasesServiceTests.cs" />
     <Compile Include="Services\ProcessFilesServiceTests.cs" />
-    <Compile Include="MessageHandler\NisraMessageHandlerTests.cs" />
-    <Compile Include="Services\PublishCaseStatusServiceTests.cs" />
+    <Compile Include="MessageHandler\MessageHandlerTests.cs" />
     <Compile Include="Services\QueueServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

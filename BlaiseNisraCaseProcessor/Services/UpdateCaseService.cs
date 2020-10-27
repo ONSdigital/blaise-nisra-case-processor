@@ -1,7 +1,6 @@
 ﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
-using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
@@ -9,16 +8,13 @@ namespace BlaiseNisraCaseProcessor.Services
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IPublishCaseStatusService _publishCaseStatusService;
 
         public UpdateCaseService(
             ILog logger,
-            IBlaiseApiService blaiseApiService,
-            IPublishCaseStatusService publishCaseStatusService)
+            IBlaiseApiService blaiseApiService)
         {
             _logger = logger;
             _blaiseApiService = blaiseApiService;
-            _publishCaseStatusService = publishCaseStatusService;
         }
 
         public void UpdateCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName, string serialNumber)
@@ -40,14 +36,8 @@ namespace BlaiseNisraCaseProcessor.Services
                 return;
             }
 
-            ImportNisraCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
-            _logger.Info($"processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' > '{nisraOutcome}') or (HOut = 0)'");
-        }
-
-        private void ImportNisraCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)
-        {
             _blaiseApiService.UpdateCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
-            _publishCaseStatusService.PublishCaseStatus(nisraDataRecord, surveyName, serverPark, CaseStatusType.NisraCaseImported);
+            _logger.Info($"processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' > '{nisraOutcome}') or (HOut = 0)'");
         }
     }
 }

@@ -1,45 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
+using BlaiseNisraCaseProcessor.Extensions;
 using BlaiseNisraCaseProcessor.Interfaces.Providers;
 
 namespace BlaiseNisraCaseProcessor.Providers
 {
     public class ConfigurationProvider : IConfigurationProvider
     {
-        public string ProjectId => Environment.GetEnvironmentVariable("ENV_PROJECT_ID", EnvironmentVariableTarget.Machine) ?? ConfigurationManager.AppSettings["ProjectId"];
+        public string ProjectId => GetVariable("ENV_PROJECT_ID");
+        
+        public string SubscriptionId => GetVariable("ENV_NCP_SUB_SUBS");
 
-        public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
+        public string DeadletterTopicId => GetVariable("ENV_DEADLETTER_TOPIC");
 
-        public string PublishTopicId => ConfigurationManager.AppSettings["PublishTopicId"];
+        public string LocalProcessFolder => GetVariable("ENV_NCP_LOCAL_PROCESS_DIR");
 
-        public string SubscriptionTopicId => ConfigurationManager.AppSettings["SubscriptionTopicId"];
+        public string CloudProcessedFolder => GetVariable("ENV_NCP_CLOUD_PROCESS_DIR");
 
-        public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
-        public string CloudProcessedFolder => ConfigurationManager.AppSettings["CloudProcessedFolder"];
-
-        public string BucketName => ConfigurationManager.AppSettings["BucketName"];
+        public string BucketName => GetVariable("ENV_NCP_BUCKET_NAME");
 
         public IList<string> IgnoreFilesInBucketList
         {
             get
             {
-                var filesToIgnore = ConfigurationManager.AppSettings["IgnoreFilesInBucketList"];
+                var filesToIgnore = GetVariable("ENV_NCP_IGNORE_FILES_IN_BUCKET_LIST");
 
-                if (string.IsNullOrWhiteSpace(filesToIgnore))
-                {
-                    return new List<string>();
-                }
-
-                return filesToIgnore.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
+                return string.IsNullOrWhiteSpace(filesToIgnore) 
+                    ? new List<string>() 
+                    : filesToIgnore.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
             }
-        } 
+        }
 
-        public string CloudStorageKey => ConfigurationManager.AppSettings["CloudStorageKey"];
+        public string VmName => GetVariable("VmName");
 
-        public string VmName => Environment.MachineName;
+        private static string GetVariable(string variableName)
+        {
+            var value = Environment.GetEnvironmentVariable(variableName, EnvironmentVariableTarget.Machine);
 
-        public string DeadletterTopicId => ConfigurationManager.AppSettings["DeadletterTopicId"];
+            value.ThrowExceptionIfNull(variableName);
+
+            return value;
+        }
     }
 }
