@@ -8,21 +8,21 @@ using log4net;
 
 namespace BlaiseNisraCaseProcessor.MessageHandler
 {
-    public class NisraMessageHandler : IMessageHandler
+    public class MessageHandler : IMessageHandler
     {
         private readonly ILog _logger;
-        private readonly ICloudStorageService _bucketFileService;
-        private readonly IProcessFilesService _processNisraFilesService;
+        private readonly IBucketService _bucketFileService;
+        private readonly IProcessFilesService _processFilesService;
         private readonly ICaseMapper _mapper;
 
-        public NisraMessageHandler(
+        public MessageHandler(
             ILog logger,
-            ICloudStorageService bucketFileService,
+            IBucketService bucketFileService,
             IProcessFilesService processNisraFilesService, 
             ICaseMapper mapper)
         {
             _bucketFileService = bucketFileService;
-            _processNisraFilesService = processNisraFilesService;
+            _processFilesService = processNisraFilesService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -43,7 +43,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                     return true;
                 }
 
-                var availableFilesInBucket = _bucketFileService.GetAvailableFilesFromBucket();
+                var availableFilesInBucket = _bucketFileService.GetListOfAvailableFilesInBucket();
 
                 if (!availableFilesInBucket.Any())
                 {
@@ -51,7 +51,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                     return true;
                 }
 
-                var downloadedFilesFromBucket = _bucketFileService.DownloadFilesFromBucket(availableFilesInBucket);
+                var downloadedFilesFromBucket = _bucketFileService.DownloadFilesFromBucket(availableFilesInBucket).ToList();
 
                 if (!downloadedFilesFromBucket.Any())
                 {
@@ -59,7 +59,7 @@ namespace BlaiseNisraCaseProcessor.MessageHandler
                     return true;
                 }
 
-                _processNisraFilesService.ProcessFiles(downloadedFilesFromBucket);
+                _processFilesService.ProcessFiles(downloadedFilesFromBucket);
 
                 _bucketFileService.MoveProcessedFilesToProcessedFolder(availableFilesInBucket);
 

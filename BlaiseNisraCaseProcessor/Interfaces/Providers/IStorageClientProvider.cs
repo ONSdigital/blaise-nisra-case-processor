@@ -5,11 +5,11 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
 {
     public interface IStorageClientProvider
     {
-        IEnumerable<string> GetAvailableFilesFromBucket();
+        IEnumerable<string> GetListOfFilesInBucket(string bucketName);
 
-        void Download(string fileName, string filePath);
+        void Download(string bucketName, string fileName, string filePath);
 
-        void MoveFileToProcessedFolder(string fileName);
+        void MoveFileToProcessedFolder(string bucketName, string fileName);
 
         void Dispose();
     }

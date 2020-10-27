@@ -47,12 +47,12 @@ namespace BlaiseNisraCaseProcessor.Providers
             _unityContainer.RegisterType<ICaseMapper, CaseMapper>();
 
             //handlers
-            _unityContainer.RegisterType<IMessageHandler, NisraMessageHandler>();
+            _unityContainer.RegisterType<IMessageHandler, MessageHandler.MessageHandler>();
 
             //services   
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
             _unityContainer.RegisterType<IUpdateCaseService, UpdateCaseService>();
-            _unityContainer.RegisterType<ICloudStorageService, CloudStorageService>();
+            _unityContainer.RegisterType<IBucketService, BucketService>();
             _unityContainer.RegisterType<IImportCasesService, ImportCasesService>();
             _unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();
 

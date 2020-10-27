@@ -346,15 +346,15 @@
     <Compile Include="Services\BlaiseApiService.cs" />
     <Compile Include="Interfaces\Services\IUpdateCaseService.cs" />
     <Compile Include="Services\UpdateCaseService.cs" />
-    <Compile Include="Services\CloudStorageService.cs" />
-    <Compile Include="Interfaces\Services\ICloudStorageService.cs" />
+    <Compile Include="Services\BucketService.cs" />
+    <Compile Include="Interfaces\Services\IBucketService.cs" />
     <Compile Include="Interfaces\Services\IImportCasesService.cs" />
     <Compile Include="Interfaces\Services\IBlaiseApiService.cs" />
     <Compile Include="Services\ImportCasesService.cs" />
     <Compile Include="Interfaces\Services\IProcessFilesService.cs" />
     <Compile Include="Services\InitialiseService.cs" />
     <Compile Include="Services\ProcessFilesService.cs" />
-    <Compile Include="MessageHandler\NisraMessageHandler.cs" />
+    <Compile Include="MessageHandler\MessageHandler.cs" />
     <Compile Include="Services\QueueService.cs" />
   </ItemGroup>
   <ItemGroup>

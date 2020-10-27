@@ -10,10 +10,8 @@ namespace BlaiseNisraCaseProcessor.Providers
 {
     public class CloudStorageClientProvider : IStorageClientProvider
     {
-        private readonly IConfigurationProvider _configurationProvider;
         private readonly IFileSystem _fileSystem;
 
-        private readonly string _bucketName;
         private readonly string _processedFolder;
 
         private StorageClient _storageClient;
@@ -22,10 +20,8 @@ namespace BlaiseNisraCaseProcessor.Providers
             IConfigurationProvider configurationProvider,
             IFileSystem fileSystem)
         {
-            _configurationProvider = configurationProvider;
             _fileSystem = fileSystem;
 
-            _bucketName = _configurationProvider.BucketName;
             _processedFolder = configurationProvider.CloudProcessedFolder;
         }
 
@@ -47,32 +43,28 @@ namespace BlaiseNisraCaseProcessor.Providers
             _storageClient = null;
         }
         
-        public IEnumerable<string> GetAvailableFilesFromBucket()
+        public IEnumerable<string> GetListOfFilesInBucket(string bucketName)
         {
             var storageClient = GetStorageClient();
-            var availableObjectsInBucket = storageClient.ListObjects(_bucketName, "");
+            var availableObjectsInBucket = storageClient.ListObjects(bucketName, "");
 
             //get all objects that are not folders
-            var availableFiles = availableObjectsInBucket.Where(f => f.Size > 0).Select(f => f.Name).ToList();
-
-            return availableFiles.Any()
-                ? RemovedFilesFromIgnoreList(availableFiles).ToList()
-                : new List<string>();
+            return availableObjectsInBucket.Where(f => f.Size > 0).Select(f => f.Name).ToList();
         }
 
-        public void Download(string fileName, string filePath)
+        public void Download(string bucketName, string fileName, string filePath)
         {
             var storageClient = GetStorageClient();
             using (var fileStream = _fileSystem.FileStream.Create(filePath, FileMode.OpenOrCreate))
             {
-                storageClient.DownloadObject(_bucketName, fileName, fileStream);
+                storageClient.DownloadObject(bucketName, fileName, fileStream);
             }
         }
 
-        public void MoveFileToProcessedFolder(string file)
+        public void MoveFileToProcessedFolder(string bucketName, string file)
         {
             var storageClient = GetStorageClient();
-            foreach (var storageObject in storageClient.ListObjects(_bucketName, ""))
+            foreach (var storageObject in storageClient.ListObjects(bucketName, ""))
             {
                 if (!string.Equals(storageObject.Name, file, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -83,8 +75,8 @@ namespace BlaiseNisraCaseProcessor.Providers
                 var filePath = _fileSystem.Path.GetDirectoryName(file).Replace("\\", "/");
                 var processedPath = $"{filePath}/{_processedFolder}/{fileName}";
                 
-                storageClient.CopyObject(_bucketName, storageObject.Name, _bucketName, processedPath);
-                storageClient.DeleteObject(_bucketName, storageObject.Name);
+                storageClient.CopyObject(bucketName, storageObject.Name, bucketName, processedPath);
+                storageClient.DeleteObject(bucketName, storageObject.Name);
 
                 return;
             }
@@ -93,18 +85,6 @@ namespace BlaiseNisraCaseProcessor.Providers
         public void Dispose()
         {
             DisposeStorageClient();
-        }
-
-        private IEnumerable<string> RemovedFilesFromIgnoreList(List<string> availableFiles)
-        {
-            var fileNamesToIgnore = _configurationProvider.IgnoreFilesInBucketList;
-
-            foreach (var fileNameToIgnore in fileNamesToIgnore)
-            {
-                availableFiles.RemoveAll(f => f.Contains(fileNameToIgnore));
-            }
-
-            return availableFiles;
         }
     }
 }
