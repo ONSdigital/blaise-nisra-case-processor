@@ -36,6 +36,8 @@ namespace BlaiseNisraCaseProcessor.Services
             catch (Exception ex)
             {
                 _logger.Error(ex);
+                _logger.Warn($"There was an error starting the Data Delivery service");
+                throw;
             }
 
             _logger.Info($"Nisra Case processing service started on '{_configurationProvider.VmName}'");
@@ -45,7 +47,16 @@ namespace BlaiseNisraCaseProcessor.Services
         {
             _logger.Info($"Stopping Nisra Case processing service on '{_configurationProvider.VmName}'");
 
-            _queueService.CancelAllSubscriptions();
+            try
+            {
+                _queueService.CancelAllSubscriptions();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+                _logger.Warn($"There was an error stopping the Nisra Case processing service");
+                throw;
+            }
 
             _logger.Info($"Nisra Case processing service stopped on '{_configurationProvider.VmName}'");
         }

@@ -45,18 +45,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
-        public void Given_I_Call_Start_And_An_Exception_Is_Thrown_During_The_Process_Then_The_Exception_Is_Handled()
-        {
-            //arrange
-            var exceptionThrown = new Exception("Error message");
-            _queueServiceMock.Setup(s => s.Subscribe(It.IsAny<IMessageHandler>())).Throws(exceptionThrown);
-            _loggingMock.Setup(l => l.Error(It.IsAny<Exception>()));
-
-            //act && assert
-            Assert.DoesNotThrow(() => _sut.Start());
-        }
-
-        [Test]
         public void Given_I_Call_Start_And_An_Exception_Is_Thrown_During_The_Process_Then_The_Exception_Is_Logged()
         {
             //arrange
@@ -65,7 +53,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _loggingMock.Setup(l => l.Error(It.IsAny<Exception>()));
 
             //act
-            _sut.Start();
+            Assert.Throws<Exception>(() => _sut.Start());
 
             //assert
             _loggingMock.Verify(v => v.Error(exceptionThrown), Times.Once);
@@ -79,6 +67,21 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
 
             //assert
             _queueServiceMock.Verify(v => v.CancelAllSubscriptions(), Times.Once);
+        }
+
+        [Test]
+        public void Given_I_Call_Stop_And_An_Exception_Is_Thrown_During_The_Process_Then_The_Exception_Is_Logged()
+        {
+            //arrange
+            var exceptionThrown = new Exception("Error message");
+            _queueServiceMock.Setup(s => s.CancelAllSubscriptions()).Throws(exceptionThrown);
+            _loggingMock.Setup(l => l.Error(It.IsAny<Exception>()));
+
+            //act
+            Assert.Throws<Exception>(() => _sut.Stop());
+
+            //assert
+            _loggingMock.Verify(v => v.Error(exceptionThrown), Times.Once);
         }
     }
 }
