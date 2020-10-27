@@ -15,8 +15,7 @@ namespace BlaiseNisraCaseProcessor.Tests
         }
 
         [Test]
-        public void
-            Given_I_Create_A_New_Instance_Of_BlaiseNisraCaseProcessor_Then_All_Dependencies_Are_Registered_And_Resolved()
+        public void Given_I_Create_A_New_Instance_Of_BlaiseNisraCaseProcessor_Then_All_Dependencies_Are_Registered_And_Resolved()
         {
             //arrange
 

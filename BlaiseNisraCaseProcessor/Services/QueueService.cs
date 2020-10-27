@@ -40,18 +40,9 @@ namespace BlaiseNisraCaseProcessor.Services
 
         public void CancelAllSubscriptions()
         {
-            try
-            {
-                _queueApi
-                    .StopConsuming();
-
-            }
-            catch (Exception e)
-            {
-                _logger.Error($"Could not stop consuming subscription because '{e.Message}'");
-                throw;
-            }
-
+            _queueApi
+                .StopConsuming();
+            
             _logger.Info($"Stopped consuming Subscription to '{_subscriptionId}' for project '{_configurationProvider.ProjectId}'");
         }
     }

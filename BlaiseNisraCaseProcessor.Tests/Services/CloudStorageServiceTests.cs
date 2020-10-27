@@ -101,6 +101,24 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         }
 
         [Test]
+        public void Given_There_Are_No_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_An_Empty_List_Is_Returned()
+        {
+            //arrange
+            var filesInBucket = new List<string>();
+
+            _storageClientProviderMock.Setup(s => s.GetAvailableFilesFromBucket())
+                .Returns(filesInBucket);
+
+            //act
+            var result = _sut.DownloadFilesFromBucket(filesInBucket);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<List<string>>(result);
+            Assert.IsEmpty(result);
+        }
+
+        [Test]
         public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_The_Files_Are_Downloaded()
         {
             //arrange
