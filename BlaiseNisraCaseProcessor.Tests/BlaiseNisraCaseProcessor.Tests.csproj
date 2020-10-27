@@ -166,7 +166,6 @@
     <Compile Include="BlaiseNisraCaseProcessorTests.cs" />
     <Compile Include="Mappers\CaseMapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\ConfigurationProviderTests.cs" />
     <Compile Include="Providers\UnityProviderTests.cs" />
     <Compile Include="Services\BlaiseApiServiceTests.cs" />
     <Compile Include="Services\BucketServiceTests.cs" />
