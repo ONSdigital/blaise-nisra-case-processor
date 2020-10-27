@@ -6,8 +6,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
     {
         string ProjectId { get; }
 
-        string SubscriptionTopicId { get; }
-
         string SubscriptionId { get; }
 
         string LocalProcessFolder { get; }

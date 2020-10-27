@@ -12,9 +12,8 @@ namespace BlaiseNisraCaseProcessor.Providers
 
         public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
 
-        public string SubscriptionTopicId => ConfigurationManager.AppSettings["SubscriptionTopicId"];
-
         public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
+
         public string CloudProcessedFolder => ConfigurationManager.AppSettings["CloudProcessedFolder"];
 
         public string BucketName => ConfigurationManager.AppSettings["BucketName"];

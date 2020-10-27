@@ -11,7 +11,6 @@ namespace BlaiseNisraCaseProcessor.Services
         private readonly ILog _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IFluentQueueApi _queueApi;
-        private readonly string _subscriptionId;
 
         public QueueService(
             ILog logger,
@@ -21,29 +20,27 @@ namespace BlaiseNisraCaseProcessor.Services
             _logger = logger;
             _configurationProvider = configurationProvider;
             _queueApi = queueApi;
-
-            _subscriptionId = $"{_configurationProvider.SubscriptionId}-{_configurationProvider.VmName}";
         }
 
         public void Subscribe(IMessageHandler messageHandler)
         {
             _queueApi
                 .WithProject(_configurationProvider.ProjectId)
-                .WithTopic(_configurationProvider.SubscriptionTopicId)
-                .CreateSubscription(_subscriptionId)
+                .WithSubscription(_configurationProvider.SubscriptionId)
                 .WithExponentialBackOff(60)
                 .WithDeadLetter(_configurationProvider.DeadletterTopicId)
                 .StartConsuming(messageHandler, true);
 
-            _logger.Info($"Subscription setup to '{_subscriptionId}' for project '{_configurationProvider.ProjectId}'");
+            _logger.Info($"Subscription setup to '{_configurationProvider.SubscriptionId}' " +
+                         $"for project '{_configurationProvider.ProjectId}'");
         }
 
         public void CancelAllSubscriptions()
         {
-            _queueApi
-                .StopConsuming();
+            _queueApi.StopConsuming();
             
-            _logger.Info($"Stopped consuming Subscription to '{_subscriptionId}' for project '{_configurationProvider.ProjectId}'");
+            _logger.Info($"Stopped consuming Subscription to '{_configurationProvider.SubscriptionId}'" +
+                         $" for project '{_configurationProvider.ProjectId}'");
         }
     }
 }
