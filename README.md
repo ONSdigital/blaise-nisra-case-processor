@@ -12,12 +12,7 @@ Populate the key values in the App.config file accordingly. **Never commit App.c
 Build the solution to obtain the necessary references.
 
 #Topics & Subscriptions
-This service needs to listen to messages put on the 'process-nisra-case-topic'. It does this by creating a subscription to this topic. There is an existing subscription called 'process-nisra-case-subscription', but as service is installed on multiple VMs and therefore will need to create a subscription 
-on initialisation in order for it to receive every message published to the 'process-nisra-case-topic'. If all the services listened to the same subscription 'process-nisra-case-subscription' the the messages would be shared between the services,
-and as each service will have access to different server parks on the different VMs this would result in data loss. Each subscription created will consist of the subscription name 'process-nisra-case-subscription' suffixed with the VM name 
-i.e. 'process-nisra-case-subscription-TEL-C0C0C0'.
-
-This service also publishes case status updates to the topic 'case-status-update-topic'.
+This service needs to listen to messages put on the 'process-nisra-case-topic'. It does this by subscribing to a subscription called 'process-nisra-case-subscription'.
 
     
 # Example message
