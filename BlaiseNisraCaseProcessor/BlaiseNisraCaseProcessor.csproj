@@ -325,12 +325,9 @@
       <DependentUpon>BlaiseNisraCaseProcessor.cs</DependentUpon>
     </Compile>
     <Compile Include="Enums\ActionType.cs" />
-    <Compile Include="Enums\CaseStatusType.cs" />
-    <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Interfaces\Mappers\ICaseMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
-    <Compile Include="Interfaces\Services\IPublishCaseStatusService.cs" />
     <Compile Include="Interfaces\Services\IQueueService.cs" />
     <Compile Include="Interfaces\Providers\IStorageClientProvider.cs" />
     <Compile Include="Mappers\CaseMapper.cs" />
@@ -344,8 +341,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ConfigurationProvider.cs" />
-    <Compile Include="Providers\CloudStorageClientProvider.cs" />
-    <Compile Include="Providers\LocalStorageClientProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
     <Compile Include="Providers\UnityProvider.cs" />
     <Compile Include="Services\BlaiseApiService.cs" />
@@ -360,7 +355,6 @@
     <Compile Include="Services\InitialiseService.cs" />
     <Compile Include="Services\ProcessFilesService.cs" />
     <Compile Include="MessageHandler\NisraMessageHandler.cs" />
-    <Compile Include="Services\PublishCaseStatusService.cs" />
     <Compile Include="Services\QueueService.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -24,19 +24,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Providers
         }
 
         [Test]
-        public void Given_I_Call_PublishTopicId_I_Get_The_Correct_Value_Back()
-        {
-            //arrange
-            var configurationProvider = new ConfigurationProvider();
-
-            //act
-            var result = configurationProvider.PublishTopicId;
-
-            //assert
-            Assert.AreEqual("PublishTopicIdTest", result);
-        }
-
-        [Test]
         public void Given_I_Call_SubscriptionTopicId_I_Get_The_Correct_Value_Back()
         {
             //arrange

@@ -15,7 +15,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         private Mock<IFluentQueueApi> _queueProviderMock;
 
         private readonly string _projectId;
-        private readonly string _publishTopicId;
         private readonly string _subscriptionTopicId;
         private readonly string _subscriptionId;
         private readonly string _vmName;
@@ -26,7 +25,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
         public QueueServiceTests()
         {
             _projectId = "ProjectId";
-            _publishTopicId = "publishTopicId";
             _subscriptionTopicId = "subscriptionTopicId";
             _subscriptionId = "SubscriptionId";
             _vmName = "VmName";
@@ -41,7 +39,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _configurationProviderMock = new Mock<IConfigurationProvider>();
             _configurationProviderMock.Setup(c => c.ProjectId).Returns(_projectId);
             _configurationProviderMock.Setup(c => c.SubscriptionId).Returns(_subscriptionId);
-            _configurationProviderMock.Setup(c => c.PublishTopicId).Returns(_publishTopicId);
             _configurationProviderMock.Setup(c => c.SubscriptionTopicId).Returns(_subscriptionTopicId);
             _configurationProviderMock.Setup(c => c.VmName).Returns(_vmName);
             _configurationProviderMock.Setup(c => c.DeadletterTopicId).Returns(_deadLetterTopicId);
@@ -78,24 +75,6 @@ namespace BlaiseNisraCaseProcessor.Tests.Services
             _queueProviderMock.Verify(v => v.WithExponentialBackOff(60, 600), Times.Once);
             _queueProviderMock.Verify(v => v.WithDeadLetter(_deadLetterTopicId, 5), Times.Once);
             _queueProviderMock.Verify(v => v.StartConsuming(_messageHandlerMock.Object, It.IsAny<bool>()), Times.Once);
-        }
-
-        [Test]
-        public void Given_I_Call_PublishMessage_Then_The_Message_Is_Published()
-        {
-            //arrange
-            var message = "Test Message";
-            _queueProviderMock.Setup(q => q.WithProject(It.IsAny<string>())).Returns(_queueProviderMock.Object);
-            _queueProviderMock.Setup(q => q.WithTopic(It.IsAny<string>())).Returns(_queueProviderMock.Object);
-            _queueProviderMock.Setup(q => q.Publish(It.IsAny<string>(), null));
-
-            //act
-            _sut.PublishMessage(message);
-
-            //assert
-            _queueProviderMock.Verify(v => v.WithProject(_projectId), Times.Once);
-            _queueProviderMock.Verify(v => v.WithTopic(_publishTopicId), Times.Once);
-            _queueProviderMock.Verify(v => v.Publish(message, null), Times.Once);
         }
 
         [Test]

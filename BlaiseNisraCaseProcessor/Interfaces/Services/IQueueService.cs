@@ -7,8 +7,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Services
     {
         void Subscribe(IMessageHandler messageHandler);
 
-        void PublishMessage(string message);
-
         void CancelAllSubscriptions();
     }
 }

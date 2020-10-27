@@ -8,34 +8,49 @@ using Google.Cloud.Storage.V1;
 
 namespace BlaiseNisraCaseProcessor.Providers
 {
-    public abstract class StorageClientProvider : IStorageClientProvider
+    public class CloudStorageClientProvider : IStorageClientProvider
     {
-        protected readonly IConfigurationProvider ConfigurationProvider;
-        protected readonly IFileSystem FileSystem;
+        private readonly IConfigurationProvider _configurationProvider;
+        private readonly IFileSystem _fileSystem;
 
-        protected readonly string BucketName;
-        protected readonly string ProcessedFolder;
+        private readonly string _bucketName;
+        private readonly string _processedFolder;
 
-        protected StorageClientProvider(
+        private StorageClient _storageClient;
+
+        public CloudStorageClientProvider(
             IConfigurationProvider configurationProvider,
             IFileSystem fileSystem)
         {
-            ConfigurationProvider = configurationProvider;
-            FileSystem = fileSystem;
+            _configurationProvider = configurationProvider;
+            _fileSystem = fileSystem;
 
-            BucketName = ConfigurationProvider.BucketName;
-            ProcessedFolder = configurationProvider.CloudProcessedFolder;
+            _bucketName = _configurationProvider.BucketName;
+            _processedFolder = configurationProvider.CloudProcessedFolder;
         }
 
-        protected abstract StorageClient GetStorageClient();
+        public StorageClient GetStorageClient()
+        {
+            var client = _storageClient;
 
-        protected abstract void DisposeStorageClient();
+            if (client != null)
+            {
+                return client;
+            }
 
+            return (_storageClient = StorageClient.Create());
+        }
 
+        public void DisposeStorageClient()
+        {
+            _storageClient?.Dispose();
+            _storageClient = null;
+        }
+        
         public IEnumerable<string> GetAvailableFilesFromBucket()
         {
             var storageClient = GetStorageClient();
-            var availableObjectsInBucket = storageClient.ListObjects(BucketName, "");
+            var availableObjectsInBucket = storageClient.ListObjects(_bucketName, "");
 
             //get all objects that are not folders
             var availableFiles = availableObjectsInBucket.Where(f => f.Size > 0).Select(f => f.Name).ToList();
@@ -48,28 +63,28 @@ namespace BlaiseNisraCaseProcessor.Providers
         public void Download(string fileName, string filePath)
         {
             var storageClient = GetStorageClient();
-            using (var fileStream = FileSystem.FileStream.Create(filePath, FileMode.OpenOrCreate))
+            using (var fileStream = _fileSystem.FileStream.Create(filePath, FileMode.OpenOrCreate))
             {
-                storageClient.DownloadObject(BucketName, fileName, fileStream);
+                storageClient.DownloadObject(_bucketName, fileName, fileStream);
             }
         }
 
         public void MoveFileToProcessedFolder(string file)
         {
             var storageClient = GetStorageClient();
-            foreach (var storageObject in storageClient.ListObjects(BucketName, ""))
+            foreach (var storageObject in storageClient.ListObjects(_bucketName, ""))
             {
                 if (!string.Equals(storageObject.Name, file, StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
 
-                var fileName = FileSystem.Path.GetFileName(file);
-                var filePath = FileSystem.Path.GetDirectoryName(file).Replace("\\", "/");
-                var processedPath = $"{filePath}/{ProcessedFolder}/{fileName}";
+                var fileName = _fileSystem.Path.GetFileName(file);
+                var filePath = _fileSystem.Path.GetDirectoryName(file).Replace("\\", "/");
+                var processedPath = $"{filePath}/{_processedFolder}/{fileName}";
                 
-                storageClient.CopyObject(BucketName, storageObject.Name, BucketName, processedPath);
-                storageClient.DeleteObject(BucketName, storageObject.Name);
+                storageClient.CopyObject(_bucketName, storageObject.Name, _bucketName, processedPath);
+                storageClient.DeleteObject(_bucketName, storageObject.Name);
 
                 return;
             }
@@ -82,7 +97,7 @@ namespace BlaiseNisraCaseProcessor.Providers
 
         private IEnumerable<string> RemovedFilesFromIgnoreList(List<string> availableFiles)
         {
-            var fileNamesToIgnore = ConfigurationProvider.IgnoreFilesInBucketList;
+            var fileNamesToIgnore = _configurationProvider.IgnoreFilesInBucketList;
 
             foreach (var fileNameToIgnore in fileNamesToIgnore)
             {

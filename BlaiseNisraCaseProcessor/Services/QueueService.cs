@@ -38,16 +38,6 @@ namespace BlaiseNisraCaseProcessor.Services
             _logger.Info($"Subscription setup to '{_subscriptionId}' for project '{_configurationProvider.ProjectId}'");
         }
 
-        public void PublishMessage(string message)
-        {
-            _queueApi
-                .WithProject(_configurationProvider.ProjectId)
-                .WithTopic(_configurationProvider.PublishTopicId)
-                .Publish(message);
-
-            _logger.Info($"Message {message} published to topic to '{_configurationProvider.PublishTopicId}' for project '{_configurationProvider.ProjectId}'");
-        }
-
         public void CancelAllSubscriptions()
         {
             try

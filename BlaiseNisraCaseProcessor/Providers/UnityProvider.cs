@@ -35,15 +35,11 @@ namespace BlaiseNisraCaseProcessor.Providers
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
-            _unityContainer.RegisterType<IStorageClientProvider, LocalStorageClientProvider>();
+            // When running in Release, the service will be running as compute account which will have access to all buckets. In test we need to get credentials
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
-
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
-#else
-            // When running in Release, the service will be running as compute account which will have access to all buckets.
-            _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
 #endif
-
+            _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
             _unityContainer.RegisterFactory<ILog>(f => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
 
@@ -54,7 +50,6 @@ namespace BlaiseNisraCaseProcessor.Providers
             _unityContainer.RegisterType<IMessageHandler, NisraMessageHandler>();
 
             //services   
-            _unityContainer.RegisterType<IPublishCaseStatusService, PublishCaseStatusService>();
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
             _unityContainer.RegisterType<IUpdateCaseService, UpdateCaseService>();
             _unityContainer.RegisterType<ICloudStorageService, CloudStorageService>();

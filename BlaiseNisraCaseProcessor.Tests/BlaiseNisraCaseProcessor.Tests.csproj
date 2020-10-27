@@ -175,7 +175,6 @@
     <Compile Include="Services\ImportCasesServiceTests.cs" />
     <Compile Include="Services\ProcessFilesServiceTests.cs" />
     <Compile Include="MessageHandler\NisraMessageHandlerTests.cs" />
-    <Compile Include="Services\PublishCaseStatusServiceTests.cs" />
     <Compile Include="Services\QueueServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
