@@ -274,8 +274,6 @@
   <ItemGroup>
     <Compile Include="Builders\CaseBuilder.cs" />
     <Compile Include="Enums\ModeType.cs" />
-    <Compile Include="Features\ImportNisraCases.feature.cs" />
-    <Compile Include="Features\LoadTest.feature.cs" />
     <Compile Include="Helpers\BucketHelper.cs" />
     <Compile Include="Helpers\CaseHelper.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
@@ -292,12 +290,24 @@
     <None Include="Data\FedForwardData.json" />
     <None Include="Features\ImportNisraCases.feature" />
     <None Include="Features\LoadTest.feature" />
-    <None Include="LibraryFiles\FrameEthnicity.blix" />
-    <None Include="LibraryFiles\FrameSOC2010.blix" />
-    <None Include="LibraryFiles\FrameSOC2K.blix" />
-    <None Include="LibraryFiles\OPN2004A.bdbx" />
-    <None Include="LibraryFiles\OPN2004A.bdix" />
-    <None Include="LibraryFiles\OPN2004A.bmix" />
+    <None Include="LibraryFiles\FrameEthnicity.blix">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LibraryFiles\FrameSOC2010.blix">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LibraryFiles\FrameSOC2K.blix">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LibraryFiles\OPN2004A.bdbx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LibraryFiles\OPN2004A.bdix">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="LibraryFiles\OPN2004A.bmix">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

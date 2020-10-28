@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Blaise.Nuget.Api.Contracts.Enums;
 using Blaise.Nuget.Api.Contracts.Extensions;
+using Newtonsoft.Json;
 using Nisra.Case.Processor.Tests.Behaviour.Models;
 
 namespace Nisra.Case.Processor.Tests.Behaviour.Builders

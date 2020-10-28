@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Nisra.Case.Processor.Tests.Behaviour.Enums;
 using Nisra.Case.Processor.Tests.Behaviour.Helpers;
