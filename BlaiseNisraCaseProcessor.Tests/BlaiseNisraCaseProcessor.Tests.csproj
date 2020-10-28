@@ -95,7 +95,7 @@
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.10.14.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Core.dll</HintPath>
