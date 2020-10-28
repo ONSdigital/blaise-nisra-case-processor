@@ -318,8 +318,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlaiseNisraCaseProcessor.cs">
+      <Compile Include="NisraCaseProcessor.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NisraCaseProcessor.Designer.cs">
+      <DependentUpon>NisraCaseProcessor.cs</DependentUpon>
     </Compile>
     <Compile Include="Enums\ActionType.cs" />
     <Compile Include="Extensions\ConfigurationExtensionMethods.cs" />

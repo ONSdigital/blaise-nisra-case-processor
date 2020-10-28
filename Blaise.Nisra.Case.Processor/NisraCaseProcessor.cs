@@ -1,6 +1,6 @@
 using System.ServiceProcess;
 using Blaise.Nisra.Case.Processor.Interfaces.Services;
-using Blaise.Nisra.Case.Processor.Providers;
+using Blaise.Nuget.Api.Providers;
 
 namespace Blaise.Nisra.Case.Processor
 {

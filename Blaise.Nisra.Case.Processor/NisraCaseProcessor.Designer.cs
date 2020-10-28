@@ -1,4 +1,4 @@
-﻿namespace Nisra.Case.Processor
+﻿namespace Blaise.Nisra.Case.Processor
 {
     partial class BlaiseNisraCaseProcessor
     {
