@@ -41,7 +41,6 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Builders
             caseData[FieldNameType.HOut.FullName()] = caseModel.Outcome;
             caseData["serial_number"] = caseModel.PrimaryKey;
             caseData[FieldNameType.Mode.FullName()] = ((int)caseModel.Mode).ToString();
-            caseData[FieldNameType.CaseId.FullName()] = caseModel.CaseId;
 
             return caseData;
         }

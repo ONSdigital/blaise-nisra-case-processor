@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 
 namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Helpers
@@ -7,30 +6,28 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Helpers
     public class NisraFileHelper
     {
         private readonly string _libraryFolder;
-
         private readonly string _localProcessFolder;
-
         private readonly string _databaseFileName;
 
 
         public NisraFileHelper()
         {
-            _libraryFolder =
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
-                    "LibraryFiles");
+            var configurationHelper = new ConfigurationHelper();
 
-            _localProcessFolder = ConfigurationManager.AppSettings["LocalProcessFolder"];
-
-            _databaseFileName = $"{ConfigurationManager.AppSettings["InstrumentName"]}.{ConfigurationManager.AppSettings["DatabaseFileNameExt"]}";
+            _libraryFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
+                        "LibraryFiles");
+            
+            _localProcessFolder = configurationHelper.LocalProcessFolder;
+            _databaseFileName = $"{configurationHelper.InstrumentName}.{configurationHelper.DatabaseFileNameExt}";
         }
 
         public string CreateDatabaseFilesAndFolder()
         {
-            if(Directory.Exists(_localProcessFolder))
+            if (Directory.Exists(_localProcessFolder))
             {
                 DeleteDatabaseFilesAndFolder();
             }
-            
+
             Directory.CreateDirectory(_localProcessFolder);
 
             CopyDatabaseLibraryFiles();

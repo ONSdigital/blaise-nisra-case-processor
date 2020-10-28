@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using Google.Cloud.Storage.V1;
@@ -8,9 +7,14 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Helpers
 {
     public class BucketHelper
     {
+        private readonly ConfigurationHelper _configurationHelper;
+
         public BucketHelper()
         {
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"]);
+            _configurationHelper = new ConfigurationHelper();
+
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
+                _configurationHelper.GoogleApplicationCredentials);
         }
 
         public void UploadToBucket(string filePath, string bucketName)
@@ -32,7 +36,7 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Helpers
 
             //get all objects that are not folders
             var availableFiles = availableObjectsInBucket.Where(f => f.Size > 0).Select(f => f.Name).ToList();
-            availableFiles.RemoveAll(f => f.Contains(ConfigurationManager.AppSettings["IgnoreFilesInBucketList"]));
+            availableFiles.RemoveAll(f => f.Contains(_configurationHelper.IgnoreFilesInBucketList));
 
             return availableFiles.Count == 0;
         }

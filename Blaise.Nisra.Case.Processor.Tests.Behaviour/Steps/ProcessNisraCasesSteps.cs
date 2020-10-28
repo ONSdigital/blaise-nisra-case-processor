@@ -16,28 +16,21 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
     {
         private readonly ScenarioContext _scenarioContext;
 
-        private readonly int _defaultOutcome;
-        private readonly ModeType _defaultMode;
-        private readonly string _bucketName;
-
         private readonly NisraFileHelper _nisraFileHelper;
         private readonly CaseHelper _caseHelper;
         private readonly BucketHelper _bucketHelper;
         private readonly PubSubHelper _pubSubHelper;
+        private readonly ConfigurationHelper _configurationHelper;
 
         public ProcessNisraCasesSteps(ScenarioContext scenarioContext)
         {
             _scenarioContext = scenarioContext;
 
-            _bucketName = "ons-blaise-dev-jam44-nisra";
-
-            _defaultOutcome = 110;
-            _defaultMode = ModeType.Web;
-
             _nisraFileHelper = new NisraFileHelper();
             _caseHelper = new CaseHelper();
             _bucketHelper = new BucketHelper();
             _pubSubHelper = new PubSubHelper();
+            _configurationHelper = new ConfigurationHelper();
         }
 
         [Given(@"there is a not a Nisra file available")]
@@ -50,7 +43,7 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
         {
             var nisraFilePath = _nisraFileHelper.CreateDatabaseFilesAndFolder();
 
-            _caseHelper.CreateCases(nisraFilePath, numberOfCases, _defaultOutcome, _defaultMode);
+            _caseHelper.CreateCases(nisraFilePath, numberOfCases);
             UploadNisraFile(nisraFilePath);
 
             _scenarioContext.Set(nisraFilePath, "nisraFilePath");
@@ -102,8 +95,6 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
             GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(0);
         }
 
-
-
         [Given(@"the same case exists in Blaise with the outcome code '(.*)'")]
         public void GivenTheSameCaseExistsInBlaiseWithTheOutcomeCode(int outcomeCode)
         {
@@ -115,13 +106,6 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
         public void GivenTheSameCaseExistsInBlaiseThatIsComplete()
         {
             GivenTheSameCaseExistsInBlaiseWithTheOutcomeCode(110);
-        }
-
-        [Given(@"the same case exists in Blaise that is complete and has a case id of '(.*)'")]
-        public void GivenTheSameCaseExistsInBlaiseThatIsCompleteHasACaseIdOf(string caseId)
-        {
-            var primaryKey = _scenarioContext.Get<int>("primaryKey");
-            _caseHelper.CreateCaseInDatabase(primaryKey, 110, ModeType.Tel, caseId);
         }
 
 
@@ -136,7 +120,7 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
         [Given(@"blaise contains '(.*)' cases")]
         public void GivenBlaiseContainsCases(int numberOfCases)
         {
-            _caseHelper.CreateCasesInDatabase(numberOfCases, _defaultOutcome, _defaultMode);
+            _caseHelper.CreateCasesInDatabase(numberOfCases);
         }
 
         [Given(@"blaise contains the following cases")]
@@ -154,7 +138,7 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
             _pubSubHelper.PublishMessage(@"{ ""action"": ""process""}");
 
             var counter = 0;
-            while (!_bucketHelper.FilesHaveBeenProcessed(_bucketName))
+            while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
             {
                 Thread.Sleep(5000);
                 counter++;
@@ -222,8 +206,6 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
                 Assert.AreEqual(caseRecordExpected.Mode, caseModel.Mode, $"expected an version of '{caseRecordExpected.Mode}' for case '{caseModel.PrimaryKey}'," +
                                                                                $"but was '{caseModel.Mode}'");
 
-                Assert.AreEqual(caseRecordExpected.CaseId, caseModel.CaseId, $"expected a caseId of '{caseRecordExpected.CaseId}' for case '{caseModel.PrimaryKey}'," +
-                                                                         $"but was '{caseModel.CaseId}'");
             }
         }
 
@@ -236,15 +218,6 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
             Assert.AreEqual(ModeType.Web, blaiseCase.Mode);
         }
 
-        [Then(@"the case has a case id of '(.*)'")]
-        public void ThenTheCaseHasACaseIdOf(string caseId)
-        {
-            var primaryKey = _scenarioContext.Get<int>("primaryKey");
-            var blaiseCase = _caseHelper.GetCaseInDatabase(primaryKey);
-
-            Assert.AreEqual(caseId, blaiseCase.CaseId);
-        }
-        
         [Then(@"the existing blaise case is kept")]
         public void ThenTheBlaiseCaseIsKept()
         {
@@ -275,7 +248,7 @@ namespace Blaise.Nisra.Case.Processor.Tests.Behaviour.Steps
 
             foreach (var file in Directory.GetFiles(databaseFilePath))
             {
-                _bucketHelper.UploadToBucket(file, _bucketName);
+                _bucketHelper.UploadToBucket(file, _configurationHelper.BucketName);
             }
         }
     }

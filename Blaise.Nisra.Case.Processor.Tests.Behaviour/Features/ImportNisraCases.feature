@@ -111,115 +111,107 @@ Scenario: There is a Nisra file available with 10 cases and Blaise contains no c
 	When the nisra file is processed
 	Then blaise will contain '10' cases
 
-#LU-7618 Take existing Case ID when importing Nisra records
-Scenario: A case in the NISRA file is complete and has no case Id and in Blaise it is complete with a case Id, we take the NISRA case and keep the existing case Id
-	Given there is a Nisra file that contains a case that is complete
-	And the same case exists in Blaise that is complete and has a case id of '30001'
-	When the nisra file is processed
-	Then the existing blaise case is overwritten with the NISRA case
-	And the case has a case id of '30001' 
-
 #Covers all scenarios in one test run
 Scenario: There is a Nisra file available that contains cases that already exists in the blaise database, the cases are updated depending on the outcome codes
 	Given there is a Nisra file that contains the following cases
-	| primarykey | outcome | mode | caseid |
+	| primarykey | outcome | mode | 
 	#scenario 1
-	| 900001     | 110     | Web  | 0      |
+	| 900001     | 110     | Web  | 
 	#scenario 2
-	| 900002     | 210     | Web  | 0      |
+	| 900002     | 210     | Web  | 
 	#scenario 3
-	| 900003     | 110     | Web  | 0      |
+	| 900003     | 110     | Web  | 
 	#scenario 4
-	| 900004     | 110     | Web  | 0      |
-	| 900005     | 110     | Web  | 0      |
-	| 900006     | 110     | Web  | 0      |
-	| 900007     | 110     | Web  | 0      |
-	| 900008     | 110     | Web  | 0      |
-	| 900009     | 110     | Web  | 0      |
+	| 900004     | 110     | Web  | 
+	| 900005     | 110     | Web  | 
+	| 900006     | 110     | Web  | 
+	| 900007     | 110     | Web  | 
+	| 900008     | 110     | Web  | 
+	| 900009     | 110     | Web  | 
 	#scenario 5
-	| 900010     | 0       | Web  | 0      |
+	| 900010     | 0       | Web  | 
 	#scenario 6
-	| 900011     | 210     | Web  | 0      |
+	| 900011     | 210     | Web  | 
 	#scenario 7
-	| 900012     | 210     | Web  | 0      |
-	| 900013     | 210     | Web  | 0      |
-	| 900014     | 210     | Web  | 0      |
-	| 900015     | 210     | Web  | 0      |
-	| 900016     | 210     | Web  | 0      |
-	| 900017     | 210     | Web  | 0      |
+	| 900012     | 210     | Web  | 
+	| 900013     | 210     | Web  | 
+	| 900014     | 210     | Web  | 
+	| 900015     | 210     | Web  | 
+	| 900016     | 210     | Web  | 
+	| 900017     | 210     | Web  | 
 	#scenario 8
-	| 900018     | 0       | Web  | 0      |
+	| 900018     | 0       | Web  | 
 	#scenario 9
-	| 900019     | 210     | Web  | 0      |
+	| 900019     | 210     | Web  | 
 	#scenario 10
-	| 900020     | 110     | Web  | 0      |
+	| 900020     | 110     | Web  | 
 	
 	And blaise contains the following cases
-	| primarykey | outcome | mode | caseid |
+	| primarykey | outcome | mode | 
 	#scenario 1
-	| 900001     | 110     | Tel  | 3001   |
+	| 900001     | 110     | Tel  | 
 	#scenario 2
-	| 900002     | 110     | Tel  | 3002   |
+	| 900002     | 110     | Tel  | 
 	#scenario 3
-	| 900003     | 210     | Tel  | 3003   |
+	| 900003     | 210     | Tel  | 
 	#scenario 4
-	| 900004     | 310     | Tel  | 3004   |
-	| 900005     | 430     | Tel  | 3005   |
-	| 900006     | 460     | Tel  | 3006   |
-	| 900007     | 461     | Tel  | 3007   |
-	| 900008     | 541     | Tel  | 3008   |
-	| 900009     | 542     | Tel  | 3009   |
+	| 900004     | 310     | Tel  | 
+	| 900005     | 430     | Tel  | 
+	| 900006     | 460     | Tel  | 
+	| 900007     | 461     | Tel  | 
+	| 900008     | 541     | Tel  | 
+	| 900009     | 542     | Tel  | 
 	#scenario 5
-	| 900010     | 110     | Tel  | 3010   |
+	| 900010     | 110     | Tel  | 
 	#scenario 6
-	| 900011     | 210     | Tel  | 3011   |
+	| 900011     | 210     | Tel  | 
 	#scenario 7
-	| 900012     | 310     | Tel  | 3012   |
-	| 900013     | 430     | Tel  | 3013   |
-	| 900014     | 460     | Tel  | 3014   |
-	| 900015     | 461     | Tel  | 3015   |
-	| 900016     | 541     | Tel  | 3016   |
-	| 900017     | 542     | Tel  | 3017   |
+	| 900012     | 310     | Tel  | 
+	| 900013     | 430     | Tel  | 
+	| 900014     | 460     | Tel  | 
+	| 900015     | 461     | Tel  | 
+	| 900016     | 541     | Tel  | 
+	| 900017     | 542     | Tel  | 
 	#scenario 8
-	| 900018     | 310     | Tel  | 3018   |
+	| 900018     | 310     | Tel  | 
 	#scenario 9
-	| 900019     | 562     | Tel  | 3019   |
+	| 900019     | 562     | Tel  | 
 	#scenario 10
-	| 900020     | 561     | Tel  | 3020   |
+	| 900020     | 561     | Tel  | 
 
 	When the nisra file is processed
 	Then blaise will contain the following cases
-	| primarykey | outcome | mode | caseid |
+	| primarykey | outcome | mode | 
 	#scenario 1
-	| 900001     | 110     | Web  | 3001   |
+	| 900001     | 110     | Web  | 
 	#scenario 2
-	| 900002     | 110     | Tel  | 3002   |
+	| 900002     | 110     | Tel  | 
 	#scenario 3
-	| 900003     | 110     | Web  | 3003   |
+	| 900003     | 110     | Web  | 
 	#scenario 4
-	| 900004     | 110     | Web  | 3004   |
-	| 900005     | 110     | Web  | 3005   |
-	| 900006     | 110     | Web  | 3006   |
-	| 900007     | 110     | Web  | 3007   |
-	| 900008     | 110     | Web  | 3008   |
-	| 900009     | 110     | Web  | 3009   |
+	| 900004     | 110     | Web  | 
+	| 900005     | 110     | Web  | 
+	| 900006     | 110     | Web  | 
+	| 900007     | 110     | Web  | 
+	| 900008     | 110     | Web  | 
+	| 900009     | 110     | Web  | 
 	#scenario 5
-	| 900010     | 110     | Tel  | 3010   |
+	| 900010     | 110     | Tel  | 
 	#scenario 6
-	| 900011     | 210     | Web  | 3011   |
+	| 900011     | 210     | Web  | 
 	#scenario 7
-	| 900012     | 210     | Web  | 3012   |
-	| 900013     | 210     | Web  | 3013   |
-	| 900014     | 210     | Web  | 3014   |
-	| 900015     | 210     | Web  | 3015   |
-	| 900016     | 210     | Web  | 3016   |
-	| 900017     | 210     | Web  | 3017   |
+	| 900012     | 210     | Web  | 
+	| 900013     | 210     | Web  | 
+	| 900014     | 210     | Web  | 
+	| 900015     | 210     | Web  | 
+	| 900016     | 210     | Web  | 
+	| 900017     | 210     | Web  | 
 	#scenario 8
-	| 900018     | 310     | Tel  | 3018   |
+	| 900018     | 310     | Tel  | 
 	#scenario 9
-	| 900019     | 562     | Tel  | 3019   |
+	| 900019     | 562     | Tel  | 
 	#scenario 10
-	| 900020     | 561     | Tel  | 3020   |
+	| 900020     | 561     | Tel  | 
 
 
 Scenario: Test Nisra Mover

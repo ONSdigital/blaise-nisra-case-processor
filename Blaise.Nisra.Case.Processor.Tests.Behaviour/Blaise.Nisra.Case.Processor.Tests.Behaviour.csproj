@@ -276,6 +276,7 @@
     <Compile Include="Enums\ModeType.cs" />
     <Compile Include="Helpers\BucketHelper.cs" />
     <Compile Include="Helpers\CaseHelper.cs" />
+    <Compile Include="Helpers\ConfigurationHelper.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\NisraFileHelper.cs" />
     <Compile Include="Helpers\PubSubHelper.cs" />
