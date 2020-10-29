@@ -26,7 +26,7 @@ namespace BlaiseNisraCaseProcessor.Services
             _queueApi
                 .WithProject(_configurationProvider.ProjectId)
                 .WithSubscription(_configurationProvider.SubscriptionId)
-                .WithExponentialBackOff(60)
+                .WithExponentialBackOff(1)
                 .WithDeadLetter(_configurationProvider.DeadletterTopicId)
                 .StartConsuming(messageHandler, true);
 

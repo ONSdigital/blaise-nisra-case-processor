@@ -36,7 +36,7 @@ namespace BlaiseNisraCaseProcessor.Services
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                _logger.Warn($"There was an error starting the Data Delivery service");
+                _logger.Warn($"There was an error starting the Nisra Case processing service");
                 throw;
             }
 
