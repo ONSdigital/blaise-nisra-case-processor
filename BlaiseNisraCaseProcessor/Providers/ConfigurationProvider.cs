@@ -32,7 +32,7 @@ namespace BlaiseNisraCaseProcessor.Providers
             }
         }
 
-        public string VmName => GetVariable("VmName");
+        public string VmName => Environment.MachineName;
 
         private static string GetVariable(string variableName)
         {
