@@ -215,7 +215,7 @@ Scenario: There is a Nisra file available that contains cases that already exist
 
 
 Scenario: Test Nisra Mover
-	Given there is a Nisra file that contains '50' cases 
+	Given there is a Nisra file that contains '10' cases 
 	And blaise contains no cases
 	When the nisra file is processed
 	Then blaise will contain '10' cases
