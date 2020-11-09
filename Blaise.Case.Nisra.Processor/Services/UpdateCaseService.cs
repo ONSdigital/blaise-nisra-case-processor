@@ -24,6 +24,7 @@ namespace Blaise.Case.Nisra.Processor.Services
             if (nisraOutcome == 0)
             {
                 _logger.Info($"Not processed: NISRA case '{serialNumber}' (HOut = 0)");
+
                 return;
             }
 
@@ -32,6 +33,7 @@ namespace Blaise.Case.Nisra.Processor.Services
             if (existingOutcome > 542)
             {
                 _logger.Info($"Not processed: NISRA case '{serialNumber}' (Existing HOut = '{existingOutcome}'");
+
                 return;
             }
 
