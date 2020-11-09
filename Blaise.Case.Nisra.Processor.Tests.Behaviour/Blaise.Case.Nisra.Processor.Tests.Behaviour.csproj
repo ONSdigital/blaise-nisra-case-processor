@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <Import Project="..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.props" Condition="Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.props')" />
   <Import Project="..\packages\SpecFlow.NUnit.3.1.97\build\SpecFlow.NUnit.props" Condition="Exists('..\packages\SpecFlow.NUnit.3.1.97\build\SpecFlow.NUnit.props')" />
   <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" />
-  <Import Project="..\packages\NUnit.3.11.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -38,13 +38,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Blaise.Nuget.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.10.14.1\lib\net472\Blaise.Nuget.Api.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.10.23.1\lib\net472\Blaise.Nuget.Api.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.10.14.1\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.10.23.1\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.Api.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.2020.10.14.1\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.2020.10.23.1\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.2020.10.14.1\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
@@ -154,8 +154,8 @@
     <Reference Include="Nito.Disposables, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nito.Disposables.2.0.0\lib\netstandard2.0\Nito.Disposables.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.11.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.11.0\lib\net45\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
       <HintPath>..\packages\StatNeth.Blaise.API.x64.5.7.5\lib\net472\StatNeth.Blaise.API.dll</HintPath>
@@ -316,7 +316,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit.3.11.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.11.0\build\NUnit.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.targets'))" />
     <Error Condition="!Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets'))" />
@@ -327,6 +326,7 @@
     <Error Condition="!Exists('..\packages\SpecFlow.NUnit.3.1.97\build\SpecFlow.NUnit.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.NUnit.3.1.97\build\SpecFlow.NUnit.targets'))" />
     <Error Condition="!Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.props'))" />
     <Error Condition="!Exists('..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SpecFlow.Tools.MsBuild.Generation.3.1.97\build\SpecFlow.Tools.MsBuild.Generation.targets'))" />
+    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
   </Target>
   <Import Project="..\packages\EntityFramework.6.3.0\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" />
   <Import Project="..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" />
