@@ -20,8 +20,6 @@ namespace BlaiseNisraCaseProcessor.Interfaces.Providers
 
         IList<string> IgnoreFilesInBucketList { get; }
 
-        string CloudStorageKey { get; }
-
         string VmName { get; }
 
         string DeadletterTopicId { get; }

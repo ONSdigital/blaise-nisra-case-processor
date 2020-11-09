@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Blaise.Nuget.Api.Contracts.Enums;
+using Blaise.Nuget.Api.Contracts.Extensions;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using BlaiseNisraCaseProcessor.Interfaces.Mappers;
 using BlaiseNisraCaseProcessor.Interfaces.Services;
@@ -40,6 +42,11 @@ namespace BlaiseNisraCaseProcessor.Services
         public string GetSerialNumber(IDataRecord dataRecord)
         {
             return _blaiseApi.Case.WithDataRecord(dataRecord).PrimaryKey;
+        }
+
+        public string GetCaseId(IDataRecord dataRecord)
+        {
+            return _blaiseApi.Case.WithDataRecord(dataRecord).CaseId;
         }
 
         public bool CaseExists(string serialNumber, string serverPark, string surveyName)
@@ -99,7 +106,10 @@ namespace BlaiseNisraCaseProcessor.Services
             var fieldData = _mapper.MapFieldDictionaryFromRecordFields(newDataRecord as IDataRecord2);
 
             // Modify the Online flag to indicate the new record is from the NISRA data set
-            fieldData.Add("QHAdmin.Online", "1");
+            fieldData[FieldNameType.Online.FullName()] = "1";
+
+            //LU-7645 - keep existing Case ID when importing Nisra records
+            fieldData[FieldNameType.CaseId.FullName()] = GetCaseId(existingDataRecord);
 
             _blaiseApi
                 .WithConnection(_blaiseApi.DefaultConnection)

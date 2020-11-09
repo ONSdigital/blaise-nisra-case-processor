@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Blaise.Nuget.Api.Contracts.Enums;
+using Blaise.Nuget.Api.Contracts.Extensions;
 using BlaiseNisraCaseProcessor.Enums;
-using BlaiseNisraCaseProcessor.Helpers;
 using BlaiseNisraCaseProcessor.Mappers;
 using BlaiseNisraCaseProcessor.Models;
 using Moq;
@@ -128,7 +129,7 @@ namespace BlaiseNisraCaseProcessor.Tests.Mappers
             var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonDataString);
 
             //assert
-            Assert.AreEqual(EnumHelper.GetEnumDescription(caseStatusType), result["status"]);
+            Assert.AreEqual(caseStatusType.FullName(), result["status"]);
             Assert.AreEqual(surveyName, result["instrument_name"]);
             Assert.AreEqual(serverPark, result["server_park"]);
         }

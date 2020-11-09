@@ -1,7 +1,7 @@
-﻿using BlaiseNisraCaseProcessor.Interfaces.Services;
+﻿using Blaise.Nuget.Api.Contracts.Enums;
+using BlaiseNisraCaseProcessor.Interfaces.Services;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
-using CaseStatusType = BlaiseNisraCaseProcessor.Enums.CaseStatusType;
 
 namespace BlaiseNisraCaseProcessor.Services
 {
@@ -27,21 +27,27 @@ namespace BlaiseNisraCaseProcessor.Services
 
             if (nisraOutcome == 0)
             {
-                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = 0)");
+                _logger.Info($"Not processed: NISRA case '{serialNumber}' (HOut = 0)");
                 return;
             }
 
             var existingOutcome = _blaiseApiService.GetHOutValue(existingDataRecord);
 
-            if (existingOutcome > 0 && existingOutcome < nisraOutcome)
+            if (existingOutcome > 542)
             {
-                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' < '{nisraOutcome}')'");
+                _logger.Info($"Not processed: NISRA case '{serialNumber}' (Existing HOut = '{existingOutcome}'");
+                return;
+            }
+
+            if (existingOutcome == 0 || nisraOutcome <= existingOutcome)
+            {
+                ImportNisraCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
+                _logger.Info($"processed: NISRA case '{serialNumber}' (HOut = '{nisraOutcome}' <= '{existingOutcome}') or (HOut = 0)'");
 
                 return;
             }
 
-            ImportNisraCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
-            _logger.Info($"processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' > '{nisraOutcome}') or (HOut = 0)'");
+            _logger.Info($"Not processed: NISRA case '{serialNumber}' (HOut = '{existingOutcome}' < '{nisraOutcome}')'");
         }
 
         private void ImportNisraCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord, string serverPark, string surveyName)

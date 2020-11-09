@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using BlaiseNisraCaseProcessor.Enums;
+using Blaise.Nuget.Api.Contracts.Enums;
 using BlaiseNisraCaseProcessor.Models;
 using StatNeth.Blaise.API.DataRecord;
 
