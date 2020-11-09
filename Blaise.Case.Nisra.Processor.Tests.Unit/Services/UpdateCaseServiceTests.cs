@@ -95,7 +95,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
 
             _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_nisraDataRecordMock.Object)).Returns(hOutComplete);
             _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_existingDataRecordMock.Object)).Returns(hOutPartial);
-            
+
             //act
             _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
 
@@ -111,11 +111,13 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
 
         // Scenario 4  (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [TestCase(210)]
-        [TestCase(300)]
-        [TestCase(400)]
-        [TestCase(500)]
+        [TestCase(310)]
+        [TestCase(430)]
+        [TestCase(460)]
+        [TestCase(461)]
+        [TestCase(541)]
         [TestCase(542)]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Haw_An_Outcome_Between_210_And_542_When_I_Call_UpdateCase_Then_The_To_Record_Is_Updated(int existingOutcome)
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Between_210_And_542_When_I_Call_UpdateCase_Then_The_To_Record_Is_Updated(int existingOutcome)
         {
             //arrange
             var hOutComplete = 110; //complete
@@ -137,34 +139,22 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
         }
 
         // Scenario 5 & 8 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
-        [Test]
-        public void Given_The_Nisra_Status_Is_NotProcessed_When_I_Call_UpdateCase_Then_The_Existing_Record_Is_Not_Updated()
+        [TestCase(110)]
+        [TestCase(310)]
+        public void Given_The_Nisra_Outcome_Is_Zero_When_I_Call_UpdateCase_Then_The_Existing_Record_Is_Not_Updated(
+            int existingOutcome)
         {
             //arrange
             _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_nisraDataRecordMock.Object)).Returns(0);
+            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_existingDataRecordMock.Object)).Returns(existingOutcome);
 
             //act
-            _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
+            _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName,
+                _serialNumber);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_nisraDataRecordMock.Object), Times.Once);
 
-            _blaiseApiServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_The_Nisra_Outcome_Is_Zero_When_I_Call_UpdateCase_Then_The_Existing_Record_Is_Not_Updated()
-        {
-            //arrange
-            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_nisraDataRecordMock.Object)).Returns(0);
-
-            //act
-            _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
-
-            //assert
-            _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_nisraDataRecordMock.Object), Times.Once);
-
-            _blaiseApiServiceMock.VerifyNoOtherCalls();
         }
 
         // Scenario 6 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
@@ -192,10 +182,12 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
         }
 
         // Scenario 7 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
+        [TestCase(210)]
         [TestCase(310)]
-        [TestCase(300)]
-        [TestCase(400)]
-        [TestCase(500)]
+        [TestCase(430)]
+        [TestCase(460)]
+        [TestCase(461)]
+        [TestCase(541)]
         [TestCase(542)]
         public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Haw_An_Outcome_Between_210_And_542_When_I_Call_UpdateCase_Then_The_To_Record_Is_Updated(int existingOutcome)
         {
@@ -239,6 +231,48 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
 
             _blaiseApiServiceMock.Verify(v => v.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _surveyName));
+
+            _blaiseApiServiceMock.VerifyNoOtherCalls();
+        }
+
+        // Scenario 9 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
+        [Test]
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_UpdateCase_Then_The_To_Record_Is_Not_Updated()
+        {
+            //arrange
+            var hOutPartial = 210; //partial
+            var hOutComplete = 562; //respondent request for data to be deleted
+
+            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_nisraDataRecordMock.Object)).Returns(hOutPartial);
+            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_existingDataRecordMock.Object)).Returns(hOutComplete);
+
+            //act
+            _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
+
+            //assert
+            _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_nisraDataRecordMock.Object), Times.Once);
+            _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_existingDataRecordMock.Object), Times.Once);
+
+            _blaiseApiServiceMock.VerifyNoOtherCalls();
+        }
+
+        // Scenario 10 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
+        [Test]
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_UpdateCase_Then_The_To_Record_Is_Not_Updated()
+        {
+            //arrange
+            var hOutPartial = 110; //Complete
+            var hOutComplete = 561; //respondent request for data to be deleted
+
+            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_nisraDataRecordMock.Object)).Returns(hOutPartial);
+            _blaiseApiServiceMock.Setup(b => b.GetHOutValue(_existingDataRecordMock.Object)).Returns(hOutComplete);
+
+            //act
+            _sut.UpdateCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _surveyName, _serialNumber);
+
+            //assert
+            _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_nisraDataRecordMock.Object), Times.Once);
+            _blaiseApiServiceMock.Verify(v => v.GetHOutValue(_existingDataRecordMock.Object), Times.Once);
 
             _blaiseApiServiceMock.VerifyNoOtherCalls();
         }

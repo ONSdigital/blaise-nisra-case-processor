@@ -23,21 +23,27 @@ namespace Blaise.Case.Nisra.Processor.Services
 
             if (nisraOutcome == 0)
             {
-                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = 0)");
+                _logger.Info($"Not processed: NISRA case '{serialNumber}' (HOut = 0)");
                 return;
             }
 
             var existingOutcome = _blaiseApiService.GetHOutValue(existingDataRecord);
 
-            if (existingOutcome > 0 && existingOutcome < nisraOutcome)
+            if (existingOutcome > 542)
             {
-                _logger.Info($"Not processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' < '{nisraOutcome}')'");
+                _logger.Info($"Not processed: NISRA case '{serialNumber}' (Existing HOut = '{existingOutcome}'");
+                return;
+            }
+
+            if (existingOutcome == 0 || nisraOutcome <= existingOutcome)
+            {
+                _blaiseApiService.UpdateCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
+                _logger.Info($"processed: NISRA case '{serialNumber}' (HOut = '{nisraOutcome}' <= '{existingOutcome}') or (HOut = 0)'");
 
                 return;
             }
 
-            _blaiseApiService.UpdateCase(nisraDataRecord, existingDataRecord, serverPark, surveyName);
-            _logger.Info($"processed: NISRA case-serial-number '{serialNumber}' (HOut = '{existingOutcome}' > '{nisraOutcome}') or (HOut = 0)'");
+            _logger.Info($"Not processed: NISRA case '{serialNumber}' (HOut = '{existingOutcome}' < '{nisraOutcome}')'");
         }
     }
 }
