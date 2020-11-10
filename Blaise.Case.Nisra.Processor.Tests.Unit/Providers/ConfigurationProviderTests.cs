@@ -1,5 +1,5 @@
 ﻿using System.Configuration;
-using Blaise.Case.Nisra.Processor.Providers;
+using Blaise.Case.Nisra.Processor.Core.Configuration;
 using NUnit.Framework;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit.Providers

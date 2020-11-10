@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Blaise.Case.Nisra.Processor.Interfaces.Mappers;
-using Blaise.Case.Nisra.Processor.Services;
+using Blaise.Case.Nisra.Processor.Data;
+using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using Blaise.Nuget.Api.Contracts.Enums;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using Blaise.Nuget.Api.Contracts.Models;
@@ -14,7 +14,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
     public class BlaiseApiServiceTests
     {
         private Mock<IBlaiseApi> _blaiseApiMock;
-        private Mock<ICaseMapper> _mapperMock;
+        private Mock<IDataRecordMapper> _mapperMock;
 
         private Mock<IDataRecord> _dataRecordMock;
 
@@ -41,7 +41,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
             _blaiseApiMock = new Mock<IBlaiseApi>();
             _blaiseApiMock.Setup(b => b.GetDefaultConnectionModel()).Returns(_connectionModel);
 
-            _mapperMock = new Mock<ICaseMapper>();
+            _mapperMock = new Mock<IDataRecordMapper>();
 
             _sut = new BlaiseApiService(
                 _blaiseApiMock.Object,

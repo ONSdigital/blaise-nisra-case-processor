@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Blaise.Case.Nisra.Processor.WindowsService;
+using NUnit.Framework;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit
 {

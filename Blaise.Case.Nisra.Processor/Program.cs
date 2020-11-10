@@ -1,4 +1,4 @@
-﻿namespace Blaise.Case.Nisra.Processor
+﻿namespace Blaise.Case.Nisra.Processor.WindowsService
 {
     static class Program
     {

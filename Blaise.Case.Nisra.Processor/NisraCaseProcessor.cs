@@ -1,19 +1,19 @@
 using System.ServiceProcess;
-using Blaise.Case.Nisra.Processor.Interfaces.Services;
-using Blaise.Case.Nisra.Processor.Providers;
+using Blaise.Case.Nisra.Processor.WindowsService.Interfaces;
+using Blaise.Case.Nisra.Processor.WindowsService.Ioc;
 
-namespace Blaise.Case.Nisra.Processor
+namespace Blaise.Case.Nisra.Processor.WindowsService
 {
     public partial class BlaiseNisraCaseProcessor : ServiceBase
     {
-        public IInitialiseService InitialiseService;
+        public IInitialiseWindowsService InitialiseService;
 
         public BlaiseNisraCaseProcessor()
         {
             InitializeComponent();
             var unityProvider = new UnityProvider();
 
-            InitialiseService = unityProvider.Resolve<IInitialiseService>();
+            InitialiseService = unityProvider.Resolve<IInitialiseWindowsService>();
         }
 
         public void OnDebug()

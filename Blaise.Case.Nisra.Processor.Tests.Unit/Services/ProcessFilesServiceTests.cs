@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
-using Blaise.Case.Nisra.Processor.Interfaces.Services;
-using Blaise.Case.Nisra.Processor.Services;
+using Blaise.Case.Nisra.Processor.Core;
+using Blaise.Case.Nisra.Processor.Core.Interfaces;
+using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using log4net;
 using Moq;
 using NUnit.Framework;

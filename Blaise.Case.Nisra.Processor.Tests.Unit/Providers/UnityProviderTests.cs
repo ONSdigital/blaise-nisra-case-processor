@@ -1,4 +1,4 @@
-﻿using Blaise.Case.Nisra.Processor.Providers;
+﻿using Blaise.Case.Nisra.Processor.WindowsService.Ioc;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using NUnit.Framework;
 
