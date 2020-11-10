@@ -3,7 +3,7 @@ using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using log4net;
 using StatNeth.Blaise.API.DataRecord;
 
-namespace Blaise.Case.Nisra.Processor.Core
+namespace Blaise.Case.Nisra.Processor.Core.Cases
 {
     public class UpdateCaseService : IUpdateCaseService
     {

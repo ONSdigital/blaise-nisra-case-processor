@@ -13,13 +13,13 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker
     {
         private readonly ILog _logger;
         private readonly IStorageService _storageService;
-        private readonly IProcessFilesService _processFilesService;
+        private readonly IProcessNisraFilesService _processFilesService;
         private readonly IMessageModelMapper _mapper;
 
         public MessageHandler(
             ILog logger,
             IStorageService storageService,
-            IProcessFilesService processNisraFilesService, 
+            IProcessNisraFilesService processNisraFilesService, 
             IMessageModelMapper mapper)
         {
             _storageService = storageService;

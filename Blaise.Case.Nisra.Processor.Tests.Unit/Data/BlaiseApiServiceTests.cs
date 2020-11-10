@@ -9,7 +9,7 @@ using NUnit.Framework;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.DataRecord;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.Data
 {
     public class BlaiseApiServiceTests
     {

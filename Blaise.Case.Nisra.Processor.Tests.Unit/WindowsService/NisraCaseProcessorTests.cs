@@ -1,7 +1,7 @@
 ﻿using Blaise.Case.Nisra.Processor.WindowsService;
 using NUnit.Framework;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
 {
     public class NisraCaseProcessorTests
     {

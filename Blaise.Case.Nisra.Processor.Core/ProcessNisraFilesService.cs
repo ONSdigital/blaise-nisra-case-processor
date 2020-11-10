@@ -7,19 +7,19 @@ using log4net;
 
 namespace Blaise.Case.Nisra.Processor.Core
 {
-    public class ProcessFilesService : IProcessFilesService
+    public class ProcessNisraFilesService : IProcessNisraFilesService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
-        private readonly IImportCasesService _importFileService;
+        private readonly IProcessNisraCasesService _importFileService;
         private readonly IFileSystem _fileSystem;
 
         private const string DatabaseFileNameExt = ".bdix";
 
-        public ProcessFilesService(
+        public ProcessNisraFilesService(
             ILog logger,
             IBlaiseApiService blaiseApiService,
-            IImportCasesService importFileService, 
+            IProcessNisraCasesService importFileService, 
             IFileSystem fileSystem)
         {
             _logger = logger;
@@ -46,7 +46,7 @@ namespace Blaise.Case.Nisra.Processor.Core
                     if (_blaiseApiService.SurveyExists(serverPark, surveyName))
                     {
                         _logger.Info($"Survey '{surveyName}' exists on server park '{serverPark}'");
-                        _importFileService.ImportCasesFromFile(databaseFile, serverPark, surveyName);
+                        _importFileService.ProcessNisraCases(databaseFile, serverPark, surveyName);
                         continue;
                     }
 

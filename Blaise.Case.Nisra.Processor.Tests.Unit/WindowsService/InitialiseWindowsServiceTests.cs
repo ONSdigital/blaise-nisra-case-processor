@@ -7,7 +7,7 @@ using log4net;
 using Moq;
 using NUnit.Framework;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
 {
     public class InitialiseWindowsServiceTests
     {

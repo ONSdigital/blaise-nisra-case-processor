@@ -7,13 +7,13 @@ using log4net;
 using Moq;
 using NUnit.Framework;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 {
     public class ProcessFilesServiceTests
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
-        private Mock<IImportCasesService> _importFileServiceMock;
+        private Mock<IProcessNisraCasesService> _importFileServiceMock;
         private MockFileSystem _mockFileSystem;
 
         private readonly List<string> _availableFiles;
@@ -22,7 +22,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
         private readonly string _serverParkName;
         private readonly string _surveyName;
 
-        private ProcessFilesService _sut;
+        private ProcessNisraFilesService _sut;
 
         public ProcessFilesServiceTests()
         {
@@ -46,9 +46,9 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
             _mockFileSystem = new MockFileSystem();
             _mockFileSystem.AddFile(_databaseFileName, new MockFileData(""));
 
-            _importFileServiceMock = new Mock<IImportCasesService>();
+            _importFileServiceMock = new Mock<IProcessNisraCasesService>();
 
-            _sut = new ProcessFilesService(
+            _sut = new ProcessNisraFilesService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
                 _importFileServiceMock.Object,
@@ -110,7 +110,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
             _sut.ProcessFiles(_availableFiles);
 
             //assert
-            _importFileServiceMock.Verify(v => v.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName), Times.Once);
+            _importFileServiceMock.Verify(v => v.ProcessNisraCases(_databaseFileName, _serverParkName, _surveyName), Times.Once);
         }
     }
 }

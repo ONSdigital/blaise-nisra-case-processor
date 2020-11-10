@@ -2,7 +2,7 @@
 
 namespace Blaise.Case.Nisra.Processor.Core.Interfaces
 {
-    public interface IProcessFilesService
+    public interface IProcessNisraFilesService
     {
         void ProcessFiles(IList<string> filesToProcess);
     }

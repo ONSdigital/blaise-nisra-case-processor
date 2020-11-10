@@ -1,4 +1,4 @@
-﻿using Blaise.Case.Nisra.Processor.Core;
+﻿using Blaise.Case.Nisra.Processor.Core.Cases;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
 using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using log4net;
@@ -7,9 +7,9 @@ using NUnit.Framework;
 using StatNeth.Blaise.API.DataLink;
 using StatNeth.Blaise.API.DataRecord;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core.Cases
 {
-    public class ImportCasesServiceTests
+    public class ProcessNisraCasesServiceTests
     {
         private Mock<ILog> _loggingMock;
         private Mock<IBlaiseApiService> _blaiseApiServiceMock;
@@ -24,9 +24,9 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
         private readonly string _serverParkName;
         private readonly string _surveyName;
 
-        private ImportCasesService _sut;
+        private ProcessNisraCasesService _sut;
 
-        public ImportCasesServiceTests()
+        public ProcessNisraCasesServiceTests()
         {
             _serialNumber = "SN123";
             _serverParkName = "Park1";
@@ -50,7 +50,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
 
             _updateCaseServiceMock = new Mock<IUpdateCaseService>();
 
-            _sut = new ImportCasesService(
+            _sut = new ProcessNisraCasesService(
                 _loggingMock.Object,
                 _blaiseApiServiceMock.Object,
                 _updateCaseServiceMock.Object);
@@ -65,7 +65,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
                 .Returns(true);
 
             //act
-            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ProcessNisraCases(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
@@ -88,7 +88,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
             _blaiseApiServiceMock.Setup(b => b.CaseExists(_serialNumber, _serverParkName, _surveyName)).Returns(false);
 
             //act
-            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ProcessNisraCases(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);
@@ -121,7 +121,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
                 .Returns(_existingDataRecordMock.Object);
 
             //act
-            _sut.ImportCasesFromFile(_databaseFileName, _serverParkName, _surveyName);
+            _sut.ProcessNisraCases(_databaseFileName, _serverParkName, _surveyName);
 
             //assert
             _blaiseApiServiceMock.Verify(v => v.GetCasesFromFile(_databaseFileName), Times.Once);

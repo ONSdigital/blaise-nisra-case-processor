@@ -16,7 +16,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
     {
         private Mock<ILog> _loggingMock;
         private Mock<IStorageService> _storageServiceMock;
-        private Mock<IProcessFilesService> _processFilesServiceMock;
+        private Mock<IProcessNisraFilesService> _processFilesServiceMock;
         private Mock<IMessageModelMapper> _mapperMock;
 
         private readonly string _message;
@@ -42,7 +42,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
 
             _storageServiceMock = new Mock<IStorageService>();
 
-            _processFilesServiceMock = new Mock<IProcessFilesService>();
+            _processFilesServiceMock = new Mock<IProcessNisraFilesService>();
 
             _mapperMock = new Mock<IMessageModelMapper>();
             _mapperMock.Setup(m => m.MapToNisraCaseActionModel(_message)).Returns(_messageModel);

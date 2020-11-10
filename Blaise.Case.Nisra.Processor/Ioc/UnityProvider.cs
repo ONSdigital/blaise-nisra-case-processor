@@ -4,10 +4,12 @@ using System.IO.Abstractions;
 using Blaise.Case.Nisra.Processor.CloudStorage;
 using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
 using Blaise.Case.Nisra.Processor.Core;
+using Blaise.Case.Nisra.Processor.Core.Cases;
 using Blaise.Case.Nisra.Processor.Core.Configuration;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
 using Blaise.Case.Nisra.Processor.Data;
 using Blaise.Case.Nisra.Processor.Data.Interfaces;
+using Blaise.Case.Nisra.Processor.Data.Mappers;
 using Blaise.Case.Nisra.Processor.MessageBroker;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Mappers;
@@ -51,6 +53,7 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
 
             //mappers
             _unityContainer.RegisterType<IMessageModelMapper, MessageModelMapper>();
+            _unityContainer.RegisterType<IDataRecordMapper, DataRecordMapper>();
 
             //handlers
             _unityContainer.RegisterType<IMessageHandler, MessageHandler>();
@@ -59,8 +62,8 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
             _unityContainer.RegisterType<IUpdateCaseService, UpdateCaseService>();
             _unityContainer.RegisterType<IStorageService, StorageService>();
-            _unityContainer.RegisterType<IImportCasesService, ImportCasesService>();
-            _unityContainer.RegisterType<IProcessFilesService, ProcessFilesService>();
+            _unityContainer.RegisterType<IProcessNisraCasesService, ProcessNisraCasesService>();
+            _unityContainer.RegisterType<IProcessNisraFilesService, ProcessNisraFilesService>();
 
             //queue service
             _unityContainer.RegisterType<IMessageBrokerService, MessageBrokerService>();

@@ -2,15 +2,15 @@
 using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using log4net;
 
-namespace Blaise.Case.Nisra.Processor.Core
+namespace Blaise.Case.Nisra.Processor.Core.Cases
 {
-    public class ImportCasesService : IImportCasesService
+    public class ProcessNisraCasesService : IProcessNisraCasesService
     {
         private readonly ILog _logger;
         private readonly IBlaiseApiService _blaiseApiService;
         private readonly IUpdateCaseService _updateCaseService;
 
-        public ImportCasesService(
+        public ProcessNisraCasesService(
             ILog logger,
             IBlaiseApiService blaiseApiService,
             IUpdateCaseService updateCaseService)
@@ -20,9 +20,9 @@ namespace Blaise.Case.Nisra.Processor.Core
             _updateCaseService = updateCaseService;
         }
 
-        public void ImportCasesFromFile(string databaseFile, string serverPark, string surveyName)
+        public void ProcessNisraCases(string nisraDatabaseFile, string serverPark, string surveyName)
         {
-            var cases = _blaiseApiService.GetCasesFromFile(databaseFile);
+            var cases = _blaiseApiService.GetCasesFromFile(nisraDatabaseFile);
 
             while (!cases.EndOfSet)
             {

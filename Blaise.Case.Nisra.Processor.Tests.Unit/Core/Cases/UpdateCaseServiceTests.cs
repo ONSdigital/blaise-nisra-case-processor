@@ -1,11 +1,11 @@
-﻿using Blaise.Case.Nisra.Processor.Core;
+﻿using Blaise.Case.Nisra.Processor.Core.Cases;
 using Blaise.Case.Nisra.Processor.Data.Interfaces;
 using log4net;
 using Moq;
 using NUnit.Framework;
 using StatNeth.Blaise.API.DataRecord;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.Services
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core.Cases
 {
     public class UpdateCaseServiceTests
     {
