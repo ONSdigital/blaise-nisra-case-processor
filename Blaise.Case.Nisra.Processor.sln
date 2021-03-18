@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29403.142
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Nisra.Processor.WindowsService", "Blaise.Case.Nisra.Processor\Blaise.Case.Nisra.Processor.WindowsService.csproj", "{80AFB125-A799-46F8-9A45-F1EDF5496E15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Nisra.Processor.WindowsService", "Blaise.Case.Nisra.Processor.WindowsService\Blaise.Case.Nisra.Processor.WindowsService.csproj", "{80AFB125-A799-46F8-9A45-F1EDF5496E15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Nisra.Processor.Tests.Unit", "Blaise.Case.Nisra.Processor.Tests.Unit\Blaise.Case.Nisra.Processor.Tests.Unit.csproj", "{2D539782-C662-4F48-8DA8-05F5E48FFC79}"
 EndProject
