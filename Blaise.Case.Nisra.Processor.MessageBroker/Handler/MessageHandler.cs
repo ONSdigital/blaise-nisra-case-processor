@@ -35,7 +35,7 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Handler
                 var messageModel = _mapper.MapToMessageModel(message);
 
                 var databaseFile = _storageService.GetInstrumentFileFromBucket(
-                    messageModel.InstrumentName, messageModel.InstrumentBucketPath);
+                    messageModel.InstrumentName, messageModel.BucketPath);
 
                 _nisraDataService.ImportNisraDatabaseFile(messageModel.ServerParkName, messageModel.InstrumentName, 
                     databaseFile);

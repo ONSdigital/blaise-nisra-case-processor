@@ -29,7 +29,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
             _message = "Message";
             _messageModel = new MessageModel
             {
-                InstrumentBucketPath = "Instruments\\OPN2101A",
+                BucketPath = "Instruments\\OPN2101A",
                 InstrumentName = "OPN2101A",
                 ServerParkName = "Gusty"
             };
@@ -58,14 +58,14 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
             //arrange
             const string databaseFile = @"d:\temp\OPN2101A.bdix";
             _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(_messageModel.InstrumentName,
-                _messageModel.InstrumentBucketPath)).Returns(databaseFile);
+                _messageModel.BucketPath)).Returns(databaseFile);
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
             _storageServiceMock.Verify(v => v.GetInstrumentFileFromBucket(_messageModel.InstrumentName, 
-                _messageModel.InstrumentBucketPath), Times.Once);
+                _messageModel.BucketPath), Times.Once);
 
             _nisraDataServiceMock.Verify(v => v.ImportNisraDatabaseFile(_messageModel.ServerParkName,
                 _messageModel.InstrumentName, databaseFile), Times.Once);
@@ -79,7 +79,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
             //arrange
             const string databaseFile = @"d:\temp\OPN2101A.bdix";
             _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(_messageModel.InstrumentName,
-                _messageModel.InstrumentBucketPath)).Returns(databaseFile);
+                _messageModel.BucketPath)).Returns(databaseFile);
 
             //act
             var result = _sut.HandleMessage(_message);
