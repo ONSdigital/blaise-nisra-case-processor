@@ -9,10 +9,10 @@ using StatNeth.Blaise.API.DataRecord;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 {
-    public class ImportNisraDataServiceTests
+    public class ImportNisraDataFileServiceTests
     {
         private Mock<IBlaiseCaseApi> _blaiseApiMock;
-        private Mock<INisraCaseService> _nisraCaseServiceMock;
+        private Mock<IImportNisraCaseService> _nisraCaseServiceMock;
         private Mock<ILoggingService> _loggingMock;
 
         private Mock<IDataRecord> _newDataRecordMock;
@@ -24,9 +24,9 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         private readonly string _serverParkName;
         private readonly string _instrumentName;
 
-        private ImportNisraDataService _sut;
+        private ImportNisraDataFileService _sut;
 
-        public ImportNisraDataServiceTests()
+        public ImportNisraDataFileServiceTests()
         {
             _primaryKey = "SN123";
             _serverParkName = "Park1";
@@ -46,10 +46,10 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock = new Mock<IBlaiseCaseApi>();
             _blaiseApiMock.Setup(b => b.GetCases(_databaseFileName)).Returns(_dataSetMock.Object);
 
-            _nisraCaseServiceMock = new Mock<INisraCaseService>();
+            _nisraCaseServiceMock = new Mock<IImportNisraCaseService>();
             _loggingMock = new Mock<ILoggingService>();
 
-            _sut = new ImportNisraDataService(
+            _sut = new ImportNisraDataFileService(
                 _blaiseApiMock.Object,
                 _nisraCaseServiceMock.Object,
                 _loggingMock.Object);

@@ -5,15 +5,15 @@ using Blaise.Nuget.Api.Contracts.Interfaces;
 
 namespace Blaise.Case.Nisra.Processor.Core.Services
 {
-    public class ImportNisraDataService : IImportNisraDataService
+    public class ImportNisraDataFileService : IImportNisraDataFileService
     {
         private readonly IBlaiseCaseApi _blaiseApi;
-        private readonly INisraCaseService _onlineCaseService;
+        private readonly IImportNisraCaseService _onlineCaseService;
         private readonly ILoggingService _loggingService;
 
-        public ImportNisraDataService(
+        public ImportNisraDataFileService(
             IBlaiseCaseApi blaiseApi, 
-            INisraCaseService onlineCaseService, 
+            IImportNisraCaseService onlineCaseService, 
             ILoggingService loggingService)
         {
             _blaiseApi = blaiseApi;

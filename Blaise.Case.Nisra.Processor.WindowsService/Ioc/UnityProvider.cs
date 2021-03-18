@@ -61,9 +61,9 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             _unityContainer.RegisterType<IStorageService, StorageService>();
 
             //core services   
-            _unityContainer.RegisterType<IImportNisraDataService, ImportNisraDataService>();
+            _unityContainer.RegisterType<IImportNisraDataFileService, ImportNisraDataFileService>();
             _unityContainer.RegisterType<ICatiDataService, CatiDataService>();
-            _unityContainer.RegisterType<INisraCaseService, NisraCaseService>();
+            _unityContainer.RegisterType<IImportNisraCaseService, ImportNisraCaseService>();
 
             //main windows service
             _unityContainer.RegisterType<IInitialiseWindowsService, InitialiseWindowsService>();

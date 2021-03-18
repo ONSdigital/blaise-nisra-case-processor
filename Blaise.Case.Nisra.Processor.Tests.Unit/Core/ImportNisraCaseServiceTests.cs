@@ -10,7 +10,7 @@ using StatNeth.Blaise.API.DataRecord;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 {
-    public class NisraCaseServiceTests
+    public class ImportNisraCaseServiceTests
     {
         private Mock<IBlaiseCaseApi> _blaiseApiMock;
         private Mock<ICatiDataService> _catiDataMock;
@@ -27,9 +27,9 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         private Dictionary<string, string> _newFieldData;
         private Dictionary<string, string> _existingFieldData;
 
-        private NisraCaseService _sut;
+        private ImportNisraCaseService _sut;
 
-        public NisraCaseServiceTests()
+        public ImportNisraCaseServiceTests()
         {
             _primaryKey = "SN123";
             _serverParkName = "Park1";
@@ -74,7 +74,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_nisraDataRecordMock.Object)).Returns(DateTime.Now);
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_existingDataRecordMock.Object)).Returns(DateTime.Now.AddHours(-1));
 
-            _sut = new NisraCaseService(
+            _sut = new ImportNisraCaseService(
                 _blaiseApiMock.Object,
                 _catiDataMock.Object,
                 _loggingMock.Object);
@@ -94,7 +94,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _catiDataMock.InSequence(_mockSequence).Setup(c => c.AddCatiManaCallItems(_newFieldData, _existingFieldData,
                 It.IsAny<int>()));
 
-            var sut = new NisraCaseService(
+            var sut = new ImportNisraCaseService(
                 _blaiseApiMock.Object,
                 _catiDataMock.Object,
                 _loggingMock.Object);

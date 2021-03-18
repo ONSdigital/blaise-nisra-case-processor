@@ -164,9 +164,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CloudStorage\StorageServiceTests.cs" />
-    <Compile Include="Core\ImportNisraDataServiceTests.cs" />
+    <Compile Include="Core\ImportNisraDataFileServiceTests.cs" />
     <Compile Include="Core\CatiDataServiceTests.cs" />
-    <Compile Include="Core\NisraCaseServiceTests.cs" />
+    <Compile Include="Core\ImportNisraCaseServiceTests.cs" />
     <Compile Include="MessageBroker\MessageModelMapperTests.cs" />
     <Compile Include="WindowsService\NisraCaseProcessorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

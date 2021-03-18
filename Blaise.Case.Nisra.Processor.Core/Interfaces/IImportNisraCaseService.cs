@@ -2,7 +2,7 @@
 
 namespace Blaise.Case.Nisra.Processor.Core.Interfaces
 {
-    public interface INisraCaseService
+    public interface IImportNisraCaseService
     {
         void CreateOnlineCase(IDataRecord dataRecord, string instrumentName, string serverParkName, 
             string primaryKey);

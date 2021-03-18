@@ -8,13 +8,13 @@ using StatNeth.Blaise.API.DataRecord;
 [assembly: InternalsVisibleTo("Blaise.Case.Nisra.Processor.Tests.Unit")]
 namespace Blaise.Case.Nisra.Processor.Core.Services
 {
-    public class NisraCaseService : INisraCaseService
+    public class ImportNisraCaseService : IImportNisraCaseService
     {
         private readonly IBlaiseCaseApi _blaiseApi;
         private readonly ICatiDataService _catiDataService;
         private readonly ILoggingService _loggingService;
 
-        public NisraCaseService(
+        public ImportNisraCaseService(
             IBlaiseCaseApi blaiseApi,
             ICatiDataService catiDataService,
             ILoggingService loggingService)
