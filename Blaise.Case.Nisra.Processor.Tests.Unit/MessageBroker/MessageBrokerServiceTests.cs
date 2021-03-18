@@ -1,5 +1,6 @@
 ﻿using Blaise.Case.Nisra.Processor.Core.Interfaces;
-using Blaise.Case.Nisra.Processor.MessageBroker;
+using Blaise.Case.Nisra.Processor.Logging.Interfaces;
+using Blaise.Case.Nisra.Processor.MessageBroker.Services;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using log4net;
 using Moq;
@@ -9,14 +10,13 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
 {
     public class MessageBrokerServiceTests
     {
-        private Mock<ILog> _loggerMock;
+        private Mock<ILoggingService> _loggerMock;
         private Mock<IConfigurationProvider> _configurationProviderMock;
         private Mock<IMessageHandler> _messageHandlerMock;
         private Mock<IFluentQueueApi> _queueProviderMock;
 
         private readonly string _projectId;
         private readonly string _subscriptionId;
-        private readonly string _vmName;
         private readonly string _deadLetterTopicId;
 
         private MessageBrokerService _sut;
@@ -25,19 +25,17 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         {
             _projectId = "ProjectId";
             _subscriptionId = "SubscriptionId";
-            _vmName = "VmName";
             _deadLetterTopicId = "deadLetterTopicId";
         }
 
         [SetUp]
         public void SetUpTests()
         {
-            _loggerMock = new Mock<ILog>();
+            _loggerMock = new Mock<ILoggingService>();
 
             _configurationProviderMock = new Mock<IConfigurationProvider>();
             _configurationProviderMock.Setup(c => c.ProjectId).Returns(_projectId);
             _configurationProviderMock.Setup(c => c.SubscriptionId).Returns(_subscriptionId);
-            _configurationProviderMock.Setup(c => c.VmName).Returns(_vmName);
             _configurationProviderMock.Setup(c => c.DeadletterTopicId).Returns(_deadLetterTopicId);
 
             _messageHandlerMock = new Mock<IMessageHandler>();

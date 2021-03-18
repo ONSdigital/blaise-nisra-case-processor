@@ -1,34 +1,31 @@
 ﻿using System;
-using Blaise.Case.Nisra.Processor.Core.Interfaces;
-using Blaise.Case.Nisra.Processor.MessageBroker;
+using Blaise.Case.Nisra.Processor.Logging.Interfaces;
+using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.WindowsService.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using log4net;
+
 
 namespace Blaise.Case.Nisra.Processor.WindowsService
 {
     public class InitialiseWindowsService : IInitialiseWindowsService
     {
-        private readonly ILog _logger;
+        private readonly ILoggingService _loggingService;
         private readonly IMessageBrokerService _queueService;
         private readonly IMessageHandler _messageHandler;
-        private readonly IConfigurationProvider _configurationProvider;
 
         public InitialiseWindowsService(
-            ILog logger,
+            ILoggingService loggingService,
             IMessageBrokerService queueService,
-            IMessageHandler messageHandler,
-            IConfigurationProvider configurationProvider)
+            IMessageHandler messageHandler)
         {
-            _logger = logger;
+            _loggingService = loggingService;
             _queueService = queueService;
             _messageHandler = messageHandler;
-            _configurationProvider = configurationProvider;
         }
 
         public void Start()
         {
-            _logger.Info($"Starting Nisra Case processing service on '{_configurationProvider.VmName}'");
+            _loggingService.LogInfo("Starting Nisra Case processing service");
 
             try
             {
@@ -36,17 +33,16 @@ namespace Blaise.Case.Nisra.Processor.WindowsService
             }
             catch (Exception ex)
             {
-                _logger.Error(ex);
-                _logger.Warn($"There was an error starting the Data Delivery service");
+                _loggingService.LogError("There was an error starting the Nisra Case processing service", ex);
                 throw;
             }
 
-            _logger.Info($"Nisra Case processing service started on '{_configurationProvider.VmName}'");
+            _loggingService.LogInfo("Nisra Case processing service started");
         }
 
         public void Stop()
         {
-            _logger.Info($"Stopping Nisra Case processing service on '{_configurationProvider.VmName}'");
+            _loggingService.LogInfo("Stopping Nisra Case processing service");
 
             try
             {
@@ -54,12 +50,11 @@ namespace Blaise.Case.Nisra.Processor.WindowsService
             }
             catch (Exception ex)
             {
-                _logger.Error(ex);
-                _logger.Warn($"There was an error stopping the Nisra Case processing service");
+                _loggingService.LogError("There was an error stopping the Nisra Case processing service", ex);
                 throw;
             }
 
-            _logger.Info($"Nisra Case processing service stopped on '{_configurationProvider.VmName}'");
+            _loggingService.LogInfo("Nisra Case processing service stopped");
         }
     }
 }

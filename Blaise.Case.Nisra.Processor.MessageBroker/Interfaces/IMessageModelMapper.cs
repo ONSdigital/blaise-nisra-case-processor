@@ -4,6 +4,6 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Interfaces
 {
     public interface IMessageModelMapper
     {
-        MessageModel MapToNisraCaseActionModel(string message);
+        MessageModel MapToMessageModel(string message);
     }
 }

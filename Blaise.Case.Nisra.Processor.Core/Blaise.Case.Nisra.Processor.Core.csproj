@@ -33,11 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Blaise.Nuget.Api.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2021.3.8.1\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
-      <HintPath>..\packages\StatNeth.Blaise.API.x64.5.7.5\lib\net472\StatNeth.Blaise.API.dll</HintPath>
+      <HintPath>..\packages\StatNeth.Blaise.API.x64.5.8.7\lib\net472\StatNeth.Blaise.API.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -73,34 +76,35 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationProvider.cs" />
-    <Compile Include="Configuration\LocalConfigurationProvider.cs" />
-    <Compile Include="Extensions\ValidationExtensionMethods.cs" />
-    <Compile Include="Cases\ProcessNisraCasesService.cs" />
+    <Compile Include="Extensions\ArgumentValidationExtensions.cs" />
+    <Compile Include="Extensions\ConfigurationExtensions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Interfaces\ICatiDataService.cs" />
     <Compile Include="Interfaces\IConfigurationProvider.cs" />
-    <Compile Include="Interfaces\IProcessNisraCasesService.cs" />
-    <Compile Include="Interfaces\IProcessNisraFilesService.cs" />
-    <Compile Include="Interfaces\IUpdateCaseService.cs" />
-    <Compile Include="ProcessNisraFilesService.cs" />
+    <Compile Include="Interfaces\INisraCaseService.cs" />
+    <Compile Include="Interfaces\IImportNisraDataService.cs" />
+    <Compile Include="Services\CatiDataService.cs" />
+    <Compile Include="Services\ImportNisraDataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Cases\UpdateCaseService.cs" />
+    <Compile Include="Services\NisraCaseService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.Data\Blaise.Case.Nisra.Processor.Data.csproj">
-      <Project>{04f6641d-cde6-4f88-a4b6-9e117444f5a1}</Project>
-      <Name>Blaise.Case.Nisra.Processor.Data</Name>
+    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.Logging\Blaise.Case.Nisra.Processor.Logging.csproj">
+      <Project>{1fd1e6d7-7659-4003-ae82-7930b2c5f6e9}</Project>
+      <Name>Blaise.Case.Nisra.Processor.Logging</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" />
+  <Import Project="..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets'))" />
+    <Error Condition="!Exists('..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets'))" />
   </Target>
 </Project>

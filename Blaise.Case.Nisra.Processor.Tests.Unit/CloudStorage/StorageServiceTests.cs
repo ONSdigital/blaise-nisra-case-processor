@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
-using Blaise.Case.Nisra.Processor.CloudStorage;
 using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
+using Blaise.Case.Nisra.Processor.CloudStorage.Services;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
-using log4net;
+using Blaise.Case.Nisra.Processor.Logging.Interfaces;
 using Moq;
 using NUnit.Framework;
 
@@ -12,286 +13,233 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.CloudStorage
 {
     public class StorageServiceTests
     {
-        private Mock<ILog> _loggingMock;
-        private Mock<IConfigurationProvider> _configurationProviderMock;
-        private Mock<IStorageClientProvider> _storageClientProviderMock;
-        private MockFileSystem _mockFileSystem;
-
-        private readonly string _bucketName;
-        private readonly string _localPath;
-        private readonly string _file1;
-        private readonly string _file2;
-
         private StorageService _sut;
 
-        public StorageServiceTests()
-        {
-            _bucketName = "Bucket1";
-            _localPath = @"c:\temp";
-            _file1 = "OPN123.bdx";
-            _file2 = "OPN123.bdix";
-        }
+        private Mock<IConfigurationProvider> _configurationProviderMock;
+        private Mock<ICloudStorageClientProvider> _storageProviderMock;
+        private Mock<IFileSystem> _fileSystemMock;
+        private Mock<ILoggingService> _loggingMock;
 
         [SetUp]
         public void SetUpTests()
         {
-            _loggingMock = new Mock<ILog>();
-
             _configurationProviderMock = new Mock<IConfigurationProvider>();
-            _configurationProviderMock.Setup(c => c.LocalProcessFolder).Returns(_localPath);
-            _configurationProviderMock.Setup(c => c.BucketName).Returns(_bucketName);
-            _configurationProviderMock.Setup(c => c.IgnoreFilesInBucketList).Returns(new List<string>());
-
-            _storageClientProviderMock = new Mock<IStorageClientProvider>();
-
-            _mockFileSystem = new MockFileSystem();
+            _storageProviderMock = new Mock<ICloudStorageClientProvider>();
+            _fileSystemMock = new Mock<IFileSystem>();
+            _loggingMock = new Mock<ILoggingService>();
 
             _sut = new StorageService(
-                _loggingMock.Object,
                 _configurationProviderMock.Object,
-                _storageClientProviderMock.Object,
-                _mockFileSystem);
+                _storageProviderMock.Object,
+                _fileSystemMock.Object,
+                _loggingMock.Object);
+        }
+
+        
+        [Test]
+        public void Given_I_Call_DownloadDatabaseFilesFromNisraBucketAsync_Then_The_Correct_Services_Are_Called()
+        {
+            //arrange
+            const string instrumentName = "OPN2101A";
+            const string bucketName = "NISRA";
+            const string bucketFilePath = "OPN1234";
+            var tempFilePath = @"d:\temp\GUID";
+            var files = new List<string>()
+            {
+                "OPN.bdix",
+                "OPN.blix",
+                "OPN.bmix",
+            };
+
+            _storageProviderMock.Setup(s => s.GetListOfFiles(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(files);
+
+            foreach (var file in files)
+            {
+                _fileSystemMock.Setup(f => f.Path.GetFileName(file)).Returns(file);
+                _fileSystemMock.Setup(s => s.Path.Combine(tempFilePath, file)).Returns($@"{tempFilePath}\\{file}");
+            }
+
+            _configurationProviderMock.Setup(c => c.BucketName).Returns(bucketName);
+            _configurationProviderMock.Setup(c => c.LocalTempFolder).Returns(tempFilePath);
+
+            _fileSystemMock.Setup(f => f.Directory.Exists(tempFilePath)).Returns(true);
+
+            //act
+            _sut.GetInstrumentFileFromBucket(instrumentName, bucketFilePath);
+
+            //assert
+            _storageProviderMock.Verify(v => v.GetListOfFiles(bucketName,
+                bucketFilePath), Times.Once);
+
+            foreach (var file in files)
+            {
+                _storageProviderMock.Verify(v => v.Download(bucketName, file, $@"{tempFilePath}\\{file}"));
+            }
         }
 
         [Test]
-        public void Given_There_Are_No_Files_In_The_Bucket_When_I_Call_GetListOfAvailableFilesInBucket_Then_An_Empty_List_Is_Returned()
+        public void Given_I_Call_DownloadDatabaseFilesFromNisraBucketAsync_Then_The_Correct_FileName_Is_Returned()
         {
             //arrange
-            var filesInBucket = new List<string>();
+            const string instrumentName = "OPN2101A";
+            const string bucketName = "NISRA";
+            const string bucketFilePath = "OPN1234";
+            var tempFilePath = @"d:\temp\GUID";
+            var files = new List<string>()
+            {
+                "OPN.bdix",
+                "OPN.blix",
+                "OPN.bmix",
+            };
+            var databaseFileName = $"{tempFilePath}\\{instrumentName}.bdix";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            _storageProviderMock.Setup(s => s.GetListOfFiles(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(files);
+
+            foreach (var file in files)
+            {
+                _fileSystemMock.Setup(f => f.Path.GetFileName(file)).Returns(file);
+                _fileSystemMock.Setup(s => s.Path.Combine(tempFilePath, file)).Returns($@"{tempFilePath}\\{file}");
+            }
+
+            _configurationProviderMock.Setup(c => c.BucketName).Returns(bucketName);
+            _configurationProviderMock.Setup(c => c.LocalTempFolder).Returns(tempFilePath);
+
+            _fileSystemMock.Setup(f => f.Directory.Exists(tempFilePath)).Returns(true);
+            _fileSystemMock.Setup(f => f.Path.Combine(tempFilePath, $"{instrumentName}.bdix"))
+                .Returns(databaseFileName);
 
             //act
-            var result = _sut.GetListOfAvailableFilesInBucket();
+            var result =_sut.GetInstrumentFileFromBucket(instrumentName, bucketFilePath);
 
             //assert
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<List<string>>(result);
-            Assert.IsEmpty(result);
+            Assert.AreEqual(databaseFileName, result);
         }
 
         [Test]
-        public void Given_There_Are_No_Files_In_The_Bucket_When_I_Call_GetListOfAvailableFilesInBucket_Then_The_Storage_Client_Is_Disposed()
+        public void Given_No_Files_Are_In_The_BucketPath_When_I_Call_DownloadDatabaseFilesFromNisraBucketAsync_Then_An_Exception_Is_Thrown()
         {
             //arrange
-            var filesInBucket = new List<string>();
+            const string instrumentName = "OPN2101A";
+            const string bucketName = "NISRA";
+            const string bucketFilePath = "OPN1234";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            _storageProviderMock.Setup(s => s.GetListOfFiles(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new List<string>());
 
-            //act
-            _sut.GetListOfAvailableFilesInBucket();
+            _configurationProviderMock.Setup(c => c.BucketName).Returns(bucketName);
 
-            //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
+            //act && assert
+            var exception = Assert.Throws<Exception>(() => _sut.GetInstrumentFileFromBucket(instrumentName, bucketFilePath));
+            Assert.AreEqual($"No files were found for bucket path '{bucketFilePath}' in bucket '{bucketName}'", exception.Message);
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_GetListOfAvailableFilesInBucket_Then_A_Filtered_List_Of_Files_Gets_Returned()
+        public void Given_I_Call_DeleteDownloadedFiles_Then_The_Correct_Folder_Is_Deleted()
         {
             //arrange
-            var file1 = "OPN123.bdx";
-            var file2 = "OPN123.bdix";
-            var file3 = "processed/OPN123.bdix";
-            var file4 = "audit/OPN123.bdix";
-
-            var filesInBucket = new List<string>
-            {
-                file1,
-                file2,
-                file3,
-                file4
-            };
-
-            _configurationProviderMock.Setup(c => c.IgnoreFilesInBucketList).Returns(new List<string> { "processed", "audit" });
-
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            const string tempFilePath = @"d:\temp\GUID";
+            _configurationProviderMock.Setup(c => c.LocalTempFolder).Returns(tempFilePath);
+            _fileSystemMock.Setup(f => f.Directory.Delete(It.IsAny<string>(), It.IsAny<bool>()));
 
             //act
-            var result = _sut.GetListOfAvailableFilesInBucket().ToList();
+            _sut.DeleteDownloadedFiles();
 
             //assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<List<string>>(result);
-            Assert.AreEqual(2, result.Count);
-            Assert.IsTrue(result.Contains($"{_file1}"));
-            Assert.IsTrue(result.Contains($"{_file2}"));
+            _fileSystemMock.Verify(f => f.Directory.Delete(tempFilePath, true), Times.Once);
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_GetListOfAvailableFilesInBucket_Then_The_Storage_Client_Is_Disposed()
+        public void Given_I_Call_DownloadFromBucket_Then_The_Correct_Services_Are_Called()
         {
             //arrange
-            var filesInBucket = new List<string>
-            {
-                _file1,
-                _file2
-            };
+            const string bucketName = "OPN";
+            const string bucketFilePath = "OPN1234/OPN1234.zip";
+            const string fileName = "OPN1234.zip";
+            const string filePath = @"d:\temp";
+            var destinationFilePath = $@"{filePath}\{fileName}";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            _fileSystemMock.Setup(f => f.Directory.Exists(filePath)).Returns(true);
+            _fileSystemMock.Setup(f => f.Path.GetFileName(bucketFilePath)).Returns(fileName);
+            _fileSystemMock.Setup(s => s.Path.Combine(filePath, fileName))
+                .Returns(destinationFilePath);
+            _fileSystemMock.Setup(s => s.File.Delete(It.IsAny<string>()));
 
             //act
-            _sut.GetListOfAvailableFilesInBucket();
+            _sut.DownloadFileFromBucket(bucketName, bucketFilePath, filePath);
 
             //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
+            _storageProviderMock.Verify(v => v.Download(bucketName,
+                bucketFilePath, destinationFilePath));
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_The_Files_Are_Downloaded()
+        public void Given_I_Call_DownloadFromBucket_Then_The_Correct_FilePath_Is_Returned()
         {
             //arrange
-            var filesInBucket = new List<string>
-            {
-                _file1,
-                _file2
-            };
+            const string bucketName = "OPN";
+            const string bucketFilePath = "OPN1234/OPN1234.zip";
+            const string fileName = "OPN1234.zip";
+            const string filePath = @"d:\temp";
+            var destinationFilePath = $@"{filePath}\{fileName}";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            _fileSystemMock.Setup(f => f.Directory.Exists(filePath)).Returns(true);
+            _fileSystemMock.Setup(f => f.Path.GetFileName(bucketFilePath)).Returns(fileName);
+            _fileSystemMock.Setup(s => s.Path.Combine(filePath, fileName))
+                .Returns(destinationFilePath);
+            _fileSystemMock.Setup(s => s.File.Delete(It.IsAny<string>()));
 
             //act
-            _sut.DownloadFilesFromBucket(filesInBucket);
+            var result = _sut.DownloadFileFromBucket(bucketName, bucketFilePath, filePath);
 
-            //assert
-            _storageClientProviderMock.Verify(v => v.Download(_bucketName,
-                _file1, $"{_localPath}\\{_file1}"), Times.Once);
-
-            _storageClientProviderMock.Verify(v => v.Download(_bucketName,
-                _file2, $"{_localPath}\\{_file2}"), Times.Once);
+            //arrange
+            Assert.AreEqual(destinationFilePath, result);
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_A_List_Of_Files_Gets_Returned()
+        public void Given_Temp_Path_Is_Not_There_When_I_Call_DownloadFromBucket_Then_The_Temp_Path_Is_Created()
         {
             //arrange
-            var filesInBucket = new List<string>
-            {
-                _file1,
-                _file2
-            };
+            const string bucketName = "OPN";
+            const string fileName = "OPN1234.zip";
+            const string filePath = @"d:\temp";
+            var destinationFilePath = $@"{filePath}\{fileName}";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            _fileSystemMock.Setup(f => f.Directory.Exists(filePath)).Returns(false);
+            _fileSystemMock.Setup(s => s.Path.Combine(filePath, fileName))
+                .Returns(destinationFilePath);
+
+            _storageProviderMock.Setup(s => s.Download(bucketName, fileName, filePath));
+            _fileSystemMock.Setup(s => s.File.Delete(It.IsAny<string>()));
 
             //act
-            var result = _sut.DownloadFilesFromBucket(filesInBucket).ToList();
+            _sut.DownloadFileFromBucket(bucketName, fileName, filePath);
 
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<List<string>>(result);
-            Assert.AreEqual(2, result.Count);
-            Assert.IsTrue(result.Contains($"{_localPath}\\{_file1}"));
-            Assert.IsTrue(result.Contains($"{_localPath}\\{_file2}"));
+            //arrange
+            _fileSystemMock.Verify(v => v.Directory.CreateDirectory(filePath), Times.Once);
         }
 
         [Test]
-        public void Given_There_Are_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_The_Storage_Client_Is_Disposed()
+        public void Given_I_Call_GetDatabaseFile_Then_The_Correct_Name_Is_Returned()
         {
             //arrange
-            var filesInBucket = new List<string>
-            {
-                _file1,
-                _file2
-            };
+            const string instrumentName = "OPN2101A";
+            var filePath = @"d:\test";
+            var expectedName = $@"{filePath}\{instrumentName}.bdix";
 
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
-
-            //act
-            _sut.DownloadFilesFromBucket(filesInBucket);
-
-            //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
-        }
-
-        [Test]
-        public void Given_There_Are_No_Files_In_The_Bucket_When_I_Call_DownloadFilesFromBucket_Then_An_Empty_List_Is_Returned()
-        {
-            //arrange
-            var filesInBucket = new List<string>();
-
-            _storageClientProviderMock.Setup(s => s.GetListOfFilesInBucket(_bucketName))
-                .Returns(filesInBucket);
+            var sut = new StorageService(
+                _configurationProviderMock.Object,
+                _storageProviderMock.Object,
+               new MockFileSystem(), 
+                _loggingMock.Object);
 
             //act
-            var result = _sut.DownloadFilesFromBucket(filesInBucket);
+            var result = sut.GetDatabaseFile(instrumentName, filePath);
 
             //assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOf<List<string>>(result);
-            Assert.IsEmpty(result);
-        }
-
-        [Test]
-        public void Given_There_Are_No_Files_To_Process_When_I_Call_MoveProcessedFilesToProcessedFolder_Then_Nothing_Is_Processed()
-        {
-            //arrange
-            var filesToProcess = new List<string>();
-
-
-            //act
-            _sut.MoveProcessedFilesToProcessedFolder(filesToProcess);
-
-            //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
-
-            _storageClientProviderMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_There_Are_No_Files_To_Process_When_I_Call_MoveProcessedFilesToProcessedFolder_Then_The_Storage_Client_Is_Disposed()
-        {
-            //arrange
-            var filesToProcess = new List<string>();
-
-
-            //act
-            _sut.MoveProcessedFilesToProcessedFolder(filesToProcess);
-
-            //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
-        }
-
-        [Test]
-        public void Given_There_Are_Files_To_Process_When_I_Call_MoveProcessedFilesToProcessedFolder_Then_The_Files_Are_Downloaded()
-        {
-            //arrange
-            var filesToProcess = new List<string>
-            {
-                $"{_localPath}/{_file1}",
-                $"{_localPath}/{_file2}"
-            };
-
-            //act
-            _sut.MoveProcessedFilesToProcessedFolder(filesToProcess);
-
-            //assert
-            _storageClientProviderMock.Verify(v => v.MoveFileToProcessedFolder(_bucketName,
-                $"{_localPath}/{_file1}"), Times.Once);
-
-            _storageClientProviderMock.Verify(v => v.MoveFileToProcessedFolder(_bucketName,
-                $"{_localPath}/{_file2}"), Times.Once);
-        }
-
-        [Test]
-        public void Given_There_Are_Files_To_Process_When_I_Call_MoveProcessedFilesToProcessedFolder_Then_The_Storage_Client_Is_Disposed()
-        {
-            //arrange
-            var filesToProcess = new List<string>
-            {
-                $"{_localPath}/{_file1}",
-                $"{_localPath}/{_file2}"
-            };
-
-            //act
-            _sut.MoveProcessedFilesToProcessedFolder(filesToProcess);
-
-            //assert
-            _storageClientProviderMock.Verify(v => v.Dispose(), Times.Once);
+            Assert.AreEqual(expectedName, result);
         }
     }
 }

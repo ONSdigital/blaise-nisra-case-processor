@@ -86,11 +86,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="StorageService.cs" />
+    <Compile Include="Services\StorageService.cs" />
     <Compile Include="Interfaces\IStorageService.cs" />
-    <Compile Include="Interfaces\IStorageClientProvider.cs" />
+    <Compile Include="Interfaces\ICloudStorageClientProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StorageClientProvider.cs" />
+    <Compile Include="Providers\CloudStorageClientProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -101,6 +101,11 @@
       <Project>{5a46b690-1db3-44a2-856b-86c845211d6b}</Project>
       <Name>Blaise.Case.Nisra.Processor.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.Logging\Blaise.Case.Nisra.Processor.Logging.csproj">
+      <Project>{1fd1e6d7-7659-4003-ae82-7930b2c5f6e9}</Project>
+      <Name>Blaise.Case.Nisra.Processor.Logging</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

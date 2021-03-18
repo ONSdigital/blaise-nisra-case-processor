@@ -1,5 +1,4 @@
-﻿using Blaise.Case.Nisra.Processor.MessageBroker.Enums;
-using Blaise.Case.Nisra.Processor.MessageBroker.Mappers;
+﻿using Blaise.Case.Nisra.Processor.MessageBroker.Mappers;
 using Blaise.Case.Nisra.Processor.MessageBroker.Model;
 using NUnit.Framework;
 
@@ -15,35 +14,20 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         }
 
         [Test]
-        public void Given_A_Message_With_A_Process_Action_When_I_Call_MapToNisraCaseActionModel_Then_I_Get_An_Expected_Model_Back()
+        public void Given_A_Valid_Message_When_I_Call_MapToMessageModel_Then_I_Get_An_Expected_Model_Back()
         {
             //arrange
-            const string message =
-                @"{ ""ACTION"":""process""}";
+            const string message = @"{""ServerParkName"":""gusty"", ""instrumentName"":""OPN2101A"", ""instrumentBucketPath"":""OPN2101A""}";
 
             //act
-            var result = _sut.MapToNisraCaseActionModel(message);
+            var result = _sut.MapToMessageModel(message);
 
             //assert`
             Assert.NotNull(result);
             Assert.IsInstanceOf<MessageModel>(result);
-            Assert.AreEqual(ActionType.Process, result.Action);
-        }
-
-        [Test]
-        public void Given_An_Invalid_Message_With_A_Process_Action_When_I_Call_MapToNisraCaseActionModel_Then_I_Get_A_Default_Model_Back()
-        {
-            //arrange
-            const string message =
-                @"{ ""ACTION"":""none""}";
-
-            //act
-            var result = _sut.MapToNisraCaseActionModel(message);
-
-            //assert`
-            Assert.NotNull(result);
-            Assert.IsInstanceOf<MessageModel>(result);
-            Assert.AreEqual(ActionType.NotSupported, result.Action);
+            Assert.AreEqual("gusty", result.ServerParkName);
+            Assert.AreEqual("OPN2101A", result.InstrumentName);
+            Assert.AreEqual("OPN2101A", result.InstrumentBucketPath);
         }
     }
 }

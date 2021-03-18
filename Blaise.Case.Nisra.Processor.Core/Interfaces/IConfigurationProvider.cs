@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Blaise.Case.Nisra.Processor.Core.Interfaces
+﻿namespace Blaise.Case.Nisra.Processor.Core.Interfaces
 {
     public interface IConfigurationProvider
     {
@@ -8,16 +6,10 @@ namespace Blaise.Case.Nisra.Processor.Core.Interfaces
 
         string SubscriptionId { get; }
 
-        string LocalProcessFolder { get; }
-
-        string CloudProcessedFolder { get; }
-
-        string BucketName { get; }
-
-        IList<string> IgnoreFilesInBucketList { get; }
-
-        string VmName { get; }
-
         string DeadletterTopicId { get; }
+
+        string LocalTempFolder { get; }
+        
+        string BucketName { get; }
     }
 }

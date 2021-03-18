@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Configuration;
 using System.IO.Abstractions;
-using Blaise.Case.Nisra.Processor.CloudStorage;
 using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
-using Blaise.Case.Nisra.Processor.Core;
-using Blaise.Case.Nisra.Processor.Core.Cases;
+using Blaise.Case.Nisra.Processor.CloudStorage.Providers;
+using Blaise.Case.Nisra.Processor.CloudStorage.Services;
 using Blaise.Case.Nisra.Processor.Core.Configuration;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
-using Blaise.Case.Nisra.Processor.Data;
-using Blaise.Case.Nisra.Processor.Data.Interfaces;
-using Blaise.Case.Nisra.Processor.Data.Mappers;
-using Blaise.Case.Nisra.Processor.MessageBroker;
+using Blaise.Case.Nisra.Processor.Core.Services;
+using Blaise.Case.Nisra.Processor.Logging.Interfaces;
+using Blaise.Case.Nisra.Processor.Logging.Services;
+using Blaise.Case.Nisra.Processor.MessageBroker.Handler;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Mappers;
+using Blaise.Case.Nisra.Processor.MessageBroker.Services;
 using Blaise.Case.Nisra.Processor.WindowsService.Interfaces;
-using Blaise.Nuget.Api;
+using Blaise.Nuget.Api.Api;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using log4net;
 using Unity;
 
 namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
@@ -30,8 +29,12 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
         public UnityProvider()
         {
             _unityContainer = new UnityContainer();
+
             //blaise services
-            _unityContainer.RegisterType<IBlaiseApi, BlaiseApi>();
+            _unityContainer.RegisterType<IBlaiseCaseApi, BlaiseCaseApi>();
+
+            //logging
+            _unityContainer.RegisterType<ILoggingService, EventLogging>();
 
             //system abstractions
             _unityContainer.RegisterType<IFileSystem, FileSystem>();
@@ -43,32 +46,26 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
 
-            _unityContainer.RegisterType<IConfigurationProvider, LocalConfigurationProvider>();
-#else
-            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
 #endif
-            _unityContainer.RegisterType<IStorageClientProvider, CloudStorageClientProvider>();
+            //configuration
+            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
+
+            //pub sub message broker
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
-            _unityContainer.RegisterFactory<ILog>(f => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
-
-            //mappers
+            _unityContainer.RegisterType<IMessageBrokerService, MessageBrokerService>();
             _unityContainer.RegisterType<IMessageModelMapper, MessageModelMapper>();
-            _unityContainer.RegisterType<IDataRecordMapper, DataRecordMapper>();
-
-            //handlers
             _unityContainer.RegisterType<IMessageHandler, MessageHandler>();
 
-            //services   
-            _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
-            _unityContainer.RegisterType<IUpdateCaseService, UpdateCaseService>();
+            //cloud storage
+            _unityContainer.RegisterType<ICloudStorageClientProvider, CloudStorageClientProvider>();
             _unityContainer.RegisterType<IStorageService, StorageService>();
-            _unityContainer.RegisterType<IProcessNisraCasesService, ProcessNisraCasesService>();
-            _unityContainer.RegisterType<IProcessNisraFilesService, ProcessNisraFilesService>();
 
-            //queue service
-            _unityContainer.RegisterType<IMessageBrokerService, MessageBrokerService>();
+            //core services   
+            _unityContainer.RegisterType<IImportNisraDataService, ImportNisraDataService>();
+            _unityContainer.RegisterType<ICatiDataService, CatiDataService>();
+            _unityContainer.RegisterType<INisraCaseService, NisraCaseService>();
 
-            //main service
+            //main windows service
             _unityContainer.RegisterType<IInitialiseWindowsService, InitialiseWindowsService>();
         }
 

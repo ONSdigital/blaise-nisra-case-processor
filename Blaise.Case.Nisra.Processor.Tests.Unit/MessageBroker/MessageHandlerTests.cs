@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
-using Blaise.Case.Nisra.Processor.MessageBroker;
-using Blaise.Case.Nisra.Processor.MessageBroker.Enums;
+using Blaise.Case.Nisra.Processor.Logging.Interfaces;
+using Blaise.Case.Nisra.Processor.MessageBroker.Handler;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Model;
 using log4net;
@@ -14,15 +13,13 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
 {
     public class MessageHandlerTests
     {
-        private Mock<ILog> _loggingMock;
+        private Mock<ILoggingService> _loggingMock;
         private Mock<IStorageService> _storageServiceMock;
-        private Mock<IProcessNisraFilesService> _processFilesServiceMock;
+        private Mock<IImportNisraDataService> _nisraDataServiceMock;
         private Mock<IMessageModelMapper> _mapperMock;
 
         private readonly string _message;
         private readonly MessageModel _messageModel;
-        private readonly List<string> _availableFilesFromBucket;
-        private readonly List<string> _downloadedFilesFromBucket;
 
        MessageHandler _sut;
 
@@ -30,253 +27,81 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         public MessageHandlerTests()
         {
             _message = "Message";
-            _messageModel = new MessageModel { Action = ActionType.Process};
-            _availableFilesFromBucket = new List<string> { "File1.bdbx", "File2.bdbx" };
-            _downloadedFilesFromBucket = new List<string> { "File1.bdbx", "File2.bdbx" };
+            _messageModel = new MessageModel
+            {
+                InstrumentBucketPath = "Instruments\\OPN2101A",
+                InstrumentName = "OPN2101A",
+                ServerParkName = "Gusty"
+            };
         }
 
         [SetUp]
         public void SetUpTests()
         {
-            _loggingMock = new Mock<ILog>();
-
+            _loggingMock = new Mock<ILoggingService>();
             _storageServiceMock = new Mock<IStorageService>();
-
-            _processFilesServiceMock = new Mock<IProcessNisraFilesService>();
+            _nisraDataServiceMock = new Mock<IImportNisraDataService>();
 
             _mapperMock = new Mock<IMessageModelMapper>();
-            _mapperMock.Setup(m => m.MapToNisraCaseActionModel(_message)).Returns(_messageModel);
+            _mapperMock.Setup(m => m.MapToMessageModel(_message)).Returns(_messageModel);
 
             _sut = new MessageHandler(
                 _loggingMock.Object,
                 _storageServiceMock.Object,
-                _processFilesServiceMock.Object,
+                _nisraDataServiceMock.Object,
                 _mapperMock.Object);
         }
 
         [Test]
-        public void Given_Process_Action_Is_Not_Set_When_I_Call_HandleMessage_Then_True_Is_Returned()
+        public void Given_A_Valid_Message_When_I_Call_HandleMessage_Then_The_Correct_Services_Are_Called()
         {
             //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
+            const string databaseFile = @"d:\temp\OPN2101A.bdix";
+            _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(_messageModel.InstrumentName,
+                _messageModel.InstrumentBucketPath)).Returns(databaseFile);
 
-            _messageModel.Action = ActionType.NotSupported;
+            //act
+            _sut.HandleMessage(_message);
+
+            //assert
+            _storageServiceMock.Verify(v => v.GetInstrumentFileFromBucket(_messageModel.InstrumentName, 
+                _messageModel.InstrumentBucketPath), Times.Once);
+
+            _nisraDataServiceMock.Verify(v => v.ImportNisraDatabaseFile(_messageModel.ServerParkName,
+                _messageModel.InstrumentName, databaseFile), Times.Once);
+
+            _storageServiceMock.Verify(s => s.DeleteDownloadedFiles());
+        }
+
+        [Test]
+        public void Given_A_Valid_Message_When_I_Call_HandleMessage_Then_True_Is_Returned()
+        {
+            //arrange
+            const string databaseFile = @"d:\temp\OPN2101A.bdix";
+            _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(_messageModel.InstrumentName,
+                _messageModel.InstrumentBucketPath)).Returns(databaseFile);
 
             //act
             var result = _sut.HandleMessage(_message);
 
             //assert
             Assert.IsNotNull(result);
-            Assert.IsTrue(result);
+            Assert.True(result);
         }
 
         [Test]
-        public void Given_Process_Action_Is_Not_Set_When_I_Call_HandleMessage_Then_Nothing_Is_Processed()
+        public void Given_An_Exception_Occurs_When_I_Call_HandleMessage_Then_False_Is_Returned()
         {
             //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
-
-            _messageModel.Action = ActionType.NotSupported;
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.VerifyNoOtherCalls();
-            _processFilesServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_Files_Are_Available_When_I_Call_HandleMessage_Then_True_Is_Returned()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
+            _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(It.IsAny<string>(),
+                It.IsAny<string>())).Throws(new Exception());
 
             //act
             var result = _sut.HandleMessage(_message);
 
             //assert
             Assert.IsNotNull(result);
-            Assert.IsTrue(result);
-        }
-
-        [Test]
-        public void Given_Files_Are_Available_When_I_Call_HandleMessage_Then_The_Correct_Services_Are_Called()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.Verify(v => v.GetListOfAvailableFilesInBucket(), Times.Once);
-            _storageServiceMock.Verify(v => v.DownloadFilesFromBucket(_availableFilesFromBucket), Times.Once);
-            _processFilesServiceMock.Verify(v => v.ProcessFiles(_downloadedFilesFromBucket), Times.Once);
-            _storageServiceMock.Verify(v => v.MoveProcessedFilesToProcessedFolder(_availableFilesFromBucket));
-
-            _storageServiceMock.VerifyNoOtherCalls();
-            _processFilesServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Available_in_Bucket_When_I_Call_HandleMessage_Then_The_Correct_Services_Are_Called()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(new List<string>());
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.Verify(v => v.GetListOfAvailableFilesInBucket(), Times.Once);
-            _processFilesServiceMock.Verify(v => v.ProcessFiles(_availableFilesFromBucket), Times.Never);
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Available_in_Bucket_When_I_Call_HandleMessage_Then_True_Is_Returned()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(new List<string>());
-
-            //act
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result);
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Available_When_I_Call_HandleMessage_Then_Nothing_Is_Processed()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(new List<string>());
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.Verify(v => v.GetListOfAvailableFilesInBucket(), Times.Once);
-
-            _storageServiceMock.VerifyNoOtherCalls();
-            _processFilesServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Downloaded_From_The_Bucket_When_I_Call_HandleMessage_Then_The_Correct_Services_Are_Called()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(new List<string>());
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.Verify(v => v.GetListOfAvailableFilesInBucket(), Times.Once);
-            _processFilesServiceMock.Verify(v => v.ProcessFiles(_availableFilesFromBucket), Times.Never);
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Downloaded_From_The_Bucket_When_I_Call_HandleMessage_Then_True_Is_Returned()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(new List<string>());
-
-            //act
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result);
-        }
-
-        [Test]
-        public void Given_No_Files_Are_Downloaded_From_The_Bucket_When_I_Call_HandleMessage_Then_Nothing_Is_Processed()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(new List<string>());
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _storageServiceMock.Verify(v => v.GetListOfAvailableFilesInBucket(), Times.Once);
-            _storageServiceMock.Verify(v => v.DownloadFilesFromBucket(_availableFilesFromBucket), Times.Once);
-
-            _storageServiceMock.VerifyNoOtherCalls();
-            _processFilesServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_An_Error_Occurs_When_Getting_Files_From_The_Bucket_When_I_Call_HandleMessage_Then_False_Is_Returned()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Throws(new Exception());
-
-            //act 
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsFalse(result);
-        }
-
-        [Test]
-        public void Given_An_Error_Occurs_When_Getting_Files_From_The_Bucket_When_I_Call_HandleMessage_Then_Exception_Is_Handled_Correctly()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Throws(new Exception());
-
-            //act && assert
-            Assert.DoesNotThrow(() => _sut.HandleMessage(_message));
-        }
-
-        [Test]
-        public void Given_An_Error_Occurs_When_Getting_Files_From_The_Bucket_When_I_Call_HandleMessage_Then_Nothing_Is_Processed()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Throws(new Exception());
-
-            //act && assert
-            _sut.HandleMessage(_message);
-
-            _processFilesServiceMock.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Given_An_Error_Occurs_When_Processing_Files_When_I_Call_HandleMessage_Then_Exception_Is_Handled_Correctly()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
-            _processFilesServiceMock.Setup(c => c.ProcessFiles(_downloadedFilesFromBucket)).Throws(new Exception());
-
-            //act && assert
-            Assert.DoesNotThrow(() => _sut.HandleMessage(_message));
-        }
-
-        [Test]
-        public void Given_An_Error_Occurs_When_Processing_Files_When_I_Call_HandleMessage_Then_False_Is_Returned()
-        {
-            //arrange
-            _storageServiceMock.Setup(c => c.GetListOfAvailableFilesInBucket()).Returns(_availableFilesFromBucket);
-            _storageServiceMock.Setup(c => c.DownloadFilesFromBucket(_availableFilesFromBucket)).Returns(_downloadedFilesFromBucket);
-            _processFilesServiceMock.Setup(c => c.ProcessFiles(_downloadedFilesFromBucket)).Throws(new Exception());
-
-            //act 
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
     }
 }

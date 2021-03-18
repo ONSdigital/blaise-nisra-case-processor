@@ -1,9 +1,11 @@
-﻿using Blaise.Case.Nisra.Processor.MessageBroker.Enums;
-
-namespace Blaise.Case.Nisra.Processor.MessageBroker.Model
+﻿namespace Blaise.Case.Nisra.Processor.MessageBroker.Model
 {
     public class MessageModel
     {
-        public ActionType Action { get; set; }
+        public string ServerParkName { get; set; }
+
+        public string InstrumentName { get; set; }
+
+        public string InstrumentBucketPath { get; set; }
     }
 }

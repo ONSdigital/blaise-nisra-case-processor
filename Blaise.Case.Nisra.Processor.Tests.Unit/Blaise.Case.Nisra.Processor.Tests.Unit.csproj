@@ -82,7 +82,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Blaise.Nuget.Api.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.11.11.4\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2021.3.8.1\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
@@ -141,7 +141,7 @@
       <HintPath>..\packages\NUnit.3.12.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="StatNeth.Blaise.API, Version=5.0.0.0, Culture=neutral, PublicKeyToken=ad2ddd432cb2a452, processorArchitecture=MSIL">
-      <HintPath>..\packages\StatNeth.Blaise.API.x64.5.7.5\lib\net472\StatNeth.Blaise.API.dll</HintPath>
+      <HintPath>..\packages\StatNeth.Blaise.API.x64.5.8.7\lib\net472\StatNeth.Blaise.API.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -163,19 +163,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Mappers\DataRecordMapperTests.cs" />
+    <Compile Include="CloudStorage\StorageServiceTests.cs" />
+    <Compile Include="Core\ImportNisraDataServiceTests.cs" />
+    <Compile Include="Core\CatiDataServiceTests.cs" />
+    <Compile Include="Core\NisraCaseServiceTests.cs" />
     <Compile Include="MessageBroker\MessageModelMapperTests.cs" />
     <Compile Include="WindowsService\NisraCaseProcessorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Core\Configuration\ConfigurationProviderTests.cs" />
-    <Compile Include="Core\Configuration\LocalConfigurationProviderTests.cs" />
+    <Compile Include="Core\ConfigurationProviderTests.cs" />
     <Compile Include="WindowsService\Ioc\UnityProviderTests.cs" />
-    <Compile Include="Data\BlaiseApiServiceTests.cs" />
-    <Compile Include="CloudStorage\StorageServiceTests.cs" />
     <Compile Include="WindowsService\InitialiseWindowsServiceTests.cs" />
-    <Compile Include="Core\Cases\UpdateCaseServiceTests.cs" />
-    <Compile Include="Core\Cases\ProcessNisraCasesServiceTests.cs" />
-    <Compile Include="Core\ProcessFilesServiceTests.cs" />
     <Compile Include="MessageBroker\MessageHandlerTests.cs" />
     <Compile Include="MessageBroker\MessageBrokerServiceTests.cs" />
   </ItemGroup>
@@ -192,9 +189,9 @@
       <Project>{5a46b690-1db3-44a2-856b-86c845211d6b}</Project>
       <Name>Blaise.Case.Nisra.Processor.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.Data\Blaise.Case.Nisra.Processor.Data.csproj">
-      <Project>{04f6641d-cde6-4f88-a4b6-9e117444f5a1}</Project>
-      <Name>Blaise.Case.Nisra.Processor.Data</Name>
+    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.Logging\Blaise.Case.Nisra.Processor.Logging.csproj">
+      <Project>{1fd1e6d7-7659-4003-ae82-7930b2c5f6e9}</Project>
+      <Name>Blaise.Case.Nisra.Processor.Logging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Blaise.Case.Nisra.Processor.MessageBroker\Blaise.Case.Nisra.Processor.MessageBroker.csproj">
       <Project>{f97c5611-4490-4b80-a96c-3ab9dcb9a23b}</Project>
@@ -205,9 +202,7 @@
       <Name>Blaise.Case.Nisra.Processor.WindowsService</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -218,8 +213,8 @@
     <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets'))" />
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
     <Error Condition="!Exists('..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit3TestAdapter.3.16.1\build\net35\NUnit3TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets'))" />
+    <Error Condition="!Exists('..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets'))" />
   </Target>
   <Import Project="..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.3.2\build\net45\MSTest.TestAdapter.targets')" />
-  <Import Project="..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x64.5.7.5\build\StatNeth.Blaise.API.x64.targets')" />
+  <Import Project="..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets" Condition="Exists('..\packages\StatNeth.Blaise.API.x64.5.8.7\build\StatNeth.Blaise.API.x64.targets')" />
 </Project>
