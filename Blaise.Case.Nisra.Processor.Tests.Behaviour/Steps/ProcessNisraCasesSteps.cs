@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Enums;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Models;
@@ -15,22 +16,18 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
     public sealed class ProcessNisraCasesSteps
     {
         private readonly ScenarioContext _scenarioContext;
-
-        private readonly NisraFileHelper _nisraFileHelper;
-        private readonly CaseHelper _caseHelper;
-        private readonly BucketHelper _bucketHelper;
-        private readonly PubSubHelper _pubSubHelper;
-        private readonly ConfigurationHelper _configurationHelper;
+        private static string _tempFilePath;
 
         public ProcessNisraCasesSteps(ScenarioContext scenarioContext)
         {
+            _tempFilePath = Path.Combine(BlaiseConfigurationHelper.TempPath, "Tests", Guid.NewGuid().ToString());
             _scenarioContext = scenarioContext;
+        }
 
-            _nisraFileHelper = new NisraFileHelper();
-            _caseHelper = new CaseHelper();
-            _bucketHelper = new BucketHelper();
-            _pubSubHelper = new PubSubHelper();
-            _configurationHelper = new ConfigurationHelper();
+        [BeforeFeature("importdata")]
+        public static void SetupUpFeature()
+        {
+            InstrumentHelper.GetInstance().InstallSurvey();
         }
 
         [Given(@"there is a not a Nisra file available")]
@@ -39,67 +36,54 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
         }
 
         [Given(@"there is a Nisra file that contains '(.*)' cases")]
-        public void GivenThereIsANisraFileAvailable(int numberOfCases)
+        public async Task GivenThereIsANisraFileAvailable(int numberOfCases)
         {
-            var nisraFilePath = _nisraFileHelper.CreateDatabaseFilesAndFolder();
-
-            _caseHelper.CreateCases(nisraFilePath, numberOfCases);
-            UploadNisraFile(nisraFilePath);
-
-            _scenarioContext.Set(nisraFilePath, "nisraFilePath");
+            await NisraFileHelper.GetInstance().CreateCasesInOnlineFileAsync(numberOfCases, _tempFilePath);
         }
 
         [Given(@"blaise contains no cases")]
         public void GivenTheBlaiseDatabaseIsEmpty()
         {
-            _caseHelper.DeleteCasesInDatabase();
+            CaseHelper.GetInstance().DeleteCases();
         }
 
         [Given(@"there is a Nisra file that contains the following cases")]
-        public void GivenTheNisraFileContainsCasesToProcess(IEnumerable<CaseModel> cases)
+        public async Task GivenTheNisraFileContainsCasesToProcess(IEnumerable<CaseModel> cases)
         {
-            var nisraFilePath = _nisraFileHelper.CreateDatabaseFilesAndFolder();
-
-            _caseHelper.CreateCases(nisraFilePath, cases);
-            UploadNisraFile(nisraFilePath);
-
-            _scenarioContext.Set(nisraFilePath, "nisraFilePath");
+            await NisraFileHelper.GetInstance().CreateCasesInOnlineFileAsync(cases, _tempFilePath);
         }
 
         [Given(@"there is a Nisra file that contains a case with the outcome code '(.*)'")]
-        public void GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(int outcomeCode)
+        public async Task GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(int outcomeCode)
         {
-            var nisraFilePath = _nisraFileHelper.CreateDatabaseFilesAndFolder();
-            var primaryKey = _caseHelper.CreateCase(nisraFilePath, outcomeCode, ModeType.Web);
-            UploadNisraFile(nisraFilePath);
-
-            _scenarioContext.Set(nisraFilePath, "nisraFilePath");
-            _scenarioContext.Set(primaryKey, "primaryKey");
+            var primaryKey = await NisraFileHelper.GetInstance().CreateCaseInOnlineFileAsync(outcomeCode, _tempFilePath);
+            _scenarioContext.Set(primaryKey,"primaryKey");
         }
 
         [Given(@"there is a Nisra file that contains a case that is complete")]
-        public void GivenThereIsANisraFileThatContainsACaseThatIsComplete()
+        public async Task GivenThereIsANisraFileThatContainsACaseThatIsComplete()
         {
-            GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(110);
+            await GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(110);
         }
 
         [Given(@"there is a Nisra file that contains a case that is partially complete")]
-        public void GivenThereIsANisraFileThatContainsACaseThatIsPartiallyComplete()
+        public async Task GivenThereIsANisraFileThatContainsACaseThatIsPartiallyComplete()
         {
-            GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(210);
+            await GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(210);
         }
 
         [Given(@"there is a Nisra file that contains a case that has not been started")]
-        public void GivenThereIsANisraFileThatContainsACaseThatHasNotBeenStarted()
+        public  async Task GivenThereIsANisraFileThatContainsACaseThatHasNotBeenStarted()
         {
-            GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(0);
+            await GivenThereIsANisraFileThatContainsACaseWithTheOutcomeCode(0);
         }
 
         [Given(@"the same case exists in Blaise with the outcome code '(.*)'")]
         public void GivenTheSameCaseExistsInBlaiseWithTheOutcomeCode(int outcomeCode)
         {
-            var primaryKey = _scenarioContext.Get<int>("primaryKey");
-            _caseHelper.CreateCaseInDatabase(primaryKey, outcomeCode, ModeType.Tel);
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            var caseModel = new CaseModel(primaryKey, outcomeCode.ToString(), ModeType.Tel, DateTime.Now.AddHours(-2));
+            CaseHelper.GetInstance().CreateCaseInBlaise(caseModel);
         }
 
         [Given(@"the same case exists in Blaise that is complete")]
@@ -115,47 +99,44 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
             GivenTheSameCaseExistsInBlaiseWithTheOutcomeCode(210);
         }
 
-
-
         [Given(@"blaise contains '(.*)' cases")]
         public void GivenBlaiseContainsCases(int numberOfCases)
         {
-            _caseHelper.CreateCasesInDatabase(numberOfCases);
+            CaseHelper.GetInstance().CreateCasesInBlaise(numberOfCases);
         }
 
         [Given(@"blaise contains the following cases")]
         public void GivenTheBlaiseDatabaseAlreadyContainsCases(IEnumerable<CaseModel> cases)
         {
-            _caseHelper.DeleteCasesInDatabase();
-
-            _caseHelper.CreateCasesInDatabase(cases);
+            CaseHelper.GetInstance().CreateCasesInBlaise(cases);
         }
 
 
         [When(@"the nisra file is processed")]
-        public void TriggerAndMonitorProcess()
+        public async Task TriggerAndMonitorProcess()
         {
-            _pubSubHelper.PublishMessage(@"{ ""action"": ""process""}");
+            PubSubHelper.GetInstance().PublishMessage(
+                $@"{{ ""ServerParkName"": ""{BlaiseConfigurationHelper.ServerParkName}"" , ""InstrumentName"": ""{BlaiseConfigurationHelper.InstrumentName}""}}");
 
             var counter = 0;
-            while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
+            while (!await CloudStorageHelper.GetInstance().FilesHaveBeenProcessedAsync(BlaiseConfigurationHelper.NisraBucket))
             {
                 Thread.Sleep(5000);
                 counter++;
 
-                if(counter == 20) return;
+                if (counter == 20) return;
             }
         }
 
         [When(@"the nisra file is triggered every '(.*)' minutes for '(.*)' hour\(s\)")]
-        public void WhenTheNisraFileIsProcessedEveryMinutesForHours(int minutes, int hours)
+        public async Task WhenTheNisraFileIsProcessedEveryMinutesForHours(int minutes, int hours)
         {
             var startTime = DateTime.Now;
 
             while ((DateTime.Now - startTime).TotalHours < hours)
             {
                 Console.WriteLine("Start process at" + DateTime.Now);
-                TriggerAndMonitorProcess();
+                await TriggerAndMonitorProcess();
 
                 Console.WriteLine("Sleep for " + minutes + " minutes");
                 Thread.Sleep(minutes * 60 * 1000);
@@ -169,11 +150,11 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
         {
             ThenCasesWillBeImportedIntoBlaise(0);
         }
-        
+
         [Then(@"blaise will contain '(.*)' cases")]
         public void ThenCasesWillBeImportedIntoBlaise(int numberOfCases)
         {
-            var numberOfCasesInBlaise = _caseHelper.GetNumberOfCasesInDatabase();
+            var numberOfCasesInBlaise = CaseHelper.GetInstance().NumberOfCasesInInstrument();
 
             Assert.AreEqual(numberOfCases, numberOfCasesInBlaise);
         }
@@ -181,7 +162,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
         [Then(@"blaise will contain the following cases")]
         public void ThenTheBlaiseDatabaseWillContainTheFollowingCases(IEnumerable<CaseModel> cases)
         {
-            var numberOfCasesInDatabase = _caseHelper.GetNumberOfCasesInDatabase();
+            var numberOfCasesInDatabase = CaseHelper.GetInstance().NumberOfCasesInInstrument();
             var casesExpected = cases.ToList();
 
             if (casesExpected.Count != numberOfCasesInDatabase)
@@ -189,7 +170,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
                 Assert.Fail($"Expected '{casesExpected.Count}' cases in the database, but {numberOfCasesInDatabase} cases were found");
             }
 
-            var casesInDatabase = _caseHelper.GetCasesInDatabase();
+            var casesInDatabase = CaseHelper.GetInstance().GetCasesInDatabase();
 
             foreach (var caseModel in casesInDatabase)
             {
@@ -200,71 +181,59 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
                     Assert.Fail($"Case {caseModel.PrimaryKey} was in the database but not found in expected cases");
                 }
 
-                Assert.AreEqual(caseRecordExpected.Outcome, caseModel.Outcome, $"expected an outcome of '{caseRecordExpected.Outcome}' for case '{caseModel.PrimaryKey}'," +
-                                                                               $"but was '{caseModel.Outcome}'");
+                Assert.AreEqual(caseRecordExpected.Outcome, caseModel.Outcome,
+                    $"expected an outcome of '{caseRecordExpected.Outcome}' for case '{caseModel.PrimaryKey}'," +
+                    $"but was '{caseModel.Outcome}'");
 
-                Assert.AreEqual(caseRecordExpected.Mode, caseModel.Mode, $"expected an version of '{caseRecordExpected.Mode}' for case '{caseModel.PrimaryKey}'," +
-                                                                               $"but was '{caseModel.Mode}'");
-
+                Assert.AreEqual(caseRecordExpected.Mode, caseModel.Mode,
+                    $"expected an version of '{caseRecordExpected.Mode}' for case '{caseModel.PrimaryKey}'," +
+                    $"but was '{caseModel.Mode}'");
             }
         }
 
         [Then(@"the existing blaise case is overwritten with the NISRA case")]
         public void ThenTheBlaiseCaseIsOverwrittenByTheNisraCase()
         {
-            var primaryKey = _scenarioContext.Get<int>("primaryKey");
-            var blaiseCase = _caseHelper.GetCaseInDatabase(primaryKey);
-            
-            Assert.AreEqual(ModeType.Web, blaiseCase.Mode);
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            var modeType = CaseHelper.GetInstance().GetMode(primaryKey);
+            Assert.AreEqual(ModeType.Web, modeType);
         }
 
         [Then(@"the existing blaise case is kept")]
         public void ThenTheBlaiseCaseIsKept()
         {
-            var primaryKey = _scenarioContext.Get<int>("primaryKey");
-            var blaiseCase = _caseHelper.GetCaseInDatabase(primaryKey);
-
-            Assert.AreEqual(ModeType.Tel, blaiseCase.Mode);
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            var modeType = CaseHelper.GetInstance().GetMode(primaryKey);
+            Assert.AreEqual(ModeType.Tel, modeType);
         }
-        
+
         [Given(@"the case has been updated within the past 30 minutes")]
         public void GivenTheCaseIsCurrentlyOpenInCati()
         {
             var primaryKey = _scenarioContext.Get<string>("primaryKey");
-            _caseHelper.MarkCaseAsOpenInCati(primaryKey);
+            CaseHelper.GetInstance().MarkCaseAsOpenInCati(primaryKey);
         }
 
         [Then(@"the nisra case is not imported again")]
         public void ThenTheNisraCaseIsNotImportedAgain()
         {
             var primaryKey = _scenarioContext.Get<string>("primaryKey");
-            var modeType = _caseHelper.GetMode(primaryKey);
+            var modeType = CaseHelper.GetInstance().GetMode(primaryKey);
             Assert.AreEqual(ModeType.Web, modeType);
         }
 
         [AfterScenario]
-        public static void CleanUpFiles()
+        public static async Task CleanUpScenario()
         {
-            var nisraFileHelper = new NisraFileHelper();
-            nisraFileHelper.DeleteDatabaseFilesAndFolder();
-
-            var caseHelper = new CaseHelper();
-            caseHelper.DeleteCasesInDatabase();
+            CaseHelper.GetInstance().DeleteCases();
+            await NisraFileHelper.GetInstance().CleanUpOnlineFiles();
+            FileSystemHelper.GetInstance().CleanUpTempFiles(_tempFilePath);
         }
 
-        private void UploadNisraFile(string nisraFilePath)
+        [AfterFeature("importdata")]
+        public static void CleanUpFeature()
         {
-            var databaseFilePath = Path.GetDirectoryName(nisraFilePath);
-
-            if (string.IsNullOrWhiteSpace(databaseFilePath))
-            {
-                throw new Exception("The path to the database files does not exist");
-            }
-
-            foreach (var file in Directory.GetFiles(databaseFilePath))
-            {
-                _bucketHelper.UploadToBucket(file, _configurationHelper.BucketName);
-            }
+            InstrumentHelper.GetInstance().UninstallSurvey();
         }
     }
 }

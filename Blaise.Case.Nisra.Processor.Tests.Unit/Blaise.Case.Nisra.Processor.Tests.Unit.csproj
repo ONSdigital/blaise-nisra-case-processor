@@ -197,7 +197,7 @@
       <Project>{f97c5611-4490-4b80-a96c-3ab9dcb9a23b}</Project>
       <Name>Blaise.Case.Nisra.Processor.MessageBroker</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Blaise.Case.Nisra.Processor\Blaise.Case.Nisra.Processor.WindowsService.csproj">
+    <ProjectReference Include="..\Blaise.Case.Nisra.Processor.WindowsService\Blaise.Case.Nisra.Processor.WindowsService.csproj">
       <Project>{80afb125-a799-46f8-9a45-f1edf5496e15}</Project>
       <Name>Blaise.Case.Nisra.Processor.WindowsService</Name>
     </ProjectReference>

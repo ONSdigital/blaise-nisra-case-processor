@@ -70,7 +70,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _catiDataMock.InSequence(_mockSequence).Setup(c => c.AddCatiManaCallItems(_newFieldData, _existingFieldData,
                 It.IsAny<int>()));
 
-            //needed as we dont update if these fields match
+            //needed as we don't update if these fields match
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_nisraDataRecordMock.Object)).Returns(DateTime.Now);
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_existingDataRecordMock.Object)).Returns(DateTime.Now.AddHours(-1));
 

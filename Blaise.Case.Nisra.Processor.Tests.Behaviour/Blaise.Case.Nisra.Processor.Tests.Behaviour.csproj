@@ -305,12 +305,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builders\CaseBuilder.cs" />
     <Compile Include="Enums\ModeType.cs" />
-    <Compile Include="Helpers\BucketHelper.cs" />
+    <Compile Include="Extensions\ArgumentValidationExtensions.cs" />
+    <Compile Include="Extensions\ConfigurationExtensions.cs" />
+    <Compile Include="Extensions\FileExtensions.cs" />
+    <Compile Include="Helpers\BlaiseConfigurationHelper.cs" />
     <Compile Include="Helpers\CaseHelper.cs" />
-    <Compile Include="Helpers\ConfigurationHelper.cs" />
-    <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\CloudStorageHelper.cs" />
+    <Compile Include="Helpers\FileSystemHelper.cs" />
+    <Compile Include="Helpers\InstrumentHelper.cs" />
     <Compile Include="Helpers\NisraFileHelper.cs" />
     <Compile Include="Helpers\PubSubHelper.cs" />
     <Compile Include="Models\CaseModel.cs" />

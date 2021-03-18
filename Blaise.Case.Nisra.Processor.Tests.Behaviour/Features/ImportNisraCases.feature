@@ -1,4 +1,5 @@
-﻿Feature: Import Nisra cases
+﻿@importdata
+Feature: Import Nisra cases
 	In order to process cases gathered online
 	As a service
 	I want to be given cases to import representing the data captured online

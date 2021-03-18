@@ -5,21 +5,25 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
 {
     public class PubSubHelper
     {
+        private static PubSubHelper _currentInstance;
         private readonly IFluentQueueApi _queueApi;
-        private readonly ConfigurationHelper _configurationHelper;
 
         public PubSubHelper()
         {
             _queueApi = new FluentQueueApi();
-            _configurationHelper = new ConfigurationHelper();
         }
-
+        
+        public static PubSubHelper GetInstance()
+        {
+            return _currentInstance ?? (_currentInstance = new PubSubHelper());
+        }
+        
         public void PublishMessage(string message)
         {
             
             _queueApi
-                .WithProject(_configurationHelper.ProjectId)
-                .WithTopic(_configurationHelper.TopicId)
+                .WithProject(BlaiseConfigurationHelper.ProjectId)
+                .WithTopic(BlaiseConfigurationHelper.TopicId)
                 .Publish(message);
 
         }

@@ -1,66 +1,87 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Blaise.Case.Nisra.Processor.Tests.Behaviour.Enums;
+using Blaise.Case.Nisra.Processor.Tests.Behaviour.Extensions;
+using Blaise.Case.Nisra.Processor.Tests.Behaviour.Models;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
 {
     public class NisraFileHelper
     {
-        private readonly string _libraryFolder;
-        private readonly string _localProcessFolder;
-        private readonly string _databaseFileName;
+        private static NisraFileHelper _currentInstance;
 
-
-        public NisraFileHelper()
+        public static NisraFileHelper GetInstance()
         {
-            var configurationHelper = new ConfigurationHelper();
-
-            _libraryFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty,
-                        "LibraryFiles");
-            
-            _localProcessFolder = configurationHelper.LocalProcessFolder;
-            _databaseFileName = $"{configurationHelper.InstrumentName}.{configurationHelper.DatabaseFileNameExt}";
+            return _currentInstance ?? (_currentInstance = new NisraFileHelper());
         }
 
-        public string CreateDatabaseFilesAndFolder()
+        public async Task CreateCasesInOnlineFileAsync(int numberOfCases, string path)
         {
-            if (Directory.Exists(_localProcessFolder))
-            {
-                DeleteDatabaseFilesAndFolder();
-            }
+            var instrumentPackage = await DownloadPackageFromBucket(path);
+            var extractedFilePath = ExtractPackageFiles(path, instrumentPackage);
+            var instrumentDatabase = Path.Combine(extractedFilePath, BlaiseConfigurationHelper.InstrumentName + ".bdix");
 
-            Directory.CreateDirectory(_localProcessFolder);
+            CaseHelper.GetInstance().CreateCasesInFile(instrumentDatabase, numberOfCases);
 
-            CopyDatabaseLibraryFiles();
-
-            return Path.Combine(_localProcessFolder, _databaseFileName);
+            await UploadFilesToBucket(extractedFilePath);
         }
 
-        public void DeleteDatabaseFilesAndFolder()
+        public async Task CreateCasesInOnlineFileAsync(IEnumerable<CaseModel> caseModels, string path)
         {
-            var directoryInfo = new DirectoryInfo(_localProcessFolder);
+            var instrumentPackage = await DownloadPackageFromBucket(path);
+            var extractedFilePath = ExtractPackageFiles(path, instrumentPackage);
+            var instrumentDatabase = Path.Combine(extractedFilePath, BlaiseConfigurationHelper.InstrumentName + ".bdix");
 
-            foreach (var file in directoryInfo.GetFiles())
-            {
-                file.Delete();
-            }
-            foreach (var dir in directoryInfo.GetDirectories())
-            {
-                dir.Delete(true);
-            }
+            CaseHelper.GetInstance().CreateCasesInFile(instrumentDatabase, caseModels.ToList());
 
-            Directory.Delete(_localProcessFolder);
+            await UploadFilesToBucket(extractedFilePath);
         }
 
-        private void CopyDatabaseLibraryFiles()
+        public async Task<string> CreateCaseInOnlineFileAsync(int outcomeCode, string path)
         {
-            foreach (var dirPath in Directory.GetDirectories(_libraryFolder, "*",
-                SearchOption.AllDirectories))
-                Directory.CreateDirectory(dirPath.Replace(_libraryFolder, _localProcessFolder));
+            var instrumentPackage = await DownloadPackageFromBucket(path);
+            var extractedFilePath = ExtractPackageFiles(path, instrumentPackage);
+            var instrumentDatabase = Path.Combine(extractedFilePath, BlaiseConfigurationHelper.InstrumentName + ".bdix");
 
-            //Copy all the files & Replaces any files with the same name
-            foreach (var newPath in Directory.GetFiles(_libraryFolder, "*.*",
-                SearchOption.AllDirectories))
-                File.Copy(newPath, newPath.Replace(_libraryFolder, _localProcessFolder), true);
+            var caseModel = CaseHelper.GetInstance().CreateCaseModel(outcomeCode.ToString(), ModeType.Web, DateTime.Now.AddMinutes(-40));
+           CaseHelper.GetInstance().CreateCaseInFile(instrumentDatabase, caseModel);
+
+            await UploadFilesToBucket(extractedFilePath);
+
+            return caseModel.PrimaryKey;
+        }
+
+        public async Task CleanUpOnlineFiles()
+        {
+            await CloudStorageHelper.GetInstance().DeleteFilesInBucketAsync(BlaiseConfigurationHelper.NisraBucket,
+                BlaiseConfigurationHelper.InstrumentName);
+        }
+
+        private static async Task<string> DownloadPackageFromBucket(string path)
+        {
+            return await CloudStorageHelper.GetInstance().DownloadFromBucketAsync(
+                BlaiseConfigurationHelper.InstrumentPackageBucket,
+                BlaiseConfigurationHelper.InstrumentFile, path);
+        }
+
+        private static string ExtractPackageFiles(string path, string instrumentPackage)
+        {
+            var extractedFilePath = Path.Combine(path, BlaiseConfigurationHelper.InstrumentName);
+
+            instrumentPackage.ExtractFiles(extractedFilePath);
+
+            return extractedFilePath;
+        }
+
+        private async Task UploadFilesToBucket(string filePath)
+        {
+            var uploadPath = Path.Combine(BlaiseConfigurationHelper.NisraBucket);
+
+            await CloudStorageHelper.GetInstance().UploadFolderToBucketAsync(
+                uploadPath, filePath);
         }
     }
 }

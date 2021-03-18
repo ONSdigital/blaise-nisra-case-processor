@@ -43,12 +43,12 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.CloudStorage
             const string instrumentName = "OPN2101A";
             const string bucketName = "NISRA";
             const string bucketFilePath = "OPN1234";
-            var tempFilePath = @"d:\temp\GUID";
-            var files = new List<string>()
+            const string tempFilePath = @"d:\temp\GUID";
+            var files = new List<string>
             {
                 "OPN.bdix",
                 "OPN.blix",
-                "OPN.bmix",
+                "OPN.bmix"
             };
 
             _storageProviderMock.Setup(s => s.GetListOfFiles(It.IsAny<string>(), It.IsAny<string>()))
@@ -85,12 +85,12 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.CloudStorage
             const string instrumentName = "OPN2101A";
             const string bucketName = "NISRA";
             const string bucketFilePath = "OPN1234";
-            var tempFilePath = @"d:\temp\GUID";
-            var files = new List<string>()
+            const string tempFilePath = @"d:\temp\GUID";
+            var files = new List<string>
             {
                 "OPN.bdix",
                 "OPN.blix",
-                "OPN.bmix",
+                "OPN.bmix"
             };
             var databaseFileName = $"{tempFilePath}\\{instrumentName}.bdix";
 
@@ -226,7 +226,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.CloudStorage
         {
             //arrange
             const string instrumentName = "OPN2101A";
-            var filePath = @"d:\test";
+            const string filePath = @"d:\test";
             var expectedName = $@"{filePath}\{instrumentName}.bdix";
 
             var sut = new StorageService(

@@ -2,7 +2,6 @@
 using Blaise.Case.Nisra.Processor.Logging.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Services;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using log4net;
 using Moq;
 using NUnit.Framework;
 

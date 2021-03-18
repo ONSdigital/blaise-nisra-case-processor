@@ -4,6 +4,7 @@
     {
         NotSpecified,
         Tel,
+        Ftf,
         Web
     }
 }

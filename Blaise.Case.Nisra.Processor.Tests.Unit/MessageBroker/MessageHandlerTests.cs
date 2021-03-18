@@ -21,7 +21,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         private readonly string _message;
         private readonly MessageModel _messageModel;
 
-       MessageHandler _sut;
+        private MessageHandler _sut;
 
 
         public MessageHandlerTests()

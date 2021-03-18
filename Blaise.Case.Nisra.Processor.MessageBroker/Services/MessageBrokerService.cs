@@ -2,7 +2,6 @@
 using Blaise.Case.Nisra.Processor.Logging.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using log4net;
 
 namespace Blaise.Case.Nisra.Processor.MessageBroker.Services
 {
