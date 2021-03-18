@@ -17,7 +17,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         public void Given_A_Valid_Message_When_I_Call_MapToMessageModel_Then_I_Get_An_Expected_Model_Back()
         {
             //arrange
-            const string message = @"{""server_park_name"":""gusty"", ""instrument_name"":""OPN2101A"", ""bucket_path"":""instruments\\OPN2101A""}";
+            const string message = @"{""serverParkName"":""gusty"", ""instrumentName"":""OPN2101A"", ""bucketPath"":""instruments\\OPN2101A""}";
 
             //act
             var result = _sut.MapToMessageModel(message);
