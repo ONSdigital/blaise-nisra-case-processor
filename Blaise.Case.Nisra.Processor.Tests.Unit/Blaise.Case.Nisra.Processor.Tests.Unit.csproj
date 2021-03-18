@@ -171,7 +171,7 @@
     <Compile Include="WindowsService\NisraCaseProcessorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ConfigurationProviderTests.cs" />
-    <Compile Include="WindowsService\Ioc\UnityProviderTests.cs" />
+    <Compile Include="WindowsService\UnityProviderTests.cs" />
     <Compile Include="WindowsService\InitialiseWindowsServiceTests.cs" />
     <Compile Include="MessageBroker\MessageHandlerTests.cs" />
     <Compile Include="MessageBroker\MessageBrokerServiceTests.cs" />

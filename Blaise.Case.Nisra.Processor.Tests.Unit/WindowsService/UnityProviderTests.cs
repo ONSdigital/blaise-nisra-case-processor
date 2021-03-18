@@ -2,7 +2,7 @@
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using NUnit.Framework;
 
-namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService.Ioc
+namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
 {
     public class UnityProviderTests
     {
