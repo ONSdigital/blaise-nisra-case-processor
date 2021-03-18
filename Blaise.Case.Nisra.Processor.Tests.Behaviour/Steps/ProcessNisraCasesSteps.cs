@@ -227,6 +227,21 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
             Assert.AreEqual(ModeType.Tel, blaiseCase.Mode);
         }
         
+        [Given(@"the case has been updated within the past 30 minutes")]
+        public void GivenTheCaseIsCurrentlyOpenInCati()
+        {
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            _caseHelper.MarkCaseAsOpenInCati(primaryKey);
+        }
+
+        [Then(@"the nisra case is not imported again")]
+        public void ThenTheNisraCaseIsNotImportedAgain()
+        {
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            var modeType = _caseHelper.GetMode(primaryKey);
+            Assert.AreEqual(ModeType.Web, modeType);
+        }
+
         [AfterScenario]
         public static void CleanUpFiles()
         {

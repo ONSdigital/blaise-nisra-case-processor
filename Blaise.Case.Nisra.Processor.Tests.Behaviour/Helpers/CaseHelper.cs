@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Builders;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Enums;
 using Blaise.Case.Nisra.Processor.Tests.Behaviour.Models;
 using Blaise.Nuget.Api.Api;
 using Blaise.Nuget.Api.Contracts.Enums;
+using Blaise.Nuget.Api.Contracts.Extensions;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
@@ -128,6 +130,27 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
 
                 cases.MoveNext();
             }
+        }
+
+        public ModeType GetMode(string primaryKey)
+        {
+            var field = _blaiseApi.GetFieldValue(primaryKey, _configurationHelper.InstrumentName,
+                _configurationHelper.ServerParkName, FieldNameType.Mode);
+
+            return (ModeType)field.EnumerationValue;
+        }
+
+        public void MarkCaseAsOpenInCati(string primaryKey)
+        {
+            var dataRecord = _blaiseApi.GetCase(primaryKey, _configurationHelper.InstrumentName,
+                _configurationHelper.ServerParkName);
+
+            var fieldData = new Dictionary<string, string> {
+                {FieldNameType.LastUpdatedDate.FullName(), DateTime.Now.ToString("dd-MM-yyyy")},
+                {FieldNameType.LastUpdatedTime.FullName(), DateTime.Now.ToString("HH:mm:ss")}};
+
+            _blaiseApi.UpdateCase(dataRecord, fieldData, _configurationHelper.InstrumentName,
+                _configurationHelper.ServerParkName);
         }
     }
 }
