@@ -426,7 +426,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
                 _instrumentName, _serverParkName, outcomeCode, outcomeCode, _primaryKey);
 
             //assert
-            _loggingMock.Verify(v => v.LogInfo($"processed: NISRA case '{_primaryKey}' (NISRA HOut = '{outcomeCode}' <= '{outcomeCode}') or (Existing HOut = 0)'"),
+            _loggingMock.Verify(v => v.LogInfo($"processed: NISRA case '{_primaryKey}' (NISRA HOut = '{outcomeCode}' <= '{outcomeCode}') or (Existing HOut = 0)' for instrument '{_instrumentName}'"),
                 Times.Once);
 
             _loggingMock.Verify(v => v.LogWarn(It.IsAny<string>()), Times.Never);
@@ -452,7 +452,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
                 _instrumentName, _serverParkName, newOutcomeCode, existingOutcomeCode, _primaryKey);
 
             //assert
-            _loggingMock.Verify(v => v.LogWarn($"NISRA case '{_primaryKey}' failed to update - potentially open in Cati at the time of the update"),
+            _loggingMock.Verify(v => v.LogWarn($"NISRA case '{_primaryKey}' failed to update - potentially open in Cati at the time of the update for instrument '{_instrumentName}'"),
                 Times.Once);
         }
 
@@ -537,7 +537,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
             //act
             var result = _sut.NisraRecordHasAlreadyBeenProcessed(_nisraDataRecordMock.Object, nisraOutcomeCode,
-                _existingDataRecordMock.Object, existingOutcomeCode);
+                _existingDataRecordMock.Object, existingOutcomeCode, _primaryKey, _instrumentName);
 
             //assert
             Assert.IsNotNull(result);
@@ -557,7 +557,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
             //act
             var result = _sut.NisraRecordHasAlreadyBeenProcessed(_nisraDataRecordMock.Object, nisraOutcomeCode,
-                _existingDataRecordMock.Object, existingOutcomeCode);
+                _existingDataRecordMock.Object, existingOutcomeCode, _primaryKey, _instrumentName);
 
             //assert
             Assert.IsNotNull(result);
@@ -579,7 +579,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
             //act
             var result = _sut.NisraRecordHasAlreadyBeenProcessed(_nisraDataRecordMock.Object, nisraOutcomeCode,
-                _existingDataRecordMock.Object, existingOutcomeCode);
+                _existingDataRecordMock.Object, existingOutcomeCode, _primaryKey, _instrumentName);
 
             //assert
             Assert.IsNotNull(result);
