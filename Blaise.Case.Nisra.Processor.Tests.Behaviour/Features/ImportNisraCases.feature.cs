@@ -917,7 +917,7 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 216
- testRunner.Given("there is a Nisra file that contains a case that is complete", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("there is a Nisra file that contains a case that has previously been imported", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 217
  testRunner.When("the nisra file is processed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");

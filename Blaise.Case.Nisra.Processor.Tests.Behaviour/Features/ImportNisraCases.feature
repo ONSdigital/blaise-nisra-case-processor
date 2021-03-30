@@ -213,6 +213,6 @@ Scenario: A case in the Nisra file has a better outcome but the case has been up
 
 #Scenario 12 https://collaborate2.ons.gov.uk/confluence/display/QSS/OPN+NISRA+Case+Processing+Scenarios
 Scenario: A case in the nisra file has already been processed
-	Given there is a Nisra file that contains a case that is complete
+	Given there is a Nisra file that contains a case that has previously been imported
 	When the nisra file is processed
 	Then the nisra case is not imported again

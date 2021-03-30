@@ -25,6 +25,7 @@ namespace Blaise.Case.Nisra.Processor.CloudStorage.Services
             _fileSystem = fileSystem;
             _loggingService = loggingService;
         }
+
         public string GetInstrumentFileFromBucket(string instrumentName, string bucketPath)
         {
             var bucketFiles = _cloudStorageClient.GetListOfFiles(_configurationProvider.BucketName, bucketPath).ToList();

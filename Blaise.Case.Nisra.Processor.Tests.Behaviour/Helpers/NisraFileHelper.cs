@@ -40,6 +40,17 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
             await UploadFilesToBucket(extractedFilePath);
         }
 
+        public async Task CreateCaseInOnlineFileAsync(CaseModel caseModel, string path)
+        {
+            var instrumentPackage = await DownloadPackageFromBucket(path);
+            var extractedFilePath = ExtractPackageFiles(path, instrumentPackage);
+            var instrumentDatabase = Path.Combine(extractedFilePath, BlaiseConfigurationHelper.InstrumentName + ".bdix");
+
+            CaseHelper.GetInstance().CreateCaseInFile(instrumentDatabase, caseModel);
+
+            await UploadFilesToBucket(extractedFilePath);
+        }
+
         public async Task<string> CreateCaseInOnlineFileAsync(int outcomeCode, string path)
         {
             var instrumentPackage = await DownloadPackageFromBucket(path);

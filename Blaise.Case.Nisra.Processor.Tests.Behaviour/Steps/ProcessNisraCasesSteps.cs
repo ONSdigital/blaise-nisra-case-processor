@@ -98,6 +98,18 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Steps
         {
             GivenTheSameCaseExistsInBlaiseWithTheOutcomeCode(210);
         }
+        
+        [Given(@"there is a Nisra file that contains a case that has previously been imported")]
+        public async Task GivenThereIsANisraFileThatContainsACaseThatHasPreviouslyBeenImported()
+        {
+            var primaryKey = _scenarioContext.Get<string>("primaryKey");
+            var caseModel = new CaseModel(primaryKey, "110", ModeType.Tel, DateTime.Now.AddHours(-2));
+            CaseHelper.GetInstance().CreateCaseInBlaise(caseModel);
+
+            caseModel.Mode = ModeType.Ftf; //used to differentiate the case to ensure it has not been imported again
+            await NisraFileHelper.GetInstance().CreateCaseInOnlineFileAsync(caseModel, _tempFilePath);
+        }
+
 
         [Given(@"blaise contains '(.*)' cases")]
         public void GivenBlaiseContainsCases(int numberOfCases)

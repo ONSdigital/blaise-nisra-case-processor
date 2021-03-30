@@ -13,7 +13,6 @@ namespace Blaise.Case.Nisra.Processor.Core.Extensions
 
             if (string.IsNullOrWhiteSpace(argument))
             {
-
                 throw new ArgumentException($"A value for the argument '{argumentName}' must be supplied");
             }
         }
