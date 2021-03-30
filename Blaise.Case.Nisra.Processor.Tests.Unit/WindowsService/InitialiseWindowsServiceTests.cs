@@ -12,7 +12,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
     {
         private Mock<ILoggingService> _loggingMock;
         private Mock<IMessageBrokerService> _messageBrokerServiceMock;
-        private Mock<IMessageHandler> _messageHandlerMock;
+        private Mock<IMessageTriggerHandler> _messageHandlerMock;
 
         private InitialiseWindowsService _sut;
 
@@ -22,7 +22,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
         {
             _loggingMock = new Mock<ILoggingService>();
             _messageBrokerServiceMock = new Mock<IMessageBrokerService>();
-            _messageHandlerMock = new Mock<IMessageHandler>();
+            _messageHandlerMock = new Mock<IMessageTriggerHandler>();
 
             _sut = new InitialiseWindowsService(
                 _loggingMock.Object,
@@ -37,7 +37,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
             _sut.Start();
 
             //assert
-            _messageBrokerServiceMock.Verify(v => v.Subscribe(It.IsAny<IMessageHandler>()), Times.Once);
+            _messageBrokerServiceMock.Verify(v => v.Subscribe(It.IsAny<IMessageTriggerHandler>()), Times.Once);
         }
 
         [Test]
@@ -45,7 +45,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
         {
             //arrange
             var exceptionThrown = new Exception("Error message");
-            _messageBrokerServiceMock.Setup(s => s.Subscribe(It.IsAny<IMessageHandler>())).Throws(exceptionThrown);
+            _messageBrokerServiceMock.Setup(s => s.Subscribe(It.IsAny<IMessageTriggerHandler>())).Throws(exceptionThrown);
             _loggingMock.Setup(l => l.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
 
             //act

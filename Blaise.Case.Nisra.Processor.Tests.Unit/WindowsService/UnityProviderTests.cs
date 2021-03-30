@@ -25,11 +25,11 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.WindowsService
             var sut = new UnityProvider();
 
             //act
-            var result = sut.Resolve<IMessageHandler>();
+            var result = sut.Resolve<IMessageTriggerHandler>();
 
             //assert
             Assert.NotNull(result);
-            Assert.IsInstanceOf<IMessageHandler>(result);
+            Assert.IsInstanceOf<IMessageTriggerHandler>(result);
         }
     }
 }

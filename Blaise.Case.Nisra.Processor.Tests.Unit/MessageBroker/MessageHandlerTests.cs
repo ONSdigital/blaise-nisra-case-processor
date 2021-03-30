@@ -1,13 +1,12 @@
-﻿using System;
-using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
+﻿using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
 using Blaise.Case.Nisra.Processor.Logging.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Handler;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Model;
-using log4net;
 using Moq;
 using NUnit.Framework;
+using System;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
 {
@@ -74,34 +73,17 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.MessageBroker
         }
 
         [Test]
-        public void Given_A_Valid_Message_When_I_Call_HandleMessage_Then_True_Is_Returned()
-        {
-            //arrange
-            const string databaseFile = @"d:\temp\OPN2101A.bdix";
-            _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(_messageModel.InstrumentName,
-                _messageModel.BucketPath)).Returns(databaseFile);
-
-            //act
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsNotNull(result);
-            Assert.True(result);
-        }
-
-        [Test]
-        public void Given_An_Exception_Occurs_When_I_Call_HandleMessage_Then_False_Is_Returned()
+        public void Given_An_Exception_Occurs_When_I_Call_HandleMessage_Then_The_Exception_Is_Handled_And_Logged()
         {
             //arrange
             _storageServiceMock.Setup(s => s.GetInstrumentFileFromBucket(It.IsAny<string>(),
                 It.IsAny<string>())).Throws(new Exception());
 
             //act
-            var result = _sut.HandleMessage(_message);
+            Assert.DoesNotThrow(()=> _sut.HandleMessage(_message));
 
             //assert
-            Assert.IsNotNull(result);
-            Assert.False(result);
+            _loggingMock.Verify(v => v.LogError(It.IsAny<string>(), It.IsAny<Exception>()));
         }
     }
 }

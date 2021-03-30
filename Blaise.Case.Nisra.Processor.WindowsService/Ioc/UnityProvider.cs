@@ -54,7 +54,7 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
             _unityContainer.RegisterType<IMessageBrokerService, MessageBrokerService>();
             _unityContainer.RegisterType<IMessageModelMapper, MessageModelMapper>();
-            _unityContainer.RegisterType<IMessageHandler, MessageHandler>();
+            _unityContainer.RegisterType<IMessageTriggerHandler, MessageHandler>();
 
             //cloud storage
             _unityContainer.RegisterType<ICloudStorageClientProvider, CloudStorageClientProvider>();

@@ -7,7 +7,7 @@ using Blaise.Nuget.PubSub.Contracts.Interfaces;
 
 namespace Blaise.Case.Nisra.Processor.MessageBroker.Handler
 {
-    public class MessageHandler : IMessageHandler
+    public class MessageHandler : IMessageTriggerHandler
     {
         private readonly ILoggingService _loggingService;
         private readonly IStorageService _storageService;
@@ -26,7 +26,7 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Handler
             _mapper = mapper;
         }
         
-        public bool HandleMessage(string message)
+        public void HandleMessage(string message)
         {
             try
             {
@@ -43,13 +43,10 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Handler
                 _storageService.DeleteDownloadedFiles();
 
                 _loggingService.LogInfo($"Finished processing '{message}' at '{DateTime.Now}'");
-                return true;
             }
             catch (Exception ex)
             {
                 _loggingService.LogError($"Error processing message '{message}' at {DateTime.Now}'", ex);
-
-                return false;
             }
         }
     }

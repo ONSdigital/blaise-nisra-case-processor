@@ -4,4 +4,4 @@ COPY Blaise.Case.Nisra.Processor.WindowsService\bin\Debug /nisra-service
 
 WORKDIR /nisra-service
 
-ENTRYPOINT ["mono", "Blaise.Case.Nisra.Processor.exe"]
+ENTRYPOINT ["mono", "Blaise.Case.Nisra.Processor.WindowsService.exe"]

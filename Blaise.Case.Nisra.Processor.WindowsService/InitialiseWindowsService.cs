@@ -11,12 +11,12 @@ namespace Blaise.Case.Nisra.Processor.WindowsService
     {
         private readonly ILoggingService _loggingService;
         private readonly IMessageBrokerService _queueService;
-        private readonly IMessageHandler _messageHandler;
+        private readonly IMessageTriggerHandler _messageHandler;
 
         public InitialiseWindowsService(
             ILoggingService loggingService,
             IMessageBrokerService queueService,
-            IMessageHandler messageHandler)
+            IMessageTriggerHandler messageHandler)
         {
             _loggingService = loggingService;
             _queueService = queueService;

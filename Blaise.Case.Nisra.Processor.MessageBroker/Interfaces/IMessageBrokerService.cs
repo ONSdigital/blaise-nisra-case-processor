@@ -5,7 +5,7 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Interfaces
 {
     public interface IMessageBrokerService
     {
-        void Subscribe(IMessageHandler messageHandler);
+        void Subscribe(IMessageTriggerHandler messageHandler);
 
         void CancelAllSubscriptions();
     }

@@ -21,14 +21,12 @@ namespace Blaise.Case.Nisra.Processor.MessageBroker.Services
             _queueApi = queueApi;
         }
 
-        public void Subscribe(IMessageHandler messageHandler)
+        public void Subscribe(IMessageTriggerHandler messageHandler)
         {
             _queueApi
                 .WithProject(_configurationProvider.ProjectId)
                 .WithSubscription(_configurationProvider.SubscriptionId)
-                .WithExponentialBackOff(5)
-                .WithDeadLetter(_configurationProvider.DeadletterTopicId)
-                .StartConsuming(messageHandler, true);
+                .StartConsuming(messageHandler);
 
             _loggingService.LogInfo($"Subscription setup to '{_configurationProvider.SubscriptionId}' " +
                          $"for project '{_configurationProvider.ProjectId}'");
