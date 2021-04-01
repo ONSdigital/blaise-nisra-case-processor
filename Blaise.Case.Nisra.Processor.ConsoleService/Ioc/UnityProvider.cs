@@ -1,4 +1,6 @@
-﻿using System.IO.Abstractions;
+﻿using System;
+using System.Configuration;
+using System.IO.Abstractions;
 using Blaise.Case.Nisra.Processor.CloudStorage.Interfaces;
 using Blaise.Case.Nisra.Processor.CloudStorage.Providers;
 using Blaise.Case.Nisra.Processor.CloudStorage.Services;
@@ -11,16 +13,13 @@ using Blaise.Case.Nisra.Processor.MessageBroker.Handler;
 using Blaise.Case.Nisra.Processor.MessageBroker.Interfaces;
 using Blaise.Case.Nisra.Processor.MessageBroker.Mappers;
 using Blaise.Case.Nisra.Processor.MessageBroker.Services;
-using Blaise.Case.Nisra.Processor.WindowsService.Interfaces;
 using Blaise.Nuget.Api.Api;
 using Blaise.Nuget.Api.Contracts.Interfaces;
-using Blaise.Nuget.Api.Providers;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Unity;
-using Unity.Injection;
 
-namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
+namespace Blaise.Case.Nisra.Processor.ConsoleService.Ioc
 {
     public class UnityProvider
     {
@@ -31,12 +30,10 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             _unityContainer = new UnityContainer();
 
             //blaise services
-            var blaiseConfigurationProvider = new BlaiseConfigurationProvider();
-            var connectionModel = blaiseConfigurationProvider.GetConnectionModel();
-            _unityContainer.RegisterType<IBlaiseCaseApi, BlaiseCaseApi>(new InjectionConstructor(connectionModel));
+            _unityContainer.RegisterType<IBlaiseCaseApi, BlaiseCaseApi>();
 
             //logging
-            _unityContainer.RegisterType<ILoggingService, ConsoleLoggingService>();
+            _unityContainer.RegisterType<ILoggingService, EventLogging>();
 
             //system abstractions
             _unityContainer.RegisterType<IFileSystem, FileSystem>();
@@ -45,8 +42,8 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
             // When running in Release, the service will be running as compute account which will have access to all buckets. In test we need to get credentials
-            //var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
-            //Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
+            var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
 
 #endif
             //configuration
@@ -64,12 +61,11 @@ namespace Blaise.Case.Nisra.Processor.WindowsService.Ioc
 
             //core services   
             _unityContainer.RegisterType<IImportNisraDataFileService, ImportNisraDataFileService>();
-            _unityContainer.RegisterType<IImportNisraCaseService, ImportNisraCaseService>();
             _unityContainer.RegisterType<IFieldDataService, FieldDataService>();
-            _unityContainer.RegisterType<IBlaiseCaseService, BlaiseCaseService>();
+
 
             //main windows service
-            _unityContainer.RegisterType<IInitialiseWindowsService, InitialiseWindowsService>();
+
         }
 
         public T Resolve<T>()

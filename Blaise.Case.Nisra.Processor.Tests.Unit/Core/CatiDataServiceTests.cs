@@ -8,12 +8,12 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 {
     public class CatiDataServiceTests
     {
-        private CatiDataService _sut;
+        private FieldDataService _sut;
 
         [SetUp]
         public void SetUpTests()
         {
-            _sut = new CatiDataService();
+            _sut = new FieldDataService();
         }
 
         [Test]

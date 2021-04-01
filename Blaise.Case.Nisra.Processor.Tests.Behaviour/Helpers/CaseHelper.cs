@@ -120,18 +120,8 @@ namespace Blaise.Case.Nisra.Processor.Tests.Behaviour.Helpers
 
         public void DeleteCases()
         {
-            var cases = _blaiseCaseApi.GetCases(BlaiseConfigurationHelper.InstrumentName,
+            _blaiseCaseApi.RemoveCases(BlaiseConfigurationHelper.InstrumentName,
                 BlaiseConfigurationHelper.ServerParkName);
-
-            while (!cases.EndOfSet)
-            {
-                var primaryKey = _blaiseCaseApi.GetPrimaryKeyValue(cases.ActiveRecord);
-
-                _blaiseCaseApi.RemoveCase(primaryKey, BlaiseConfigurationHelper.InstrumentName,
-                    BlaiseConfigurationHelper.ServerParkName);
-
-                cases.MoveNext();
-            }
         }
 
         public int NumberOfCasesInInstrument()

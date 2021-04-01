@@ -4,7 +4,7 @@ using Blaise.Case.Nisra.Processor.Logging.Interfaces;
 
 namespace Blaise.Case.Nisra.Processor.Logging.Services
 {
-    public class EventLogging : ILoggingService
+    public class EventLoggingService : ILoggingService
     {
         public void LogError(string message, Exception exception)
         {

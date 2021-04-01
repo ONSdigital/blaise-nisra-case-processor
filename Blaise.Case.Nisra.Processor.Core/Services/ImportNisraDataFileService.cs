@@ -8,16 +8,16 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
     public class ImportNisraDataFileService : IImportNisraDataFileService
     {
         private readonly IBlaiseCaseApi _blaiseApi;
-        private readonly IImportNisraCaseService _onlineCaseService;
+        private readonly IImportNisraCaseService _nisraCaseService;
         private readonly ILoggingService _loggingService;
 
         public ImportNisraDataFileService(
-            IBlaiseCaseApi blaiseApi, 
-            IImportNisraCaseService onlineCaseService, 
+            IBlaiseCaseApi blaiseApi,
+            IImportNisraCaseService nisraCaseService, 
             ILoggingService loggingService)
         {
             _blaiseApi = blaiseApi;
-            _onlineCaseService = onlineCaseService;
+            _nisraCaseService = nisraCaseService;
             _loggingService = loggingService;
         }
 
@@ -28,23 +28,17 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
 
             while (!caseRecords.EndOfSet)
             {
-                var newRecord = caseRecords.ActiveRecord;
-                var primaryKey = _blaiseApi.GetPrimaryKeyValue(newRecord);
+                var nisraRecord = caseRecords.ActiveRecord;
+                var primaryKey = _blaiseApi.GetPrimaryKeyValue(nisraRecord);
+                var nisraOutcomeCode = _blaiseApi.GetOutcomeCode(nisraRecord);
 
-                if (_blaiseApi.CaseExists(primaryKey, instrumentName, serverParkName))
+                if (nisraOutcomeCode == 0)
                 {
-                    _loggingService.LogInfo($"Case with serial number '{primaryKey}' exists in Blaise");
-
-                    var existingCase = _blaiseApi.GetCase(primaryKey, instrumentName, serverParkName);
-                    _onlineCaseService.UpdateExistingCaseWithOnlineData(newRecord, existingCase, 
-                        serverParkName, instrumentName,  primaryKey);
+                    _loggingService.LogInfo($"Not processed: NISRA case '{primaryKey}' (NISRA HOut = 0) for instrument '{instrumentName}'");
                 }
                 else
                 {
-                    _loggingService.LogInfo($"Case with serial number '{primaryKey}' does not exist in Blaise");
-
-                    _onlineCaseService.CreateOnlineCase(newRecord, instrumentName, 
-                        serverParkName, primaryKey);
+                    _nisraCaseService.ImportNisraCase(nisraRecord, instrumentName, serverParkName);
                 }
 
                 caseRecords.MoveNext();

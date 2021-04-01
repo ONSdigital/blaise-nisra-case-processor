@@ -2,14 +2,56 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Blaise.Case.Nisra.Processor.Core.Extensions;
 using Blaise.Case.Nisra.Processor.Core.Interfaces;
+using Blaise.Nuget.Api.Contracts.Interfaces;
+using StatNeth.Blaise.API.DataRecord;
 
+[assembly: InternalsVisibleTo("Blaise.Case.Nisra.Processor.Tests.Unit")]
 namespace Blaise.Case.Nisra.Processor.Core.Services
 {
-    public class CatiDataService : ICatiDataService
+    public class FieldDataService : IFieldDataService
     {
-        public void RemoveCatiManaBlock(Dictionary<string, string> fieldData)
+        private readonly IBlaiseCaseApi _blaiseApi;
+
+        public FieldDataService(IBlaiseCaseApi blaiseApi)
+        {
+            _blaiseApi = blaiseApi;
+        }
+
+        public Dictionary<string, string> GetNewCaseFieldData(IDataRecord newDataRecord)
+        {
+            var outcomeCode = _blaiseApi.GetOutcomeCode(newDataRecord);
+            var fieldData = _blaiseApi.GetRecordDataFields(newDataRecord);
+            RemoveCatiManaBlock(fieldData);
+            AddCatiManaCallItems(fieldData, fieldData, outcomeCode);
+
+            return fieldData;
+        }
+
+        public Dictionary<string, string> GetUpdateCaseFieldData(IDataRecord newDataRecord, IDataRecord existingDataRecord)
+        {
+            var outcomeCode = _blaiseApi.GetOutcomeCode(newDataRecord);
+            var fieldData = _blaiseApi.GetRecordDataFields(newDataRecord);
+            var existingFieldData = _blaiseApi.GetRecordDataFields(existingDataRecord);
+
+            // we need to preserve the TO CatiMana block data sp remove the fields from WEB
+            RemoveCatiManaBlock(fieldData);
+
+            // we need to preserve the TO CallHistory block data captured in Cati
+            RemoveCallHistoryBlock(fieldData);
+
+            //we need to preserve the web nudged field
+            RemoveWebNudgedField(fieldData);
+
+            // add the existing cati call data with additional items to the new field data
+            AddCatiManaCallItems(fieldData, existingFieldData, outcomeCode);
+
+            return fieldData;
+        }
+
+        internal void RemoveCatiManaBlock(Dictionary<string, string> fieldData)
         {
             var callHistoryItems = fieldData.Where(f =>
                 f.Key.StartsWith("CatiMana")).ToList();
@@ -20,7 +62,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
             }
         }
 
-        public void RemoveCallHistoryBlock(Dictionary<string, string> fieldData)
+        internal void RemoveCallHistoryBlock(Dictionary<string, string> fieldData)
         {
             var callHistoryItems = fieldData.Where(f =>
                 f.Key.StartsWith("CallHistory")).ToList();
@@ -31,7 +73,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
             }
         }
 
-        public void RemoveWebNudgedField(Dictionary<string, string> fieldData)
+        internal void RemoveWebNudgedField(Dictionary<string, string> fieldData)
         {
             if (fieldData.ContainsKey("WebNudged"))
             {
@@ -39,7 +81,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
             }
         }
 
-        public void AddCatiManaCallItems(Dictionary<string, string> newFieldData,
+        internal void AddCatiManaCallItems(Dictionary<string, string> newFieldData,
             Dictionary<string, string> existingFieldData, int outcomeCode)
         {
             var catiCallItems = BuildCatiManaRegCallItems(existingFieldData,
@@ -54,7 +96,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
             }
         }
 
-        public void SetFirstDayIfNotSet(Dictionary<string, string> newFieldData,
+        internal void SetFirstDayIfNotSet(Dictionary<string, string> newFieldData,
             Dictionary<string, string> existingFieldData)
         {
             var existingFieldValue = existingFieldData["CatiMana.CatiCall.FirstDay"];
@@ -65,7 +107,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
                     : existingFieldValue);
         }
 
-        public void AddCatiManaNrOfCallItem(Dictionary<string, string> newFieldData,
+        internal void AddCatiManaNrOfCallItem(Dictionary<string, string> newFieldData,
             Dictionary<string, string> existingFieldData)
         {
             newFieldData.Add("CatiMana.CatiCall.NrOfCall",
@@ -74,7 +116,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
                     : "1");
         }
 
-        public Dictionary<string, string> BuildCatiManaRegCallItems(Dictionary<string, string> fieldData, int outcomeCode)
+        internal Dictionary<string, string> BuildCatiManaRegCallItems(Dictionary<string, string> fieldData, int outcomeCode)
         {
             var newDictionary = new Dictionary<string, string>();
             newDictionary.AddRange(BuildOnlineCatiCallItems(outcomeCode, 1));

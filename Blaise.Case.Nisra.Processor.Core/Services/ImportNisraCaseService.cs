@@ -1,54 +1,49 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Blaise.Case.Nisra.Processor.Core.Interfaces;
+﻿using Blaise.Case.Nisra.Processor.Core.Interfaces;
 using Blaise.Case.Nisra.Processor.Logging.Interfaces;
+using Blaise.Nuget.Api.Contracts.Enums;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using StatNeth.Blaise.API.DataRecord;
 
-[assembly: InternalsVisibleTo("Blaise.Case.Nisra.Processor.Tests.Unit")]
 namespace Blaise.Case.Nisra.Processor.Core.Services
 {
     public class ImportNisraCaseService : IImportNisraCaseService
     {
         private readonly IBlaiseCaseApi _blaiseApi;
-        private readonly ICatiDataService _catiDataService;
+        private readonly IBlaiseCaseService _blaiseCaseService;
         private readonly ILoggingService _loggingService;
 
         public ImportNisraCaseService(
             IBlaiseCaseApi blaiseApi,
-            ICatiDataService catiDataService,
+            IBlaiseCaseService blaiseCaseService,
             ILoggingService loggingService)
         {
             _blaiseApi = blaiseApi;
-            _catiDataService = catiDataService;
+            _blaiseCaseService = blaiseCaseService;
             _loggingService = loggingService;
         }
 
-        public void CreateOnlineCase(IDataRecord dataRecord, string instrumentName, string serverParkName,
-            string primaryKey)
+        public void ImportNisraCase(IDataRecord nisraDataRecord, string instrumentName, string serverParkName)
         {
-            var outcomeCode = _blaiseApi.GetOutcomeCode(dataRecord);
-            var existingFieldData = _blaiseApi.GetRecordDataFields(dataRecord);
+            var primaryKey = _blaiseApi.GetPrimaryKeyValue(nisraDataRecord);
 
-            var newFieldData = _blaiseApi.GetRecordDataFields(dataRecord);
-            _catiDataService.RemoveCatiManaBlock(newFieldData);
+            if (_blaiseApi.CaseExists(primaryKey, instrumentName, serverParkName))
+            {
+                var existingDataRecord = _blaiseApi.GetCase(primaryKey, instrumentName, serverParkName);
+                UpdateExistingCase(nisraDataRecord, existingDataRecord, instrumentName, serverParkName, primaryKey);
+                return;
+            }
 
-            _catiDataService.AddCatiManaCallItems(newFieldData, existingFieldData, outcomeCode);
-
-            _blaiseApi.CreateCase(primaryKey, newFieldData, instrumentName, serverParkName);
-            _loggingService.LogInfo($"Created new case with SerialNumber '{primaryKey}'");
+            //_blaiseCaseService.CreateCase(nisraDataRecord, instrumentName, serverParkName, primaryKey);
         }
 
-          public void UpdateExistingCaseWithOnlineData(IDataRecord nisraDataRecord, IDataRecord existingDataRecord,
-            string serverParkName, string instrumentName, string primaryKey)
+        public void UpdateExistingCase(IDataRecord nisraDataRecord, IDataRecord existingDataRecord,
+             string instrumentName, string serverParkName, string primaryKey)
         {
             var nisraOutcome = _blaiseApi.GetOutcomeCode(nisraDataRecord);
             var existingOutcome = _blaiseApi.GetOutcomeCode(existingDataRecord);
 
             if (nisraOutcome == 0)
             {
-                _loggingService.LogInfo($"Not processed: NISRA case '{primaryKey}' (NISRA HOut = 0) for instrument '{instrumentName}'");
-
                 return;
             }
 
@@ -60,7 +55,7 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
                 return;
             }
 
-            if (NisraRecordHasAlreadyBeenProcessed(nisraDataRecord, nisraOutcome, existingDataRecord, 
+            if (NisraRecordHasAlreadyBeenProcessed(nisraDataRecord, nisraOutcome, existingDataRecord,
                 existingOutcome, primaryKey, instrumentName))
             {
                 _loggingService.LogInfo(
@@ -69,13 +64,13 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
                 return;
             }
 
-            if (_blaiseApi.CaseInUseInCati(existingDataRecord))
-            {
-                _loggingService.LogInfo(
-                    $"Not processed: NISRA case '{primaryKey}' as the case may be open in Cati for instrument '{instrumentName}'");
+            //if (_blaiseApi.CaseInUseInCati(existingDataRecord))
+            //{
+            //    _loggingService.LogInfo(
+            //        $"Not processed: NISRA case '{primaryKey}' as the case may be open in Cati for instrument '{instrumentName}'");
 
-                return;
-            }
+            //    return;
+            //}
 
             if (existingOutcome > 0 && existingOutcome < nisraOutcome)
             {
@@ -85,70 +80,26 @@ namespace Blaise.Case.Nisra.Processor.Core.Services
                 return;
             }
 
-            UpdateCase(nisraDataRecord, existingDataRecord, instrumentName,
-                serverParkName, nisraOutcome, existingOutcome, primaryKey);
+            _loggingService.LogInfo(
+                $"processed: NISRA case '{primaryKey}' (NISRA HOut = '{nisraOutcome}' <= '{existingOutcome}') or (Existing HOut = 0)' for instrument '{instrumentName}'");
+
+            //_blaiseCaseService.UpdateCase(nisraDataRecord, existingDataRecord, instrumentName, serverParkName,  primaryKey);
         }
 
         internal bool NisraRecordHasAlreadyBeenProcessed(IDataRecord nisraDataRecord, int nisraOutcome,
             IDataRecord existingDataRecord, int existingOutcome, string primaryKey, string instrumentName)
         {
-            var nisraTimeStamp = _blaiseApi.GetLastUpdatedDateTime(nisraDataRecord);
-            var existingTimeStamp = _blaiseApi.GetLastUpdatedDateTime(existingDataRecord);
+            var nisraTimeStamp = _blaiseApi.GetFieldValue(nisraDataRecord, FieldNameType.LastUpdated);
+            var existingTimeStamp = _blaiseApi.GetFieldValue(existingDataRecord, FieldNameType.LastUpdated);
+
             var recordHasAlreadyBeenProcessed = nisraOutcome == existingOutcome && nisraTimeStamp == existingTimeStamp;
-            
+
             _loggingService.LogInfo($"Check NISRA Update needed for case '{primaryKey}': '{!recordHasAlreadyBeenProcessed}' - " +
                                     $"(NISRA HOut = '{nisraOutcome}' timestamp = '{nisraTimeStamp}') " +
                                     $"(Existing HOut = '{existingOutcome}' timestamp = '{existingTimeStamp}')" +
                                     $" for instrument '{instrumentName}'");
-            
+
             return recordHasAlreadyBeenProcessed;
-        }
-
-        internal void UpdateCase(IDataRecord newDataRecord, IDataRecord existingDataRecord, string instrumentName,
-            string serverParkName, int newOutcome, int existingOutcome, string primaryKey)
-        {
-            var fieldData = GetFieldData(newDataRecord, existingDataRecord, newOutcome);
-
-            _blaiseApi.UpdateCase(existingDataRecord, fieldData, instrumentName, serverParkName);
-
-            if (RecordHasBeenUpdated(primaryKey, newDataRecord, newOutcome, instrumentName, serverParkName))
-            {
-                _loggingService.LogInfo(
-                    $"processed: NISRA case '{primaryKey}' (NISRA HOut = '{newOutcome}' <= '{existingOutcome}') or (Existing HOut = 0)' for instrument '{instrumentName}'");
-
-                return;
-            }
-
-            _loggingService.LogWarn($"NISRA case '{primaryKey}' failed to update - potentially open in Cati at the time of the update for instrument '{instrumentName}'");
-        }
-
-        internal Dictionary<string, string> GetFieldData(IDataRecord newDataRecord, IDataRecord existingDataRecord, int outcomeCode)
-        {
-            var newFieldData = _blaiseApi.GetRecordDataFields(newDataRecord);
-            var existingFieldData = _blaiseApi.GetRecordDataFields(existingDataRecord);
-
-            // we need to preserve the TO CatiMana block data sp remove the fields from WEB
-            _catiDataService.RemoveCatiManaBlock(newFieldData);
-
-            // we need to preserve the TO CallHistory block data captured in Cati
-            _catiDataService.RemoveCallHistoryBlock(newFieldData);
-
-            //we need to preserve the web nudged field
-            _catiDataService.RemoveWebNudgedField(newFieldData);
-
-            // add the existing cati call data with additional items to the new field data
-            _catiDataService.AddCatiManaCallItems(newFieldData, existingFieldData, outcomeCode);
-
-            return newFieldData;
-        }
-
-        internal bool RecordHasBeenUpdated(string primaryKey, IDataRecord newDataRecord, int newOutcomeCode,
-            string instrumentName, string serverParkName)
-        {
-            var existingRecord = _blaiseApi.GetCase(primaryKey, instrumentName, serverParkName);
-
-            return _blaiseApi.GetOutcomeCode(existingRecord) == newOutcomeCode &&
-                   _blaiseApi.GetLastUpdatedDateTime(existingRecord) == _blaiseApi.GetLastUpdatedDateTime(newDataRecord);
         }
     }
 }

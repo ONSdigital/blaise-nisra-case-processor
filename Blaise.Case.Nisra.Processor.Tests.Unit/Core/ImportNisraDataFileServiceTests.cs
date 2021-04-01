@@ -12,7 +12,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
     public class ImportNisraDataFileServiceTests
     {
         private Mock<IBlaiseCaseApi> _blaiseApiMock;
-        private Mock<IImportNisraCaseService> _nisraCaseServiceMock;
+        private Mock<INisraCaseService> _nisraCaseServiceMock;
         private Mock<ILoggingService> _loggingMock;
 
         private Mock<IDataRecord> _newDataRecordMock;
@@ -46,7 +46,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock = new Mock<IBlaiseCaseApi>();
             _blaiseApiMock.Setup(b => b.GetCases(_databaseFileName)).Returns(_dataSetMock.Object);
 
-            _nisraCaseServiceMock = new Mock<IImportNisraCaseService>();
+            _nisraCaseServiceMock = new Mock<INisraCaseService>();
             _loggingMock = new Mock<ILoggingService>();
 
             _sut = new ImportNisraDataFileService(
@@ -95,7 +95,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Verify(v => v.GetPrimaryKeyValue(_newDataRecordMock.Object), Times.Once);
             _blaiseApiMock.Verify(v => v.CaseExists(_primaryKey, _instrumentName, _serverParkName), Times.Once);
 
-            _nisraCaseServiceMock.Verify(v => v.CreateOnlineCase(_newDataRecordMock.Object, _instrumentName,
+            _nisraCaseServiceMock.Verify(v => v.CreateNisraCase(_newDataRecordMock.Object, _instrumentName,
                 _serverParkName, _primaryKey), Times.Once);
 
             _dataSetMock.Verify(v => v.EndOfSet, Times.Exactly(2));
@@ -134,7 +134,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _dataSetMock.Verify(v => v.ActiveRecord, Times.Once);
             _dataSetMock.Verify(v => v.MoveNext(), Times.Once);
 
-            _nisraCaseServiceMock.Verify(v => v.UpdateExistingCaseWithOnlineData(_newDataRecordMock.Object, _existingDataRecordMock.Object,
+            _nisraCaseServiceMock.Verify(v => v.ImportNisraCase(_newDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey), Times.Once);
 
             _blaiseApiMock.VerifyNoOtherCalls();

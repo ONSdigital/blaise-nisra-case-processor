@@ -10,10 +10,10 @@ using StatNeth.Blaise.API.DataRecord;
 
 namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 {
-    public class ImportNisraCaseServiceTests
+    public class NisraCaseServiceTests
     {
         private Mock<IBlaiseCaseApi> _blaiseApiMock;
-        private Mock<ICatiDataService> _catiDataMock;
+        private Mock<IFieldDataService> _catiDataMock;
         private Mock<ILoggingService> _loggingMock;
         private MockSequence _mockSequence;
 
@@ -27,9 +27,9 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         private Dictionary<string, string> _newFieldData;
         private Dictionary<string, string> _existingFieldData;
 
-        private ImportNisraCaseService _sut;
+        private NisraCaseService _sut;
 
-        public ImportNisraCaseServiceTests()
+        public NisraCaseServiceTests()
         {
             _primaryKey = "SN123";
             _serverParkName = "Park1";
@@ -61,7 +61,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
                 .Returns(false);
 
             //important that the service calls the methods in the right order, otherwise you could end up removing what you have added
-            _catiDataMock = new Mock<ICatiDataService>(MockBehavior.Strict);
+            _catiDataMock = new Mock<IFieldDataService>(MockBehavior.Strict);
             _mockSequence = new MockSequence();
 
             _catiDataMock.InSequence(_mockSequence).Setup(c => c.RemoveCatiManaBlock(_newFieldData));
@@ -74,33 +74,33 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_nisraDataRecordMock.Object)).Returns(DateTime.Now);
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_existingDataRecordMock.Object)).Returns(DateTime.Now.AddHours(-1));
 
-            _sut = new ImportNisraCaseService(
+            _sut = new NisraCaseService(
                 _blaiseApiMock.Object,
                 _catiDataMock.Object,
                 _loggingMock.Object);
         }
         [Test]
-        public void Given_A_New_dataRecord_When_I_Call_CreateOnlineCase_Then_The_Case_Is_Created()
+        public void Given_A_New_dataRecord_When_I_Call_CreateNisraCase_Then_The_Case_Is_Created()
         {
             //arrange
             const int outcomeCode = 110;
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_nisraDataRecordMock.Object)).Returns(outcomeCode);
 
             //important that the service calls the methods in the right order, otherwise you could end up removing what you have added
-            _catiDataMock = new Mock<ICatiDataService>(MockBehavior.Strict);
+            _catiDataMock = new Mock<IFieldDataService>(MockBehavior.Strict);
             _mockSequence = new MockSequence();
 
             _catiDataMock.InSequence(_mockSequence).Setup(c => c.RemoveCatiManaBlock(_newFieldData));
             _catiDataMock.InSequence(_mockSequence).Setup(c => c.AddCatiManaCallItems(_newFieldData, _existingFieldData,
                 It.IsAny<int>()));
 
-            var sut = new ImportNisraCaseService(
+            var sut = new NisraCaseService(
                 _blaiseApiMock.Object,
                 _catiDataMock.Object,
                 _loggingMock.Object);
 
             //act
-            sut.CreateOnlineCase(_nisraDataRecordMock.Object, _instrumentName, _serverParkName, _primaryKey);
+            sut.CreateNisraCase(_nisraDataRecordMock.Object, _instrumentName, _serverParkName, _primaryKey);
 
             //assert
             _catiDataMock.Verify(v => v.RemoveCatiManaBlock(_newFieldData), Times.Once);
@@ -113,7 +113,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 1 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_And_Existing_Case_Have_An_Outcome_Of_Complete_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated()
+        public void Given_The_Nisra_Case_And_Existing_Case_Have_An_Outcome_Of_Complete_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated()
         {
             //arrange
             const int hOutComplete = 110; //complete
@@ -122,7 +122,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutComplete);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
                 _instrumentName, _primaryKey);
 
             //assert
@@ -135,7 +135,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 2 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Has_An_Outcome_Of_Complete_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Not_Updated()
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Has_An_Outcome_Of_Complete_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Not_Updated()
         {
             //arrange
             const int hOutPartial = 210; //partial
@@ -145,7 +145,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutComplete);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _instrumentName, _primaryKey);
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName, _instrumentName, _primaryKey);
 
             //assert
             _blaiseApiMock.Verify(v => v.UpdateCase(It.IsAny<IDataRecord>(), It.IsAny<Dictionary<string, string>>(),
@@ -154,7 +154,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 3 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Of_Partial_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated()
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Of_Partial_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated()
         {
             //arrange
             const int hOutPartial = 210; //partial
@@ -164,7 +164,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutPartial);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -180,7 +180,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         [TestCase(461)]
         [TestCase(541)]
         [TestCase(542)]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Between_210_And_542_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated(int existingOutcome)
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Between_210_And_542_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated(int existingOutcome)
         {
             //arrange
             const int hOutComplete = 110; //complete
@@ -189,7 +189,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(existingOutcome);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -208,7 +208,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(existingOutcome);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName,
                 _primaryKey);
 
@@ -219,7 +219,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 6 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_And_Existing_Case_Have_An_Outcome_Of_Partial_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated()
+        public void Given_The_Nisra_Case_And_Existing_Case_Have_An_Outcome_Of_Partial_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated()
         {
             //arrange
             const int hOutPartial = 210; //partial
@@ -228,7 +228,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutPartial);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -244,7 +244,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         [TestCase(461)]
         [TestCase(541)]
         [TestCase(542)]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Haw_An_Outcome_Between_210_And_542_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated(int existingOutcome)
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Haw_An_Outcome_Between_210_And_542_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated(int existingOutcome)
         {
             //arrange
             const int hOutPartial = 210; //partial
@@ -253,7 +253,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(existingOutcome);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -266,14 +266,14 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
         //additional scenario
         [TestCase(110)]
         [TestCase(210)]
-        public void Given_The_Nisra_Case_Has_A_Valid_Outcome_But_Existing_Case_Haw_An_Outcome_Of_Zero_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Updated(int nisraOutcome)
+        public void Given_The_Nisra_Case_Has_A_Valid_Outcome_But_Existing_Case_Haw_An_Outcome_Of_Zero_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Updated(int nisraOutcome)
         {
             //arrange
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_nisraDataRecordMock.Object)).Returns(nisraOutcome);
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(0);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -283,7 +283,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 9 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Not_Updated()
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Partial_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Not_Updated()
         {
             //arrange
             const int hOutPartial = 210; //partial
@@ -293,7 +293,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutComplete);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -303,7 +303,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 10 (https://collaborate2.ons.gov.uk/confluence/display/QSS/Blaise+5+NISRA+Case+Processor+Flow)
         [Test]
-        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_To_Record_Is_Not_Updated()
+        public void Given_The_Nisra_Case_Has_An_Outcome_Of_Complete_And_Existing_Case_Has_An_Outcome_Of_Delete_When_I_Call_ImportNisraCase_Then_The_To_Record_Is_Not_Updated()
         {
             //arrange
             const int hOutPartial = 110; //Complete
@@ -313,7 +313,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetOutcomeCode(_existingDataRecordMock.Object)).Returns(hOutComplete);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object,
                 _serverParkName, _instrumentName, _primaryKey);
 
             //assert
@@ -323,7 +323,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 11
         [Test]
-        public void Given_Nisra_Is_Superior_But_The_Case_Is_In_Use_In_Cati_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_Case_Is_Not_Updated()
+        public void Given_Nisra_Is_Superior_But_The_Case_Is_In_Use_In_Cati_When_I_Call_ImportNisraCase_Then_The_Case_Is_Not_Updated()
         {
             //arrange
             const int hOutComplete = 110; //complete
@@ -337,7 +337,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
                 .Returns(true);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
                 _instrumentName, _primaryKey);
 
             //assert
@@ -347,7 +347,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
 
         // Scenario 12
         [Test]
-        public void Given_The_Case_Has_Been_Processed_Before_When_I_Call_UpdateExistingCaseWithOnlineData_Then_The_Case_Is_Not_Updated()
+        public void Given_The_Case_Has_Been_Processed_Before_When_I_Call_ImportNisraCase_Then_The_Case_Is_Not_Updated()
         {
             //arrange
             const int hOutComplete = 110; //complete
@@ -361,7 +361,7 @@ namespace Blaise.Case.Nisra.Processor.Tests.Unit.Core
             _blaiseApiMock.Setup(b => b.GetLastUpdatedDateTime(_existingDataRecordMock.Object)).Returns(lastUpdated);
 
             //act
-            _sut.UpdateExistingCaseWithOnlineData(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
+            _sut.ImportNisraCase(_nisraDataRecordMock.Object, _existingDataRecordMock.Object, _serverParkName,
                 _instrumentName, _primaryKey);
 
             //assert

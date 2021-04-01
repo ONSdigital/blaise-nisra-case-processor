@@ -79,13 +79,15 @@
     <Compile Include="Extensions\ArgumentValidationExtensions.cs" />
     <Compile Include="Extensions\ConfigurationExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Interfaces\ICatiDataService.cs" />
+    <Compile Include="Interfaces\IFieldDataService.cs" />
     <Compile Include="Interfaces\IConfigurationProvider.cs" />
-    <Compile Include="Interfaces\IImportNisraCaseService.cs" />
     <Compile Include="Interfaces\IImportNisraDataFileService.cs" />
-    <Compile Include="Services\CatiDataService.cs" />
+    <Compile Include="Services\FieldDataService.cs" />
+    <Compile Include="Interfaces\IBlaiseCaseService.cs" />
+    <Compile Include="Interfaces\IImportNisraCaseService.cs" />
     <Compile Include="Services\ImportNisraDataFileService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\BlaiseCaseService.cs" />
     <Compile Include="Services\ImportNisraCaseService.cs" />
   </ItemGroup>
   <ItemGroup>
